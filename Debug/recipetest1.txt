@@ -1,0 +1,5 @@
+lib c2style static
+	$generate-c
+	$warnings no-unused
+	bo\om/.c2
+end

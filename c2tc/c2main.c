@@ -1,0 +1,198 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <io.h>
+
+#include "mpc.h"
+#include "inttypes.h"
+#include "shared.h"
+
+int32 c2main(int32 argc, char** argv)
+{
+	//general
+	mpc_parser_t* start = mpc_new("start");
+	mpc_parser_t* end = mpc_new("end");
+	mpc_parser_t* op = mpc_new("op");
+	mpc_parser_t* ptrop = mpc_new("ptrop");
+	mpc_parser_t* ident = mpc_new("ident");
+	mpc_parser_t* number = mpc_new("number");
+	mpc_parser_t* character = mpc_new("character");
+	mpc_parser_t* string = mpc_new("string");
+	mpc_parser_t* val = mpc_new("val");
+	mpc_parser_t* emptyindices = mpc_new("emptyindices");
+	mpc_parser_t* indices = mpc_new("indices");
+	mpc_parser_t* anyindices = mpc_new("anyindices");
+	mpc_parser_t* module = mpc_new("module");
+	mpc_parser_t* import = mpc_new("import");
+	mpc_parser_t* define = mpc_new("define");
+	mpc_parser_t* natives = mpc_new("natives");
+	mpc_parser_t* typeident = mpc_new("typeident");
+	mpc_parser_t* member = mpc_new("member");
+	mpc_parser_t* memblock = mpc_new("memblock");
+	mpc_parser_t* structure = mpc_new("structure");
+	mpc_parser_t* locunion = mpc_new("locunion");
+	mpc_parser_t* globunion = mpc_new("globunion");
+	mpc_parser_t* alias = mpc_new("alias");
+	mpc_parser_t* decltype = mpc_new("decltype");
+
+	mpc_parser_t* head = mpc_new("head");
+	mpc_parser_t* body = mpc_new("body");
+	mpc_parser_t* c2 = mpc_new("c2");
+
+	mpc_err_t* err = mpca_lang(MPCA_LANG_DEFAULT,
+		//general
+		" start       : /^/ ;                                                          \n"
+		" end         : /$/ ;                                                          \n"
+		" op          : '+' | '>' | '<' ;                                              \n"
+		" ptrop       : '*' ;                                                          \n"
+		" ident       : /[a-zA-Z_\\.\\#][a-zA-Z0-9_-]*/ ;                              \n"
+		" number      : /[0-9]+/ ;                                                     \n"
+		" character   : /'.'/ ;                                                        \n"
+		" string      : /\"\"(\\\\.|[^\"])*\"/ ;                                       \n"
+		" val         : /[0-9]+(\\.[0-9]+)*[a-zA-Z_]*/ ;                               \n"
+		" emptyindices: \"[]\";                                                        \n"
+		" indices     : '[' (<ident> | <number> | '+' ) ']' ;                          \n"
+		" anyindices  : (<indices> | <emptyindices>) ;                                 \n"
+		" module      : \"module\" <ident> ';' ;                                       \n"
+		" import      : \"import\" <ident> (';'                                        \n"
+		"             | (\"local\" ';')                                                \n"
+		"             | (\"as\" <ident> ';')                                           \n"
+		"             | (\"as\" <ident> \"local\" ';')) ;                              \n"
+		" define      : \"#define\" <ident> /((\\w*)\\s)/ ;                            \n"
+		" natives     : \"char\"                                                       \n"
+		"             | \"int8\"    | \"uint8\"                                        \n"
+		"             | \"int16\"   | \"uint16\"                                       \n"
+		"             | \"int32\"   | \"uint32\"                                       \n"
+		"             | \"int64\"   | \"uint64\"                                       \n"
+		"             | \"float32\" | \"float64\" ;                                    \n"
+		" typeident   : <natives> | <ident> ;                                          \n"
+		" member      : <typeident> <ident> ';' ;                                      \n"
+		" memblock    : '{' (<member> | <locunion>)* '}' ;                             \n"
+		" structure   : \"type\" <ident> \"struct\" <memblock> ;                       \n"
+		" locunion    : \"union\" (<ident> <memblock> | <memblock>) ;                  \n"
+		" globunion   : \"type\" <ident> \"union\" <memblock> ;                        \n"
+		" decltype    : <ident> <ptrop>* <indices>* ;                                  \n"
+		" alias       : \"type\" <ident> <decltype> ';' ;                              \n"
+		" head        : <module> <import>* ;                                           \n"
+		" body        : (<define> | <structure> | <globunion> | <alias>)* ;            \n"
+		" c2          : <start> <head> <body> <end> ;                                  \n",
+		start, end, op, ptrop, ident, number, string, val, emptyindices, indices, anyindices, module,
+		import, define, natives, typeident, member, memblock, structure, locunion, globunion, decltype,
+		alias, head, body, c2, NULL
+		);
+	mpc_optimise(c2);
+	if (err != NULL)
+	{
+		mpc_err_print(err);
+		mpc_err_delete(err);
+		exit(1);
+	}
+
+	if (argc > 1)
+	{
+#ifdef R_OK
+		if (access(argv[1], R_OK) == 0)
+#else
+		if (access(argv[1], _A_NORMAL) == 0)
+#endif
+		{
+			current = fopen(argv[1], "rb");
+			if (!current)
+			{
+				perror(argv[1]);
+				exit(1);
+			}
+
+			fseek(current, 0L, SEEK_END);
+			lsize = ftell(current);
+			rewind(current);
+
+			currenttxt = calloc(1, lsize + 1);
+			if (!currenttxt)
+			{
+				fclose(current);
+				fputs("memory alloc fails", stderr);
+				exit(1);
+			}
+
+			if (fread(currenttxt, lsize, 1, current) != 1)
+			{
+				fclose(current);
+				free(currenttxt);
+				fputs("entire read fails", stderr);
+				exit(1);
+			}
+			fclose(current);
+
+			//comment skip
+			puts(currenttxt);
+			puts("\n======================\n");
+			char* temp = malloc(sizeof(char) * strlen(currenttxt));
+			int8 flag = 0;
+			int32 cursor = 0;
+			for (int32 i = 0; i < strlen(currenttxt) + 1; i++)
+			{
+				if (currenttxt[i] != '/' && flag == 0)
+				{
+					temp[cursor] = currenttxt[i];
+					cursor++;
+				}
+				else if (currenttxt[i] == '*' && currenttxt[i + 1] == '/' && flag == 1)
+				{
+					flag = 0;
+					i++;
+				}
+				else if (currenttxt[i] == '\n' && flag == 2)
+				{
+					flag = 0;
+				}
+				else if (currenttxt[i] == '/' && currenttxt[i + 1] == '/' && flag == 0)
+				{
+					flag = 2;
+				}
+				else if (currenttxt[i] == '/' && currenttxt[i + 1] == '*' && flag == 0)
+				{
+					flag = 1;
+				}
+			}
+			commentless = malloc(sizeof(char) * strlen(temp));
+			strcpy(commentless, temp);
+			puts(commentless);
+			free(currenttxt);
+		}
+
+		mpc_result_t r;
+		if (mpc_parse(argv[1], commentless, c2, &r))
+		{
+			mpc_ast_print(r.output);
+			mpc_ast_delete(r.output);
+		}
+		else
+		{
+			mpc_err_print(r.error);
+			mpc_err_delete(r.error);
+		}
+		mpc_print(c2);
+
+	}
+	else
+	{
+		mpc_result_t r;
+		if (mpc_parse_pipe("<stdin>", stdin, c2, &r))
+		{
+			mpc_ast_print(r.output);
+			mpc_ast_delete(r.output);
+		}
+		else
+		{
+			mpc_err_print(r.error);
+			mpc_err_delete(r.error);
+		}
+	}
+
+	mpc_cleanup(25, start, end, op, ptrop, ident, number, string, val, emptyindices, indices, anyindices, module,
+	import, define, natives, typeident, member, memblock, structure, locunion, globunion, decltype, alias, head,
+	body, c2);
+
+	return 0;
+}
