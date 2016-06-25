@@ -4,9 +4,12 @@
 
 #include "inttypes.h"
 #include "shared.h"
+#include "stringutils.h"
 
 int32 main(int32 argc, char** argv)
 {
+	if (startswith("lol", "ol")) puts("lol");
+	else puts("fuck");
 	switch (argc)
 	{
 	case 1:

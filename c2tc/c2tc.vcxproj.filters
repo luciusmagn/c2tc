@@ -36,6 +36,9 @@
     <ClCompile Include="recipe.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="stringutils.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mpc.h">
@@ -51,6 +54,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="recipe.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stringutils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

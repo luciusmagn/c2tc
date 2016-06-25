@@ -128,6 +128,7 @@
     <ClCompile Include="mpc.c" />
     <ClCompile Include="recipe.c" />
     <ClCompile Include="recipeparser.c" />
+    <ClCompile Include="stringutils.c" />
     <ClCompile Include="vector.c" />
   </ItemGroup>
   <ItemGroup>
@@ -135,6 +136,7 @@
     <ClInclude Include="mpc.h" />
     <ClInclude Include="recipe.h" />
     <ClInclude Include="shared.h" />
+    <ClInclude Include="stringutils.h" />
     <ClInclude Include="vector.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

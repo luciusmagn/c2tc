@@ -12,12 +12,15 @@ int32 c2main(int32 argc, char** argv)
 	//general
 	mpc_parser_t* start = mpc_new("start");
 	mpc_parser_t* end = mpc_new("end");
-	mpc_parser_t* op = mpc_new("op");
+	mpc_parser_t* unaryop = mpc_new("unaryop");
 	mpc_parser_t* ptrop = mpc_new("ptrop");
 	mpc_parser_t* ident = mpc_new("ident");
 	mpc_parser_t* number = mpc_new("number");
 	mpc_parser_t* character = mpc_new("character");
 	mpc_parser_t* string = mpc_new("string");
+	mpc_parser_t* attrtype = mpc_new("attrtype");
+	mpc_parser_t* attrwval = mpc_new("attrwval");
+	mpc_parser_t* attribute = mpc_new("attribute");
 	mpc_parser_t* val = mpc_new("val");
 	mpc_parser_t* emptyindices = mpc_new("emptyindices");
 	mpc_parser_t* indices = mpc_new("indices");
@@ -34,8 +37,20 @@ int32 c2main(int32 argc, char** argv)
 	mpc_parser_t* globunion = mpc_new("globunion");
 	mpc_parser_t* alias = mpc_new("alias");
 	mpc_parser_t* decltype = mpc_new("decltype");
-
+	mpc_parser_t* arg = mpc_new("arg");
+	mpc_parser_t* args = mpc_new("args");
 	mpc_parser_t* head = mpc_new("head");
+	mpc_parser_t* funcdecl = mpc_new("funcdecl");
+	mpc_parser_t* factor = mpc_new("factor");
+	mpc_parser_t* term = mpc_new("term");
+	mpc_parser_t* lexp = mpc_new("lexp");
+	mpc_parser_t* funccall = mpc_new("funccall");
+	mpc_parser_t* whileloop = mpc_new("whileloop");
+	mpc_parser_t* stmt = mpc_new("stmt");
+	mpc_parser_t* exp = mpc_new("exp");
+	mpc_parser_t* block = mpc_new("block");
+	mpc_parser_t* function = mpc_new("function");
+
 	mpc_parser_t* body = mpc_new("body");
 	mpc_parser_t* c2 = mpc_new("c2");
 
@@ -43,12 +58,19 @@ int32 c2main(int32 argc, char** argv)
 		//general
 		" start       : /^/ ;                                                          \n"
 		" end         : /$/ ;                                                          \n"
-		" op          : '+' | '>' | '<' ;                                              \n"
+		" unaryop     : '&' | '!' | '-' | '~' | '+' ;                                  \n"
 		" ptrop       : '*' ;                                                          \n"
 		" ident       : /[a-zA-Z_\\.\\#][a-zA-Z0-9_-]*/ ;                              \n"
 		" number      : /[0-9]+/ ;                                                     \n"
 		" character   : /'.'/ ;                                                        \n"
 		" string      : /\"\"(\\\\.|[^\"])*\"/ ;                                       \n"
+		" attrtype    :(\"export\"    | \"packed\"                                     \n"
+		"             |  \"unused\"   | \"unused_params\"                              \n"
+		"             |  \"noreturn\" | \"inline\"                                     \n"
+		"             |  \"weak\"     | \"opaque\") ;                                  \n"
+		" attrwval    : (\"aligned\" | \"section\") '=' (<string>|<number>) ;          \n"
+		" attribute   : \"@(\" (<attrwal>|<attrtype>) (',' (<attrwval>                 \n"
+		"             |<attrtype>))* ')' ;                                             \n"
 		" val         : /[0-9]+(\\.[0-9]+)*[a-zA-Z_]*/ ;                               \n"
 		" emptyindices: \"[]\";                                                        \n"
 		" indices     : '[' (<ident> | <number> | '+' ) ']' ;                          \n"
@@ -68,17 +90,46 @@ int32 c2main(int32 argc, char** argv)
 		" typeident   : <natives> | <ident> ;                                          \n"
 		" member      : <typeident> <ident> ';' ;                                      \n"
 		" memblock    : '{' (<member> | <locunion>)* '}' ;                             \n"
-		" structure   : \"type\" <ident> \"struct\" <memblock> ;                       \n"
+		" structure   : \"type\" <ident> \"struct\" <memblock> <attribute>? ;          \n"
 		" locunion    : \"union\" (<ident> <memblock> | <memblock>) ;                  \n"
 		" globunion   : \"type\" <ident> \"union\" <memblock> ;                        \n"
-		" decltype    : <ident> <ptrop>* <indices>* ;                                  \n"
+		" decltype    : <typeident> <ptrop>* <indices>* ;                              \n"
 		" alias       : \"type\" <ident> <decltype> ';' ;                              \n"
+		" arg         : <decltype> <ident>;                                            \n"
+		" args        : '(' (<arg> ',')* <arg>? ')' ;                                  \n"
+		" funcdecl    : (\"public\")? \"func\" <decltype> <ident> <args>;              \n"
+		" whileloop   : \"while\" '(' <exp> ')' <stmt> ;                               \n"
+		" factor      : '(' <lexp> ')'                                                 \n"
+		"             | <number>                                                       \n"
+		"             | <character>                                                    \n"
+		"             | <string>                                                       \n"
+		"             | <ident> '(' <lexp>? (',' <lexp>)* ')'                          \n"
+		"             | <ident> ;                                                      \n"
+		" term        : <factor> (('*' | '/' | '%') <factor>)* ;                       \n"
+		" lexp        : <term> (('+' | '-') <term>)* ;                                 \n"
+		" funccall    : <ident> '(' <ident>? (',' <ident>)* ')' ';' ;                  \n"
+		" stmt        : '{' <stmt>* '}'                                                \n"
+		"             | <member>                                                       \n"
+		"             | <whileloop>                                                    \n"
+		"             | \"if\"    '(' <exp> ')' <stmt>                                 \n"
+		"             | <ident> '=' <lexp> ';'                                         \n"
+		"             | \"return\" <lexp>? ';'                                         \n"
+		"             | <funccall> ;                                                   \n"
+		" exp         : <lexp> '>' <lexp>                                              \n"
+		"             | <lexp> '<' <lexp>                                              \n"
+		"             | '!'<lexp>                                                      \n"
+		"             | <lexp> \">=\" <lexp>                                           \n"
+		"             | <lexp> \"<=\" <lexp>                                           \n"
+		"             | <lexp> \"!=\" <lexp>                                           \n"
+		"             | <lexp> \"==\" <lexp> ;                                         \n"
+		" block       : '{' <stmt>* '}' ;                                              \n"
+		" function    : <funcdecl> <block> ;                                           \n"
 		" head        : <module> <import>* ;                                           \n"
-		" body        : (<define> | <structure> | <globunion> | <alias>)* ;            \n"
+		" body        : (<define> | <structure> | <globunion> | <alias> | <function>)*;\n"
 		" c2          : <start> <head> <body> <end> ;                                  \n",
-		start, end, op, ptrop, ident, number, string, val, emptyindices, indices, anyindices, module,
+		start, end, unaryop, ptrop, ident, number, string, attrtype, attrwval, attribute, val, emptyindices, indices, anyindices, module,
 		import, define, natives, typeident, member, memblock, structure, locunion, globunion, decltype,
-		alias, head, body, c2, NULL
+		alias, arg, args, funcdecl, factor, term, lexp, funccall, stmt, funccall, whileloop, exp, block, function, head, body, c2, NULL
 		);
 	mpc_optimise(c2);
 	if (err != NULL)
@@ -172,7 +223,7 @@ int32 c2main(int32 argc, char** argv)
 			mpc_err_print(r.error);
 			mpc_err_delete(r.error);
 		}
-		mpc_print(c2);
+		//mpc_print(c2);
 
 	}
 	else
@@ -190,9 +241,9 @@ int32 c2main(int32 argc, char** argv)
 		}
 	}
 
-	mpc_cleanup(25, start, end, op, ptrop, ident, number, string, val, emptyindices, indices, anyindices, module,
-	import, define, natives, typeident, member, memblock, structure, locunion, globunion, decltype, alias, head,
-	body, c2);
+	mpc_cleanup(41, start, end, unaryop, ptrop, ident, number, string, attrtype, attrwval, attribute, val, emptyindices, indices, anyindices, module,
+	import, define, natives, typeident, member, memblock, structure, locunion, globunion, decltype, alias, arg, args, funcdecl, factor, term, lexp, funccall,
+	whileloop, stmt, exp, block, function, head, body, c2);
 
 	return 0;
 }

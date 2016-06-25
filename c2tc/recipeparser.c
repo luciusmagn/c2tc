@@ -26,8 +26,8 @@ int32 recipemain(int32 argc, char** argv)
 		" option      : <spaces> /\\$/ <ident>+ /\\s/+ ;                                                        \n"//
 		" type        : \"target\" | \"lib\" ;                                                                  \n"//
 		" libtype     : \"shared\" | \"static\" ;                                                               \n"//
-		" file        : <spaces> /[a-zA-Z0-9_-\\.\\\\\\/]+/ <spaces> /\\s/+ ;                                   \n"// I FINALLY DID IT. 10 HOURS GONE TO HELL FOR THIS PARSER
-		" target      : <spaces> <type> <ident> <libtype>? /\\s/+ (<option> | <file>)+ \"end\" <spaces> ;       \n"// NAMELY THIS ^ LINE
+		" file        : <spaces> /[a-zA-Z0-9_-\\.\\\\\\/]+/ <spaces> /\\s/+ ;                                   \n"//
+		" target      : <spaces> <type> <ident> <libtype>? /\\s/+ (<option> | <file>)+ \"end\" <spaces> ;       \n"//
 		" recipe      : /^/ <target>+ /$/;                        \n",
 		spaces, ident, option, type, libtype, file, target,
 		recipe, NULL
