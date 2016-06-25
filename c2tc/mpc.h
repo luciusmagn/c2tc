@@ -23,9 +23,9 @@
 */
 
 typedef struct {
-  long pos;
-  long row;
-  long col;
+	long pos;
+	long row;
+	long col;
 } mpc_state_t;
 
 /*
@@ -33,12 +33,12 @@ typedef struct {
 */
 
 typedef struct {
-  mpc_state_t state;
-  int expected_num;
-  char *filename;
-  char *failure;
-  char **expected;
-  char recieved;
+	mpc_state_t state;
+	int expected_num;
+	char *filename;
+	char *failure;
+	char **expected;
+	char recieved;
 } mpc_err_t;
 
 void mpc_err_delete(mpc_err_t *e);
@@ -53,8 +53,8 @@ void mpc_err_print_to(mpc_err_t *e, FILE *f);
 typedef void mpc_val_t;
 
 typedef union {
-  mpc_err_t *error;
-  mpc_val_t *output;
+	mpc_err_t *error;
+	mpc_val_t *output;
 } mpc_result_t;
 
 struct mpc_parser_t;
@@ -73,14 +73,15 @@ typedef void(*mpc_dtor_t)(mpc_val_t*);
 typedef mpc_val_t*(*mpc_ctor_t)(void);
 
 typedef mpc_val_t*(*mpc_apply_t)(mpc_val_t*);
-typedef mpc_val_t*(*mpc_apply_to_t)(mpc_val_t*,void*);
-typedef mpc_val_t*(*mpc_fold_t)(int,mpc_val_t**);
+typedef mpc_val_t*(*mpc_apply_to_t)(mpc_val_t*, void*);
+typedef mpc_val_t*(*mpc_fold_t)(int, mpc_val_t**);
 
 /*
 ** Building a Parser
 */
 
 mpc_parser_t *mpc_new(const char *name);
+mpc_parser_t *mpc_copy(mpc_parser_t *a);
 mpc_parser_t *mpc_define(mpc_parser_t *p, mpc_parser_t *a);
 mpc_parser_t *mpc_undefine(mpc_parser_t *p);
 
@@ -108,7 +109,7 @@ mpc_parser_t *mpc_fail(const char *m);
 mpc_parser_t *mpc_failf(const char *fmt, ...);
 mpc_parser_t *mpc_lift(mpc_ctor_t f);
 mpc_parser_t *mpc_lift_val(mpc_val_t *x);
-mpc_parser_t *mpc_anchor(int(*f)(char,char));
+mpc_parser_t *mpc_anchor(int(*f)(char, char));
 mpc_parser_t *mpc_state(void);
 
 /*
@@ -189,7 +190,7 @@ mpc_parser_t *mpc_whole(mpc_parser_t *a, mpc_dtor_t da);
 mpc_parser_t *mpc_stripl(mpc_parser_t *a);
 mpc_parser_t *mpc_stripr(mpc_parser_t *a);
 mpc_parser_t *mpc_strip(mpc_parser_t *a);
-mpc_parser_t *mpc_tok(mpc_parser_t *a); 
+mpc_parser_t *mpc_tok(mpc_parser_t *a);
 mpc_parser_t *mpc_sym(const char *s);
 mpc_parser_t *mpc_total(mpc_parser_t *a, mpc_dtor_t da);
 
@@ -250,17 +251,17 @@ mpc_val_t *mpcf_maths(int n, mpc_val_t** xs);
 */
 
 mpc_parser_t *mpc_re(const char *re);
-  
+
 /*
 ** AST
 */
 
 typedef struct mpc_ast_t {
-  char *tag;
-  char *contents;
-  mpc_state_t state;
-  int children_num;
-  struct mpc_ast_t** children;
+	char *tag;
+	char *contents;
+	mpc_state_t state;
+	int children_num;
+	struct mpc_ast_t** children;
 } mpc_ast_t;
 
 mpc_ast_t *mpc_ast_new(const char *tag, const char *contents);
@@ -268,12 +269,37 @@ mpc_ast_t *mpc_ast_build(int n, const char *tag, ...);
 mpc_ast_t *mpc_ast_add_root(mpc_ast_t *a);
 mpc_ast_t *mpc_ast_add_child(mpc_ast_t *r, mpc_ast_t *a);
 mpc_ast_t *mpc_ast_add_tag(mpc_ast_t *a, const char *t);
+mpc_ast_t *mpc_ast_add_root_tag(mpc_ast_t *a, const char *t);
 mpc_ast_t *mpc_ast_tag(mpc_ast_t *a, const char *t);
 mpc_ast_t *mpc_ast_state(mpc_ast_t *a, mpc_state_t s);
 
 void mpc_ast_delete(mpc_ast_t *a);
 void mpc_ast_print(mpc_ast_t *a);
 void mpc_ast_print_to(mpc_ast_t *a, FILE *fp);
+
+int mpc_ast_get_index(mpc_ast_t *ast, const char *tag);
+int mpc_ast_get_index_lb(mpc_ast_t *ast, const char *tag, int lb);
+mpc_ast_t *mpc_ast_get_child(mpc_ast_t *ast, const char *tag);
+mpc_ast_t *mpc_ast_get_child_lb(mpc_ast_t *ast, const char *tag, int lb);
+
+typedef enum {
+	mpc_ast_trav_order_pre,
+	mpc_ast_trav_order_post
+} mpc_ast_trav_order_t;
+
+typedef struct mpc_ast_trav_t {
+	mpc_ast_t             *curr_node;
+	struct mpc_ast_trav_t *parent;
+	int                    curr_child;
+	mpc_ast_trav_order_t   order;
+} mpc_ast_trav_t;
+
+mpc_ast_trav_t *mpc_ast_traverse_start(mpc_ast_t *ast,
+	mpc_ast_trav_order_t order);
+
+mpc_ast_t *mpc_ast_traverse_next(mpc_ast_trav_t **trav);
+
+void mpc_ast_traverse_free(mpc_ast_trav_t **trav);
 
 /*
 ** Warning: This function currently doesn't test for equality of the `state` member!
@@ -301,9 +327,9 @@ mpc_parser_t *mpca_or(int n, ...);
 mpc_parser_t *mpca_and(int n, ...);
 
 enum {
-  MPCA_LANG_DEFAULT              = 0,
-  MPCA_LANG_PREDICTIVE           = 1,
-  MPCA_LANG_WHITESPACE_SENSITIVE = 2
+	MPCA_LANG_DEFAULT = 0,
+	MPCA_LANG_PREDICTIVE = 1,
+	MPCA_LANG_WHITESPACE_SENSITIVE = 2
 };
 
 mpc_parser_t *mpca_grammar(int flags, const char *grammar, ...);
@@ -323,14 +349,14 @@ void mpc_optimise(mpc_parser_t *p);
 void mpc_stats(mpc_parser_t *p);
 
 int mpc_test_pass(mpc_parser_t *p, const char *s, const void *d,
-  int(*tester)(const void*, const void*), 
-  mpc_dtor_t destructor, 
-  void(*printer)(const void*));
+	int(*tester)(const void*, const void*),
+	mpc_dtor_t destructor,
+	void(*printer)(const void*));
 
 int mpc_test_fail(mpc_parser_t *p, const char *s, const void *d,
-  int(*tester)(const void*, const void*),
-  mpc_dtor_t destructor,
-  void(*printer)(const void*));
+	int(*tester)(const void*, const void*),
+	mpc_dtor_t destructor,
+	void(*printer)(const void*));
 
 
 

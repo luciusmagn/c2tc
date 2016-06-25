@@ -17,7 +17,7 @@ type Point struct
         int64 z;
         char u;
     }
-}
+} @(opaque)
 
 type myunion union 
 {
@@ -32,153 +32,19 @@ type myunion union
 
 type banana char*[250];
 
-/*#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <io.h>
+public func int32 test0() {}
+public func int32 test1(int32 i, float64 f) {} 
 
-#include "mpc.h"
-#include "inttypes.h"
-#include "shared.h"
-#include "recipe.h"
-
-int32 recipemain(int32 argc, char** argv)
+public func int32 test2(int32 i, float64 f)
 {
-	mpc_parser_t* ident = mpc_new("ident");
-	mpc_parser_t* optionname = mpc_new("optionname");
-	mpc_parser_t* optionkw = mpc_new("optionkw");
-	mpc_parser_t* anyoption = mpc_new("anyoption");
-	mpc_parser_t* exportconfig = mpc_new("exportconfig");
-	mpc_parser_t* option = mpc_new("option");
-	mpc_parser_t* file = mpc_new("file");
-	mpc_parser_t* target = mpc_new("target");
-	mpc_parser_t* recipe = mpc_new("recipe");
-
-	mpc_err_t* err = mpca_lang(MPCA_LANG_PREDICTIVE,
-		" ident       : /[a-zA-Z_\\#-][a-zA-Z0-9_-]*\/ ;                                \n"
-		" optionname  : \"$warnings\"   | \"$refs\"                                      \n"
-		"             | \"$deps\"       | \"$generate-c\"                                \n"
-		"             | \"$generate-ir\" ;                                              \n"
-		" optionkw    : \"no-unused\"      | \"show-files\"                            \n"
-		"             | \"show-externals\" | \"single-module\" ;                       \n"
-		" anyoption   : <optionname> <optionkw>* ;                               \n"
-	    " exportconfig: (\"$export\" | \"$config\") <ident> ;                      \n"
-		" option      : <anyoption> | <exportconfig> ;                                 \n"
-		" file        : /[\\.a-zA-Z0-9\\\\\\/_-]+[a-zA-Z0-9_-]+\\.[a-zA-Z0-9]+\\s*\/ ;      \n"
-		" target      : (\"target\" | \"lib\") <ident>                                 \n"
-		"               (\"shared\" | \"static\" | <file>)                  \n"
-		"               (<file>)* \"end\";                                  \n"
-		" recipe      : /^/ <target>+ ;                                                \n",
-		ident, optionname, optionkw, anyoption, exportconfig, option, file, target,
-		recipe, NULL
-		);
-	mpc_optimise(recipe);
-	if (err != NULL)
+	int32 n;
+  	int32 i;
+  
+  	while (i < 10) 
 	{
-		mpc_err_print(err);
-		mpc_err_delete(err);
-		exit(1);
-	}
-
-	if (argc > 1)
-	{
-		char* commentlessrecipe;
-		char* recipetxt;
-#ifdef R_OK
-		if (access(argv[1], R_OK) == 0)
-#else
-		if (access(argv[1], _A_NORMAL) == 0)
-#endif
-		{
-			current = fopen(argv[1], "rb");
-			if (!current)
-			{
-				perror(argv[1]);
-				exit(1);
-			}
-
-			fseek(current, 0L, SEEK_END);
-			lsize = ftell(current);
-			rewind(current);
-
-			recipetxt = calloc(1, lsize + 1);
-			if (!recipetxt)
-			{
-				fclose(current);
-				fputs("memory alloc fails", stderr);
-				exit(1);
-			}
-
-			if (fread(recipetxt, lsize, 1, current) != 1)
-			{
-				fclose(current);
-				free(recipetxt);
-				fputs("entire read fails", stderr);
-				exit(1);
-			}
-			fclose(current);
-
-			//comment skip
-			//puts(recipetxt);
-			//puts("\n======================\n");
-			char* temp = malloc(sizeof(char) * strlen(recipetxt));
-			int8 flag = 0;
-			int32 cursor = 0;
-			for (int32 i = 0; i < strlen(recipetxt) + 1; i++)
-			{
-				if (recipetxt[i] != '#' && flag == 0)
-				{
-					temp[cursor] = recipetxt[i];
-					cursor++;
-				}
-				else if (recipetxt[i] == '\n' && flag == 1)
-				{
-					flag = 0;
-				}
-				else if (recipetxt[i] == '#' && flag == 0)
-				{
-					flag = 1;
-				}
-			}
-			commentlessrecipe = malloc(sizeof(char) * strlen(temp));
-			strcpy(commentlessrecipe, temp);
-			puts(commentlessrecipe);
-			free(recipetxt);
-		}
-		mpc_result_t r;
-		if (mpc_parse(argv[1], commentlessrecipe, recipe, &r))
-		{
-			mpc_ast_print(r.output);
-			recipe_walk(r.output, NULL);
-			mpc_ast_delete(r.output);
-		}
-		else
-		{
-			mpc_err_print(r.error);
-			puts("dump");
-			puts("=======================");
-			printf("failure:%s\nfilename:%s\n", r.error->failure, r.error->filename);
-			mpc_err_delete(r.error);
-		}
-		mpc_print(recipe);
-
-	}
-	else
-	{
-		mpc_result_t r;
-		if (mpc_parse_pipe("<stdin>", stdin, recipe, &r))
-		{
-			mpc_ast_print(r.output);
-			mpc_ast_delete(r.output);
-		}
-		else
-		{
-			mpc_err_print(r.error);
-			mpc_err_delete(r.error);
-		}
-	}
-
-	mpc_cleanup(4, ident, optionname, optionkw, anyoption, exportconfig, option, file, target, recipe);
-
+    	n = fib(10);
+    	print(n);
+    	i = i + 1;
+  	}
 	return 0;
-}*/
+}
