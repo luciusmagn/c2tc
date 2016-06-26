@@ -72,4 +72,14 @@ public func int32 test3(int32*[] i, float64 f)
 	{
 		
 	}
+	
+	switch(banana)
+	{
+		case 0:
+			break;
+		case 1:
+			break;
+		default:
+			break;
+	}
 }

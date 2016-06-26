@@ -50,6 +50,8 @@ int32 c2main(int32 argc, char** argv)
 	mpc_parser_t* dowhile = mpc_new("dowhile");
 	mpc_parser_t* forloop = mpc_new("forloop");
 	mpc_parser_t* ifstmt = mpc_new("ifstmt");
+	mpc_parser_t* switchcase = mpc_new("switchcase");
+	mpc_parser_t* switchstmt = mpc_new("switchstmt");
 	mpc_parser_t* stmt = mpc_new("stmt");
 	mpc_parser_t* exp = mpc_new("exp");
 	mpc_parser_t* logic = mpc_new("logic");
@@ -108,6 +110,8 @@ int32 c2main(int32 argc, char** argv)
 		" dowhile     : \"do\" <stmt> \"while\" '(' <logic> ')' ';' ;	                     \n"
 		" forloop     : \"for\" '('(<vardecl>|';') (<logic>';'|';') <factor>? ')' <stmt>;    \n"
 		" ifstmt      :	\"if\" '(' <logic> ')' <stmt> (\"else\" <stmt>)*  ;                  \n"
+		" switchcase  : ((\"case\" <factor>) | \"default\") ':' <stmt>* ;                    \n"
+		" switchstmt  : \"switch\" '(' <factor> ')' '{' <switchcase>* '}' ;                  \n"
 		" factor      : '(' <lexp> ')'                                                       \n"
 		"             | <number>                                                             \n"
 		"             | <character>                                                          \n"
@@ -128,8 +132,11 @@ int32 c2main(int32 argc, char** argv)
 		"             | <dowhile>                                                            \n"
 		"             | <forloop>                                                            \n"
 		"             | <ifstmt>                                                             \n"
+		"             | <switchstmt>                                                         \n"
 		"             | <ident> '=' <lexp> ';'                                               \n"
 		"             | \"return\" <lexp>? ';'                                               \n"
+		"             | \"continue\" ';'                                                     \n"
+		"             | \"break\" ';'                                                        \n"
 		"             | <funccall> ;                                                         \n"
 		" exp         : <lexp> '>' <lexp>                                                    \n"
 		"             | <lexp> '<' <lexp>                                                    \n"
@@ -151,7 +158,7 @@ int32 c2main(int32 argc, char** argv)
 		" c2          : <start> <head> <body> <end> ;                                        \n",
 		start, end, unaryop, ptrop, ident, number, string, attrtype, attrwval, attribute, val, emptyindices, indices, anyindices, module,
 		import, define, natives, typeident, member, memblock, structure, locunion, globunion, decltype,
-		alias, arg, args, funcdecl, factor, term, lexp, vardecl, funccall, stmt, funccall, whileloop, dowhile, forloop, ifstmt, exp, logic, block, function, head, body, c2, NULL
+		alias, arg, args, funcdecl, factor, term, lexp, vardecl, funccall, stmt, funccall, whileloop, dowhile, forloop, ifstmt, switchcase, switchstmt, exp, logic, block, function, head, body, c2, NULL
 		);
 	mpc_optimise(c2);
 	if (err != NULL)
@@ -270,9 +277,9 @@ int32 c2main(int32 argc, char** argv)
 		}
 	}
 
-	mpc_cleanup(46, start, end, unaryop, ptrop, ident, number, string, attrtype, attrwval, attribute, val, emptyindices, indices, anyindices, module,
+	mpc_cleanup(48, start, end, unaryop, ptrop, ident, number, string, attrtype, attrwval, attribute, val, emptyindices, indices, anyindices, module,
 	import, define, natives, typeident, member, memblock, structure, locunion, globunion, decltype, alias, arg, args, funcdecl, factor, term, lexp, vardecl, funccall,
-	whileloop, dowhile, forloop, ifstmt, stmt, exp, logic, block, function, head, body, c2);
+	whileloop, dowhile, forloop, ifstmt, switchcase, switchstmt, stmt, exp, logic, block, function, head, body, c2);
 
 	return 0;
 }
