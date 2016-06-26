@@ -34,4 +34,5 @@ target* currenttrg;
 recipe_t* recipe;
 
 void recipe_walk(mpc_ast_t* tree, mpc_ast_t* parent);
+char* findrecipe();
 #endif

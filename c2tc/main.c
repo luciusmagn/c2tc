@@ -16,7 +16,8 @@ int32 main(int32 argc, char** argv)
 		puts("mpctest -mode path");
 		break;
 	case 2:
-		puts("missing filename arg. terminating");
+		recipemain(argc, &argv[1]);
+		//puts("missing filename arg. terminating");
 		break;
 	case 3:
 		if (strlen(argv[1]) > 1)
@@ -37,6 +38,9 @@ int32 main(int32 argc, char** argv)
 				puts("mpctest -mode path");
 				break;
 			}
+		break;
+	default:
+		recipemain(2, argv);
 		break;
 	}
 	//getchar();

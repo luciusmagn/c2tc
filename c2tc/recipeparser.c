@@ -16,21 +16,22 @@
 
 int32 recipemain(int32 argc, char** argv)
 {
-	char* recipepath;
-	if (argc > 1)
+	char* recipepath = findrecipe();
+	if (argc > 0)
 	{
 		char* commentlessrecipe;
 		char* recipetxt;
+		puts(recipepath);
 #ifdef R_OK
-		if (access(argv[1], R_OK) == 0)
+		if (access(recipepath, R_OK) == 0)
 #else
-		if (access(argv[1], _A_NORMAL) == 0)
+		if (access(recipepath, _A_NORMAL) == 0)
 #endif
 		{
-			current = fopen(argv[1], "rb");
+			current = fopen(recipepath, "rb");
 			if (!current)
 			{
-				perror(argv[1]);
+				perror(recipepath);
 				exit(1);
 			}
 
@@ -78,6 +79,7 @@ int32 recipemain(int32 argc, char** argv)
 			}
 			commentlessrecipe = malloc(sizeof(char) * strlen(temp));
 			strcpy(commentlessrecipe, temp);
+			puts(commentlessrecipe);
 			free(recipetxt);
 		}
 		else
@@ -96,7 +98,6 @@ int32 recipemain(int32 argc, char** argv)
 char* findrecipe()
 {
 	char buf[1024];
-
 #ifdef _WIN32
 	_getcwd(buf, 1024);
 	while (strlen(buf) != 3)
@@ -115,12 +116,12 @@ char* findrecipe()
 #ifdef _WIN32
 			_getcwd(path, 1024);
 #else
-			getcwd(buf, 1024);
+			getcwd(path, 1024);
 #endif
-			strcat(path, "recipe.txt");
+			strcat(path, "\\recipe.txt");
 			return path;
 		}
 		chdir("../");
 	}
-	return -1;
+	return 0;
 }
