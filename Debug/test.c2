@@ -52,10 +52,24 @@ public func int32 test2(int32 i, float64 f)
     	n = fib(10);
     	print(n);
     	i = i + 1;
-  	} while (i < 10);
+  	} while (i < 10 && i > 1);
 	  
 	for(int32 x = 0; x < 10; x++) {}
 	return 0;
 }
 
 int32 testvar = 2 + 4;
+
+public func int32 test3(int32*[] i, float64 f)
+{
+	bool banana;
+	bool potato;
+	if(banana)
+	{
+		
+	}
+	else if(potato)
+	{
+		
+	}
+}
