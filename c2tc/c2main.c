@@ -49,6 +49,7 @@ int32 c2main(int32 argc, char** argv)
 	mpc_parser_t* whileloop = mpc_new("whileloop");
 	mpc_parser_t* dowhile = mpc_new("dowhile");
 	mpc_parser_t* forloop = mpc_new("forloop");
+	mpc_parser_t* ifstmt = mpc_new("ifstmt");
 	mpc_parser_t* stmt = mpc_new("stmt");
 	mpc_parser_t* exp = mpc_new("exp");
 	mpc_parser_t* logic = mpc_new("logic");
@@ -85,7 +86,7 @@ int32 c2main(int32 argc, char** argv)
 		"             | (\"as\" <ident> ';')                                                 \n"
 		"             | (\"as\" <ident> \"local\" ';')) ;                                    \n"
 		" define      : \"#define\" <ident> /((\\w*)\\s)/ ;                                  \n"
-		" natives     : \"char\"                                                             \n"
+		" natives     : \"char\"    | \"bool\"                                               \n"
 		"             | \"int8\"    | \"uint8\"                                              \n"
 		"             | \"int16\"   | \"uint16\"                                             \n"
 		"             | \"int32\"   | \"uint32\"                                             \n"
@@ -97,15 +98,16 @@ int32 c2main(int32 argc, char** argv)
 		" structure   : \"type\" <ident> \"struct\" <memblock> <attribute>? ;                \n"
 		" locunion    : \"union\" (<ident> <memblock> | <memblock>) ;                        \n"
 		" globunion   : \"type\" <ident> \"union\" <memblock> ;                              \n"
-		" decltype    : <typeident> <ptrop>* <indices>* ;                                    \n"
+		" decltype    : <typeident> <ptrop>* <anyindices>* ;                                 \n"
 		" alias       : \"type\" <ident> <decltype> ';' ;                                    \n"
 		" arg         : <decltype> <ident>;                                                  \n"
 		" args        : '(' (<arg> ',')* <arg>? ')' ;                                        \n"
 		" vardecl     : <decltype> <ident> ('=' <lexp>)? ';' ;                               \n"
 		" funcdecl    : (\"public\")? \"func\" <decltype> <ident> <args>;                    \n"
-		" whileloop   : \"while\" '(' <exp> ')' <stmt> ;                                     \n"
-		" dowhile     : \"do\" <stmt> \"while\" '(' <exp> ')' ';' ;	                         \n"
+		" whileloop   : \"while\" '(' <logic> ')' <stmt> ;                                   \n"
+		" dowhile     : \"do\" <stmt> \"while\" '(' <logic> ')' ';' ;	                     \n"
 		" forloop     : \"for\" '('(<vardecl>|';') (<logic>';'|';') <factor>? ')' <stmt>;    \n"
+		" ifstmt      :	\"if\" '(' <logic> ')' <stmt> (\"else\" <stmt>)*  ;                  \n"
 		" factor      : '(' <lexp> ')'                                                       \n"
 		"             | <number>                                                             \n"
 		"             | <character>                                                          \n"
@@ -114,7 +116,7 @@ int32 c2main(int32 argc, char** argv)
 		"             | (\"++\"|\"--\") <ident>                                              \n"
 		"             | '~' <term>                                                           \n"
 		"             | '&' <ident>                                                          \n"
-		"             | \"(->\"<typedecl>')' <ident>                                         \n"
+		"             | \"(->\"<decltype>')' <ident>                                         \n"
 		"             | <ident> '(' <lexp>? (',' <lexp>)* ')'                                \n"
 		"             | <ident> ;                                                            \n"
 		" term        : <factor> (('*' | '/' | '%') <factor>)* ;                             \n"
@@ -125,13 +127,14 @@ int32 c2main(int32 argc, char** argv)
 		"             | <whileloop>                                                          \n"
 		"             | <dowhile>                                                            \n"
 		"             | <forloop>                                                            \n"
-		"             | \"if\"    '(' <exp> ')' <stmt>                                       \n"
+		"             | <ifstmt>                                                             \n"
 		"             | <ident> '=' <lexp> ';'                                               \n"
 		"             | \"return\" <lexp>? ';'                                               \n"
 		"             | <funccall> ;                                                         \n"
 		" exp         : <lexp> '>' <lexp>                                                    \n"
 		"             | <lexp> '<' <lexp>                                                    \n"
 		"             | '!'<lexp>                                                            \n"
+		"             | <lexp>                                                               \n"
 		"             | <lexp> \"<<\" <lexp>                                                 \n"
 		"             | <lexp> \">>\" <lexp>                                                 \n"
 		"             | <lexp> \">=\" <lexp>                                                 \n"
@@ -148,7 +151,7 @@ int32 c2main(int32 argc, char** argv)
 		" c2          : <start> <head> <body> <end> ;                                        \n",
 		start, end, unaryop, ptrop, ident, number, string, attrtype, attrwval, attribute, val, emptyindices, indices, anyindices, module,
 		import, define, natives, typeident, member, memblock, structure, locunion, globunion, decltype,
-		alias, arg, args, funcdecl, factor, term, lexp, vardecl, funccall, stmt, funccall, whileloop, dowhile, forloop, exp, logic, block, function, head, body, c2, NULL
+		alias, arg, args, funcdecl, factor, term, lexp, vardecl, funccall, stmt, funccall, whileloop, dowhile, forloop, ifstmt, exp, logic, block, function, head, body, c2, NULL
 		);
 	mpc_optimise(c2);
 	if (err != NULL)
@@ -267,9 +270,9 @@ int32 c2main(int32 argc, char** argv)
 		}
 	}
 
-	mpc_cleanup(45, start, end, unaryop, ptrop, ident, number, string, attrtype, attrwval, attribute, val, emptyindices, indices, anyindices, module,
+	mpc_cleanup(46, start, end, unaryop, ptrop, ident, number, string, attrtype, attrwval, attribute, val, emptyindices, indices, anyindices, module,
 	import, define, natives, typeident, member, memblock, structure, locunion, globunion, decltype, alias, arg, args, funcdecl, factor, term, lexp, vardecl, funccall,
-	whileloop, dowhile, forloop, stmt, exp, logic, block, function, head, body, c2);
+	whileloop, dowhile, forloop, ifstmt, stmt, exp, logic, block, function, head, body, c2);
 
 	return 0;
 }
