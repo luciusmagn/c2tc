@@ -4,8 +4,12 @@
 #include "inttypes.h"
 #include "mpc.h"
 #include "vector.h"
+
 int32 c2main(int32 argc, char** argv);
+
 int32 recipemain(int32 argc, char** argv);
+char* findrecipe();
+void parserecipe(char* recipetext);
 
 int32 lsize;
 FILE* current;

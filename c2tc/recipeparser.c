@@ -125,3 +125,8 @@ char* findrecipe()
 	}
 	return 0;
 }
+
+void parserecipe(char* recipetext)
+{
+
+}
