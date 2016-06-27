@@ -8,14 +8,17 @@
 
 int32 main(int32 argc, char** argv)
 {
-	if (startswith("lol", "ol")) puts("lol");
-	else puts("fuck");
 	switch (argc)
 	{
 	case 1:
 		puts("mpctest -mode path");
 		break;
 	case 2:
+		if (argv[1][1] == 't')
+		{
+			runtests();
+			return 0;
+		}
 		recipemain(argc, &argv[1]);
 		//puts("missing filename arg. terminating");
 		break;
@@ -34,6 +37,7 @@ int32 main(int32 argc, char** argv)
 					"=============="
 					);
 				recipemain(2, &argv[1]);
+				break;
 			default:
 				puts("mpctest -mode path");
 				break;

@@ -11,6 +11,8 @@ int32 recipemain(int32 argc, char** argv);
 char* findrecipe();
 void parserecipe(char* recipetext);
 
+void runtests();
+
 int32 lsize;
 FILE* current;
 char* currenttxt;
