@@ -6,6 +6,8 @@
 #include "mpc.h"
 #include "inttypes.h"
 #include "shared.h"
+#include "throw.h"
+#include "errors.h"
 
 int32 c2main(int32 argc, char** argv)
 {
@@ -191,7 +193,7 @@ int32 c2main(int32 argc, char** argv)
 			if (!currenttxt)
 			{
 				fclose(current);
-				fputs("memory alloc fails", stderr);
+				throw(&emafail, "Failed to alloc memory");
 				exit(1);
 			}
 
@@ -199,7 +201,7 @@ int32 c2main(int32 argc, char** argv)
 			{
 				fclose(current);
 				free(currenttxt);
-				fputs("entire read fails", stderr);
+				throw(&erdfail, "Failed to read file");
 				exit(1);
 			}
 			fclose(current);
@@ -246,6 +248,10 @@ int32 c2main(int32 argc, char** argv)
 			strcpy(commentless, temp);
 			puts(commentless);
 			free(currenttxt);
+		}
+		else
+		{
+			throw(&enoaccs, "Cannot access recipe file");
 		}
 
 		mpc_result_t r;

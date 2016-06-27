@@ -13,6 +13,8 @@
 #include "inttypes.h"
 #include "shared.h"
 #include "recipe.h"
+#include "throw.h"
+#include "errors.h"
 
 /// <summary>
 ///  Entry point for the recipe parser
@@ -46,7 +48,7 @@ int32 recipemain(int32 argc, char** argv)
 			if (!recipetxt)
 			{
 				fclose(current);
-				fputs("memory alloc fails", stderr);
+				throw(&emafail, "Failed to alloc memory");
 				exit(1);
 			}
 
@@ -54,7 +56,7 @@ int32 recipemain(int32 argc, char** argv)
 			{
 				fclose(current);
 				free(recipetxt);
-				fputs("entire read fails", stderr);
+				throw(&erdfail, "Failed to read file");
 				exit(1);
 			}
 			fclose(current);
@@ -87,13 +89,13 @@ int32 recipemain(int32 argc, char** argv)
 		}
 		else
 		{
-			puts("error: recipe file can not be read");
+			throw(&enoaccs, "Cannot access recipe file");
 		}
 
 	}
 	else
 	{
-		puts("error: not enough command-line arguments.");
+		throw(&enoaccs, "Not enough command-line arguments");
 	}
 	return 0;
 }

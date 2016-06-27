@@ -5,9 +5,12 @@
 #include "inttypes.h"
 #include "shared.h"
 #include "stringutils.h"
+#include "throw.h"
+#include "errors.h"
 
 int32 main(int32 argc, char** argv)
 {
+	init_errors();
 	switch (argc)
 	{
 	case 1:
