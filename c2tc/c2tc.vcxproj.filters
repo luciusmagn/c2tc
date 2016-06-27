@@ -24,9 +24,6 @@
     <ClCompile Include="c2main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="c2mainbackup.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="recipeparser.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -43,6 +40,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="tests.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="errors.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="throw.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -69,6 +72,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vasprintf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="throw.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="errors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="log.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

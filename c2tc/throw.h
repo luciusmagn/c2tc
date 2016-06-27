@@ -1,5 +1,5 @@
 #ifndef THROW_H
-#define THROW_H 1
+#define THROW_H
 
 //
 // throw.h
@@ -22,30 +22,10 @@ typedef struct
 	char *name;
 } error_t;
 
-FILE *THROW_FD = stderr;
+FILE *THROW_FD;
 
 void throw (void *type, char *msg);
 
 error_t error_new(int code, char *name);
-
-error_t error_new(int code, char *name)
-{
-	error_t err;
-	err.code = code;
-	err.name = name;
-	return err;
-}
-
-void throw (void *type, char *msg)
-{
-	error_t *err = (error_t *)type;
-	// default to `stderr` stream
-	if (NULL == THROW_FD)
-	{
-		THROW_FD = stderr;
-	}
-
-	fprintf(THROW_FD, "%s (%d): %s\n", err->name, err->code, msg);
-}
 
 #endif

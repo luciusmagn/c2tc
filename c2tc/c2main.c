@@ -8,6 +8,9 @@
 #include "shared.h"
 #include "throw.h"
 #include "errors.h"
+#include "log.h"
+#include "stringutils.h"
+#include "microtest.h"
 
 int32 c2main(int32 argc, char** argv)
 {
@@ -258,11 +261,17 @@ int32 c2main(int32 argc, char** argv)
 		if (mpc_parse(argv[1], commentless, c2, &r))
 		{
 			mpc_ast_print(r.output);
+			mpc_stats(c2);
 			mpc_ast_delete(r.output);
 		}
 		else
 		{
 			mpc_err_print(r.error);
+			printf(ANSI_COLOR_YELLOW "%s\n" ANSI_COLOR_RESET, getline(commentless, r.error->state.row));
+			int32 i = 0;
+			printf(ANSI_COLOR_GREEN);
+			while (i < r.error->state.col) { printf(" "); i++; }
+			printf("^\n" ANSI_COLOR_RESET);
 			mpc_err_delete(r.error);
 		}
 		//mpc_print(c2);

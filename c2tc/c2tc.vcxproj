@@ -123,23 +123,27 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="c2main.c" />
-    <ClCompile Include="c2mainbackup.c" />
+    <ClCompile Include="errors.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="mpc.c" />
     <ClCompile Include="recipe.c" />
     <ClCompile Include="recipeparser.c" />
     <ClCompile Include="stringutils.c" />
     <ClCompile Include="tests.c" />
+    <ClCompile Include="throw.c" />
     <ClCompile Include="vasprintf.c" />
     <ClCompile Include="vector.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="errors.h" />
     <ClInclude Include="inttypes.h" />
+    <ClInclude Include="log.h" />
     <ClInclude Include="microtest.h" />
     <ClInclude Include="mpc.h" />
     <ClInclude Include="recipe.h" />
     <ClInclude Include="shared.h" />
     <ClInclude Include="stringutils.h" />
+    <ClInclude Include="throw.h" />
     <ClInclude Include="vasprintf.h" />
     <ClInclude Include="vector.h" />
   </ItemGroup>
