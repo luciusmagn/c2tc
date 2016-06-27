@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include "inttypes.h"
 
 #define QUOTE_X(t)#t
 #define QUOTE(t)QUOTE_X(t)
@@ -28,4 +29,5 @@ void throw (void *type, char *msg);
 
 error_t error_new(int code, char *name);
 
+int32 errors;
 #endif

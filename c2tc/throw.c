@@ -25,4 +25,5 @@ void throw (void *type, char *msg)
 	{
 		log_error("%s (%d): %s\n", err->name, err->code, msg);
 	}
+	errors++;
 }
