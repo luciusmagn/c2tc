@@ -123,6 +123,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="c2main.c" />
+    <ClCompile Include="dict.c" />
     <ClCompile Include="errors.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="mpc.c" />
@@ -135,6 +136,7 @@
     <ClCompile Include="vector.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="dict.h" />
     <ClInclude Include="errors.h" />
     <ClInclude Include="inttypes.h" />
     <ClInclude Include="log.h" />
