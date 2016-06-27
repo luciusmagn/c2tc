@@ -7,3 +7,16 @@
 #include "mpc.h"
 #include "vector.h"
 
+void processrecipe()
+{
+	puts("test");
+	for (int32 i = 0; i < recipe->count; i++)
+	{
+		processtarget(vector_get(recipe->targets, i));
+	}
+}
+
+void processtarget(target* trg)
+{
+	puts(trg->name);
+}

@@ -51,4 +51,6 @@ recipe_t* recipe;
 
 int32 state;
 
+void processrecipe();
+void processtarget(target* trg);
 #endif
