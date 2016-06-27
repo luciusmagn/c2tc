@@ -27,8 +27,14 @@ char* getline(char* src, int32 index);
 /// </summary>
 int32 occurences(char* str, char c);
 /// <summary>
+/// This function replaces every occurency of char* rep with char* in given string
+/// </summary>
+char *str_replace(char *orig, char *rep, char *with);
+/// <summary>
+/// This function tests whether a string is whitespace or null
+/// <summary>
+int8 issornull(char* test);
 ///  This function performs tests of stringutils' functions
 /// </summary>
 void teststrings();
-
 #endif
