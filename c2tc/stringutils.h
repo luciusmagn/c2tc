@@ -19,6 +19,10 @@ char** strsplit(char* dest[], const char* delimiter, const char* str);
 /// </summary>
 char *skip_spaces(const char *str);
 /// <summary>
+///  This function returns a line given by index from a string
+/// </summary>
+char* getline(char* src, int32 index);
+/// <summary>
 ///  This function performs tests of stringutils' functions
 /// </summary>
 void teststrings();

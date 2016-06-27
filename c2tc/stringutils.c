@@ -77,3 +77,11 @@ void teststrings()
 	char* str = "       test";
 	tiny_assert("test if skip_spaces() works properly", (strcmp(skip_spaces(str), "test") == 0));
 }
+
+/// <summary>
+///  This function returns a line given by index from a string
+/// </summary>
+char* getline(char* src, int32 index)
+{
+	return strsplit(src, "\n")[index];
+}

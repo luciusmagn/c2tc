@@ -1,5 +1,5 @@
 #include "mpc.h"
-
+#include "log.h"
 /*
 ** State Type
 */
@@ -533,6 +533,12 @@ void mpc_err_print(mpc_err_t *x) {
 
 void mpc_err_print_to(mpc_err_t *x, FILE *f) {
 	char *str = mpc_err_string(x);
+	if (f == stdout)
+	{
+		log_error("%s", str);
+		free(str);
+		return;
+	}
 	fprintf(f, "%s", str);
 	free(str);
 }
