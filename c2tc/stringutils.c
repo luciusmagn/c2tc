@@ -21,59 +21,6 @@ int8 startswith(char* str1, char* str2)
 {
 	return !strncmp(str1, str2, strlen(str2));
 }
-//Credits to Xenon from StackOverflow for the original code of this function, which was then changed and formatted by me
-//Usage:
-//char *arrayWhereTheExplodedStringsWillGo[];
-//char *string = "Hello, world!";
-//split(arrayWhereTheExplodedStringsWillGo, ',', string);
-int8 split(char *dest[], const char *delimiter, const char *str)
-{
-	int32 numsplits = 1;
-	const uint64 delimiterlength = strlen(delimiter);
-	const uint64 strlength = strlen(str);
-
-	if (delimiterlength != 1)
-	{
-		int32 delimiterencountered = 0;
-
-		for (uint64 str_iterator = 0; str_iterator < strlength; str_iterator++)
-		{
-			if (delimiterencountered == delimiterlength)
-			{
-				numsplits++;
-				realloc((char *)dest, numsplits + sizeof(char *));
-			}
-			else if (*str == *(delimiter + delimiterencountered))
-			{
-				delimiterencountered++;
-			}
-			else
-			{
-				if (delimiterencountered > 0) delimiterencountered = 0;
-				*dest[numsplits] = *str;
-				dest[numsplits]++;
-			}
-		}
-	}
-	else
-	{
-		for (uint64 str_iterator = 0; str_iterator < (strlength - 1); str_iterator++)
-		{
-			if (*str == *delimiter)
-			{
-				numsplits++;
-				realloc((char *)dest, numsplits * sizeof(char *));
-			}
-			else
-			{
-				*dest[numsplits] = *str;
-				dest[numsplits]++;
-			}
-			str++;
-		}
-	}
-	return numsplits;
-}
 
 char** strsplit(char* str, const char* delim)
 {
