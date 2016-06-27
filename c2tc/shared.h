@@ -27,6 +27,11 @@ char* findrecipe();
 void parserecipe(char* recipetext);
 
 /// <summary>
+///  This function handles each line in recipe
+/// </summary>
+void handleline(char* line);
+
+/// <summary>
 ///  This function runs all tests and prints verdict to stdout
 /// </summary>
 void runtests();

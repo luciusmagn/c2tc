@@ -40,8 +40,15 @@ typedef struct
 	vector* opts;
 } option;
 
+enum
+{
+	START,
+	INSIDE_TARGET
+};
 //currently built target
 target* currenttrg;
 recipe_t* recipe;
+
+int32 state;
 
 #endif
