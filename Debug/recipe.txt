@@ -8,3 +8,8 @@ target blabla
     file.c2
     file.c2
 end
+
+lib banana shared
+    file.c2
+    file.c2
+end
