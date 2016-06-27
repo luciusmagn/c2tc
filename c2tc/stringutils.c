@@ -29,7 +29,7 @@ int8 startswith(char* str1, char* str2)
 }
 
 /// <summary>
-///  This function checks splits a string divided by a delimiter to an array of strings
+///  This function splits a string divided by a delimiter to an array of strings
 /// </summary>
 char** strsplit(char* str, const char* delim)
 {
@@ -56,7 +56,7 @@ char** strsplit(char* str, const char* delim)
 }
 
 /// <summary>
-///  This function checks skips leading whitespace
+///  This function skips leading whitespace
 /// </summary>
 char *skip_spaces(const char *str)
 {
@@ -64,7 +64,23 @@ char *skip_spaces(const char *str)
 		++str;
 	return str;
 }
-
+/// <summary>
+///  This function returns a line given by index from a string
+/// </summary>
+char* getline(char* src, int32 index)
+{
+	return strsplit(src, "\n")[index];
+}
+/// <summary>
+///  This function returns a number of occurrences of given character in the string
+/// </summary>
+int32 occurences(char* str, char c)
+{
+	int32 i, count;
+	for (i = 0, count = 0; str[i]; i++)
+		count += (str[i] == c);
+	return count;
+}
 /// <summary>
 ///  This function performs tests of stringutils' functions
 /// </summary>
@@ -76,12 +92,4 @@ void teststrings()
 	tiny_assert("test if split() works properly", (strcmp(strsplit("This is a test", " ")[0], "This") == 0));
 	char* str = "       test";
 	tiny_assert("test if skip_spaces() works properly", (strcmp(skip_spaces(str), "test") == 0));
-}
-
-/// <summary>
-///  This function returns a line given by index from a string
-/// </summary>
-char* getline(char* src, int32 index)
-{
-	return strsplit(src, "\n")[index];
 }

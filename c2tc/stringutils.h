@@ -11,17 +11,21 @@ int8 endswith(char* str1,char* str2);
 /// </summary>
 int8 startswith(char* str1, char* str2);
 /// <summary>
-///  This function checks splits a string divided by a delimiter to an array of strings
+///  This function splits a string divided by a delimiter to an array of strings
 /// </summary>
-char** strsplit(char* dest[], const char* delimiter, const char* str);
+char** strsplit(char* str, const char* delim);
 /// <summary>
-///  This function checks skips leading whitespace
+///  This function skips leading whitespace
 /// </summary>
 char *skip_spaces(const char *str);
 /// <summary>
 ///  This function returns a line given by index from a string
 /// </summary>
 char* getline(char* src, int32 index);
+/// <summary>
+///  This function returns a number of occurrences of given character in the string
+/// </summary>
+int32 occurences(char* str, char c);
 /// <summary>
 ///  This function performs tests of stringutils' functions
 /// </summary>
