@@ -15,6 +15,7 @@
 #include "recipe.h"
 #include "throw.h"
 #include "errors.h"
+#include "stringutils.h"
 
 /// <summary>
 ///  Entry point for the recipe parser
@@ -84,7 +85,7 @@ int32 recipemain(int32 argc, char** argv)
 			}
 			commentlessrecipe = malloc(sizeof(char) * strlen(temp));
 			strcpy(commentlessrecipe, temp);
-			puts(commentlessrecipe);
+			parserecipe(commentlessrecipe);
 			free(recipetxt);
 		}
 		else
@@ -140,5 +141,10 @@ char* findrecipe()
 /// </summary>
 void parserecipe(char* recipetext)
 {
-
+	char** lines = strsplit(recipetext, "\n");
+	int32 lines_num = occurences(recipetext, '\n');
+	for (int32 i = 0; i < lines_num; i++)
+	{
+		puts(lines[i]);
+	}
 }

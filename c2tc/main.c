@@ -14,6 +14,7 @@ int32 main(int32 argc, char** argv)
 	switch (argc)
 	{
 	case 1:
+		recipemain(1, argv);
 		puts("mpctest -mode path");
 		break;
 	case 2:
