@@ -10,6 +10,10 @@
 
 #include <stdarg.h>
 int vasprintf(char** str, const char* fmt, va_list args);
+
+/// <summary>
+///  This function works similarly to sprintf, but allocates the memory the string requires
+/// </summary>
 int asprintf(char** str, const char *fmt, ...);
 #endif
 #endif

@@ -8,6 +8,9 @@
 #include "inttypes.h"
 #include "microtest.h"
 
+/// <summary>
+///  This function checks if a string ends with the given suffix
+/// </summary>
 int8 endswith(char *string, char* suffix)
 {
 	char* loc = strstr(string, suffix);
@@ -17,11 +20,17 @@ int8 endswith(char *string, char* suffix)
 
 	return(0);
 }
+/// <summary>
+///  This function checks if a string starts with the given prefix
+/// </summary>
 int8 startswith(char* str1, char* str2)
 {
 	return !strncmp(str1, str2, strlen(str2));
 }
 
+/// <summary>
+///  This function checks splits a string divided by a delimiter to an array of strings
+/// </summary>
 char** strsplit(char* str, const char* delim)
 {
 	char** res = NULL;
@@ -45,6 +54,10 @@ char** strsplit(char* str, const char* delim)
 
 	return res;
 }
+
+/// <summary>
+///  This function checks skips leading whitespace
+/// </summary>
 char *skip_spaces(const char *str)
 {
 	while (isspace(*str))
@@ -52,6 +65,9 @@ char *skip_spaces(const char *str)
 	return str;
 }
 
+/// <summary>
+///  This function performs tests of stringutils' functions
+/// </summary>
 void teststrings()
 {
 	tiny_file();

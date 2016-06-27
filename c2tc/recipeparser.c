@@ -14,6 +14,9 @@
 #include "shared.h"
 #include "recipe.h"
 
+/// <summary>
+///  Entry point for the recipe parser
+/// </summary>
 int32 recipemain(int32 argc, char** argv)
 {
 	char* recipepath = findrecipe();
@@ -95,6 +98,10 @@ int32 recipemain(int32 argc, char** argv)
 	return 0;
 }
 
+/// <summary>
+///  This function loops through parent directories until it finds the project root directory
+///  where a cwd is set and recipe.txt file is located. Returns path to recipe.txt
+/// </summary>
 char* findrecipe()
 {
 	char buf[1024];
@@ -126,6 +133,9 @@ char* findrecipe()
 	return 0;
 }
 
+/// <summary>
+///  This function parses the recipe file and builds a recipe structure from it.
+/// </summary>
 void parserecipe(char* recipetext)
 {
 
