@@ -39,6 +39,12 @@
     <ClCompile Include="stringutils.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="vasprintf.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tests.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mpc.h">
@@ -57,6 +63,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stringutils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="microtest.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vasprintf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

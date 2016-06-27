@@ -129,14 +129,18 @@
     <ClCompile Include="recipe.c" />
     <ClCompile Include="recipeparser.c" />
     <ClCompile Include="stringutils.c" />
+    <ClCompile Include="tests.c" />
+    <ClCompile Include="vasprintf.c" />
     <ClCompile Include="vector.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inttypes.h" />
+    <ClInclude Include="microtest.h" />
     <ClInclude Include="mpc.h" />
     <ClInclude Include="recipe.h" />
     <ClInclude Include="shared.h" />
     <ClInclude Include="stringutils.h" />
+    <ClInclude Include="vasprintf.h" />
     <ClInclude Include="vector.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
