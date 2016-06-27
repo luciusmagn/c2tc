@@ -3,10 +3,10 @@ A tiny compiler to compile C2 code. C2 is a language invented and its first and 
 
 ##Libraries in use
 
-- thlorenz/log.h - Minimal yet colorful logging lib
-- jwerle/throw.h - Create and throw errors easily
-- orangeduck/mpc - Parser Combinator Library for C
-- littlstar/asprintf.c - asprintf() implementation
+- [thlorenz/log.h](https://github.com/thlorenz/log.h) - Minimal yet colorful logging lib
+- [jwerle/throw.h](https://github.com/jwerle/throw.h) - Create and throw errors easily
+- [orangeduck/mpc](https://github.com/orangeduck/mpc) - Parser Combinator Library for C
+- [littlstar/asprintf.c](https://github.com/littlstar/asprintf.c) - asprintf() implementation]
 
 ## Waypoints
 - [X] Parse recipe files
