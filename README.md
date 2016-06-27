@@ -22,3 +22,4 @@ A tiny compiler to compile C2 code. C2 is a language invented and its first and 
 - [ ] .h -> .c2i
 - [ ] .c2i -> .h
 - [ ] tcc tie-in
+- [ ] Parse manifest file and c2libs
