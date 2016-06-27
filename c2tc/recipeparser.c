@@ -147,11 +147,13 @@ void parserecipe(char* recipetext)
 	int32 lines_num = occurences(recipetext, '\n');
 	recipe = malloc(sizeof(recipe_t));
 	recipe->targets = malloc(sizeof(vector));
+	recipe->count = 0;
 	vector_init(recipe->targets);
 	for (int32 i = 0; i < lines_num; i++)
 	{
 		handleline(lines[i]);
 	}
+	processrecipe();
 }
 
 /// <summary>
@@ -219,6 +221,7 @@ void handleline(char* line)
 			if (strcmp(words[0], "end") == 0)
 			{
 				vector_add(recipe->targets, currenttrg);
+				recipe->count++;
 				state = START;
 			}
 			else if (words[0][0] == '$')
