@@ -44,4 +44,8 @@ void vector_delete(vector* v, int32 index);
 /// </summary>
 void vector_free(vector* v);
 
+/// <summary>
+///  This function tests vector
+/// </summary>
+void testvector();
 #endif

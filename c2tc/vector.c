@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "inttypes.h"
 #include "vector.h"
+#include "microtest.h"
 //Implementation of a vector. Based on tutorial
 //by Edd Mann
 
@@ -70,4 +72,22 @@ void vector_delete(vector* v, int32 index)
 void vector_free(vector* v)
 {
 	free(v->items);
+	v->items = NULL;
+}
+
+void testvector()
+{
+	vector* v = malloc(sizeof(vector));
+	vector_init(v);
+	tiny_file();
+	vector_add(v, "test");
+	tiny_assert("test if vector_add() works properly", vector_total(v) == 1);
+	tiny_assert("test if vector_get() works properly", (strcmp(vector_get(v, 0), "test") == 0));
+	vector_set(v, 0, "test2");
+	tiny_assert("test if vector_set() works properly", (strcmp(vector_get(v, 0), "test2") == 0));
+	tiny_assert("test if vector_total() works properly", vector_total(v) == 1);
+	vector_delete(v, 0);
+	tiny_assert("test if vector_delete() works properly", vector_total(v) == 0);
+	vector_free(v);
+	tiny_assert("test if vector_free() is working properly", !v->items);
 }
