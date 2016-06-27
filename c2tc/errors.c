@@ -6,4 +6,6 @@ void init_errors()
 	emafail = error_new(2, "EMAFAIL");
 	enoargs = error_new(3, "ENOARGS");
 	enoaccs = error_new(4, "ENOACCS");
+	ebadtok = error_new(5, "EBADTOK");
+	enotoks = error_new(6, "ENOTOKS");
 }
