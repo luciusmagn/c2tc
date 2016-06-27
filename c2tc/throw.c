@@ -1,4 +1,5 @@
 #include "throw.h"
+#include "log.h"
 
 error_t error_new(int code, char *name)
 {
@@ -16,6 +17,12 @@ void throw (void *type, char *msg)
 	{
 		THROW_FD = stderr;
 	}
-
-	fprintf(THROW_FD, "%s (%d): %s\n", err->name, err->code, msg);
+	if (THROW_FD != stderr)
+	{
+		fprintf(THROW_FD, "%s (%d): %s\n", err->name, err->code, msg);
+	}
+	else
+	{
+		log_error("%s (%d): %s\n", err->name, err->code, msg);
+	}
 }
