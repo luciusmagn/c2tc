@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include "inttypes.h"
 #include "vector.h"
-//Implementation of a vector in C2. Based on tutorial for
-//C by Edd Mann
+//Implementation of a vector. Based on tutorial
+//by Edd Mann
 
 void vector_init(vector* v)
 {
