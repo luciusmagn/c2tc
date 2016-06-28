@@ -149,7 +149,7 @@ void parserecipe(char* recipetext)
 	recipe->targets = malloc(sizeof(vector));
 	recipe->count = 0;
 	vector_init(recipe->targets);
-	for (int32 i = 0; i < lines_num; i++)
+	for (int32 i = 0; i <= lines_num; i++)
 	{
 		handleline(lines[i]);
 	}
@@ -162,9 +162,11 @@ void parserecipe(char* recipetext)
 void handleline(char* line)
 {
 	if (issornull(line)) return;
+	puts(line);
 	char** words = strsplit(line, " ");
 	int32 words_num = occurences(line, ' ');
 	if (!words) return;
+	puts(words[0]);
 	switch (state)
 	{
 		case START:
@@ -220,6 +222,7 @@ void handleline(char* line)
 		case INSIDE_TARGET:
 			if (strcmp(words[0], "end") == 0)
 			{
+				puts("a means to an end");
 				vector_add(recipe->targets, currenttrg);
 				recipe->count++;
 				state = START;

@@ -8,8 +8,11 @@
 /// <summary>
 ///  This function is the c2 parser main entrypoint
 /// </summary>
-int32 c2main(int32 argc, char** argv);
-
+mpc_ast_t* c2main(int32 argc, char** argv);
+/// <summary>
+///  This function parses C2 from a file name given in the argument and returns AST
+/// </summary>
+mpc_ast_t* c2parse(char* filename);
 /// <summary>
 ///  Entry point for the recipe parser
 /// </summary>
@@ -42,6 +45,7 @@ char* currenttxt;
 char* commentless;
 mpc_ast_t* currenttree;
 vector* trees;
+vector* modules;
 
 
 
