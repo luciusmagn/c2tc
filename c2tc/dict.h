@@ -26,18 +26,19 @@
 //SOFTWARE.
 
 typedef struct dict {
-	char key[_DICT_LIMIT], value[_DICT_LIMIT];
+	char key[_DICT_LIMIT];
+	void* value;
 	struct dict *next;
 } dict;
 
 dict *dict_new();
 void dict_free(dict *d);
 char *dict_get(dict *d, char *key);
-void dict_set(dict *d, char *key, char *value);
+void dict_set(dict *d, char *key, void *value);
 void dict_del(dict *d, char *key);
 int dict_has(dict *d, char *key);
 int dict_len(dict *d);
 char **dict_keys(dict *d);
-char **dict_values(dict *d);
+void **dict_values(dict *d);
 
 #endif

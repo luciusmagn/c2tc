@@ -73,13 +73,11 @@ int dict_has(dict *d, char *key)
 }
 
 // Get a value for a specific key
-char *dict_get(dict *d, char *key)
+void *dict_get(dict *d, char *key)
 {
-	if (streq(d->key, key)) {
-		char *val = malloc(sizeof(d->value));
-		copy(val, d->value);
-
-		return val;
+	if (streq(d->key, key))
+	{
+		return d->value;
 	}
 	else
 		if ((int)(d->next) != 0)
@@ -93,15 +91,19 @@ void dict_set(dict *d, char *key, char *value)
 {
 	if (streq(key, "")) return;
 
-	if (streq(d->key, key) || streq(d->key, "")) {
+	if (streq(d->key, key) || streq(d->key, ""))
+	{
 		if (streq(d->key, ""))
 			copy(d->key, key);
 
-		copy(d->value, value);
+		d->value = value;
 	}
-	else {
+	else
+	{
 		if ((int)(d->next) == 0)
+		{
 			d->next = dict_new();
+		}
 
 		dict_set(d->next, key, value);
 	}
@@ -110,7 +112,8 @@ void dict_set(dict *d, char *key, char *value)
 // Delete a key
 void dict_del(dict *d, char *key)
 {
-	if (streq(d->key, key) && (int)(d->next) != 0) {
+	if (streq(d->key, key) && (int)(d->next) != 0)
+	{
 		dict *n = d->next;
 		*d = *n;
 		free(n);
@@ -136,7 +139,8 @@ char **dict_keys(dict *d)
 	int len = dict_len(d);
 	char **keys = malloc(len * sizeof(char *));
 
-	for (int i = 0; i < len; i++) {
+	for (int i = 0; i < len; i++)
+	{
 		keys[i] = malloc(_DICT_LIMIT);
 		copy(keys[i], d->key);
 		d = d->next;
@@ -146,14 +150,15 @@ char **dict_keys(dict *d)
 }
 
 // Get all the values in a dictionary
-char **dict_values(dict *d)
+void **dict_values(dict *d)
 {
 	int len = dict_len(d);
-	char **values = malloc(len * sizeof(char *));
+	void **values = malloc(len * sizeof(void *));
 
-	for (int i = 0; i < len; i++) {
-		values[i] = malloc(_DICT_LIMIT);
-		copy(values[i], d->value);
+	for (int i = 0; i < len; i++)
+	{
+		values[i] = malloc(sizeof(void*));
+		values[i] = d->value;
 		d = d->next;
 	}
 
