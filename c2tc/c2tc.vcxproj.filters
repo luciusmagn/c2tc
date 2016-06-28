@@ -51,6 +51,9 @@
     <ClCompile Include="dict.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="c2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mpc.h">
@@ -87,6 +90,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dict.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="c2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

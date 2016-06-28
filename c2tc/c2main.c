@@ -12,7 +12,15 @@
 #include "stringutils.h"
 #include "microtest.h"
 
-int32 c2main(int32 argc, char** argv)
+mpc_ast_t* c2main(int32 argc, char** argv)
+{
+	if (argc > 1)
+	{
+		return c2parse(argv[1]);
+	}
+}
+
+mpc_ast_t* c2parse(char* filename)
 {
 	//general
 	mpc_parser_t* start = mpc_new("start");
@@ -66,10 +74,11 @@ int32 c2main(int32 argc, char** argv)
 	mpc_parser_t* body = mpc_new("body");
 	mpc_parser_t* c2 = mpc_new("c2");
 
+	//TODO: Parse enums
 	mpc_err_t* err = mpca_lang(MPCA_LANG_DEFAULT,
 		//general
-		" start                              : /^/ ;                                                                \n"
-		" end                                : /$/ ;                                                                \n"
+		" start                             : /^/ ;                                                                \n"
+		" end                               : /$/ ;                                                                \n"
 		" unaryop        \"Unary operator\" : '&' | '!' | '-' | '~' | '+' ;                                        \n"
 		" ptrop        \"Pointer operator\" : '*' ;                                                                \n"
 		" ident              \"Identifier\" : /[a-zA-Z_\\.\\#][a-zA-Z0-9_-]*/ ;                                    \n"
@@ -173,128 +182,110 @@ int32 c2main(int32 argc, char** argv)
 		exit(1);
 	}
 
-	if (argc > 1)
-	{
+
 #ifdef R_OK
-		if (access(argv[1], R_OK) == 0)
+	if (access(filename, R_OK) == 0)
 #else
-		if (access(argv[1], _A_NORMAL) == 0)
+	if (access(filename, _A_NORMAL) == 0)
 #endif
+	{
+		current = fopen(filename, "rb");
+		if (!current)
 		{
-			current = fopen(argv[1], "rb");
-			if (!current)
-			{
-				perror(argv[1]);
-				exit(1);
-			}
+			perror(filename);
+			exit(1);
+		}
 
-			fseek(current, 0L, SEEK_END);
-			lsize = ftell(current);
-			rewind(current);
+		fseek(current, 0L, SEEK_END);
+		lsize = ftell(current);
+		rewind(current);
 
-			currenttxt = calloc(1, lsize + 1);
-			if (!currenttxt)
-			{
-				fclose(current);
-				throw(&emafail, "Failed to alloc memory");
-				exit(1);
-			}
-
-			if (fread(currenttxt, lsize, 1, current) != 1)
-			{
-				fclose(current);
-				free(currenttxt);
-				throw(&erdfail, "Failed to read file");
-				exit(1);
-			}
+		currenttxt = calloc(1, lsize + 1);
+		if (!currenttxt)
+		{
 			fclose(current);
+			throw(&emafail, "Failed to alloc memory");
+			exit(1);
+		}
 
-			//comment skip
-			/*puts(currenttxt);
-			puts("\n======================\n");*/
-			char* temp = malloc(sizeof(char) * strlen(currenttxt));
-			int8 flag = 0;
-			int32 cursor = 0;
-			for (int32 i = 0; i < strlen(currenttxt) + 1; i++)
-			{
-				if (currenttxt[i] != '/' && flag == 0)
-				{
-					temp[cursor] = currenttxt[i];
-					cursor++;
-				}
-				else if (currenttxt[i] == '*' && currenttxt[i + 1] == '/' && flag == 1)
-				{
-					flag = 0;
-					i++;
-				}
-				else if (currenttxt[i] == '\n' && flag == 2)
-				{
-					flag = 0;
-					temp[cursor] = currenttxt[i];
-					cursor++;
-				}
-				else if (currenttxt[i] == '/' && currenttxt[i + 1] == '/' && flag == 0)
-				{
-					flag = 2;
-				}
-				else if (currenttxt[i] == '/' && currenttxt[i + 1] == '*' && flag == 0)
-				{
-					flag = 1;
-				}
-				else if (currenttxt[i] == '\n')
-				{
-					temp[cursor] = currenttxt[i];
-					cursor++;
-				}
-			}
-			commentless = malloc(sizeof(char) * strlen(temp));
-			strcpy(commentless, temp);
-			puts(commentless);
+		if (fread(currenttxt, lsize, 1, current) != 1)
+		{
+			fclose(current);
 			free(currenttxt);
+			throw(&erdfail, "Failed to read file");
+			exit(1);
 		}
-		else
-		{
-			throw(&enoaccs, "Cannot access recipe file");
-		}
+		fclose(current);
 
-		mpc_result_t r;
-		if (mpc_parse(argv[1], commentless, c2, &r))
+		//comment skip
+		/*puts(currenttxt);
+		puts("\n======================\n");*/
+		char* temp = malloc(sizeof(char) * strlen(currenttxt));
+		int8 flag = 0;
+		int32 cursor = 0;
+		for (int32 i = 0; i < strlen(currenttxt) + 1; i++)
 		{
-			mpc_ast_print(r.output);
-			mpc_stats(c2);
-			mpc_ast_delete(r.output);
+			if (currenttxt[i] != '/' && flag == 0)
+			{
+				temp[cursor] = currenttxt[i];
+				cursor++;
+			}
+			else if (currenttxt[i] == '*' && currenttxt[i + 1] == '/' && flag == 1)
+			{
+				flag = 0;
+				i++;
+			}
+			else if (currenttxt[i] == '\n' && flag == 2)
+			{
+				flag = 0;
+				temp[cursor] = currenttxt[i];
+				cursor++;
+			}
+			else if (currenttxt[i] == '/' && currenttxt[i + 1] == '/' && flag == 0)
+			{
+				flag = 2;
+			}
+			else if (currenttxt[i] == '/' && currenttxt[i + 1] == '*' && flag == 0)
+			{
+				flag = 1;
+			}
+			else if (currenttxt[i] == '\n')
+			{
+				temp[cursor] = currenttxt[i];
+				cursor++;
+			}
 		}
-		else
-		{
-			mpc_err_print(r.error);
-			printf(ANSI_COLOR_YELLOW "%s\n" ANSI_COLOR_RESET, getline(commentless, r.error->state.row));
-			int32 i = 0;
-			printf(ANSI_COLOR_GREEN);
-			while (i < r.error->state.col) { printf(" "); i++; }
-			printf("^\n" ANSI_COLOR_RESET);
-			mpc_err_delete(r.error);
-		}
-		//mpc_print(c2);
-
+		commentless = malloc(sizeof(char) * strlen(temp));
+		strcpy(commentless, temp);
+		puts(commentless);
+		free(currenttxt);
 	}
 	else
 	{
-		mpc_result_t r;
-		if (mpc_parse_pipe("<stdin>", stdin, c2, &r))
-		{
-			mpc_ast_print(r.output);
-			mpc_ast_delete(r.output);
-		}
-		else
-		{
-			mpc_err_print(r.error);
-			mpc_err_delete(r.error);
-		}
+		throw(&enoaccs, "Cannot access recipe file");
 	}
 
-	mpc_cleanup(48, start, end, unaryop, ptrop, ident, number, string, attrtype, attrwval, attribute, val, emptyindices, indices, anyindices, module,
-	import, define, natives, typeident, member, memblock, structure, locunion, globunion, decltype, alias, arg, args, funcdecl, factor, term, lexp, vardecl, funccall,
-	whileloop, dowhile, forloop, ifstmt, switchcase, switchstmt, stmt, exp, logic, block, function, head, body, c2);
+	mpc_result_t r;
+	if (mpc_parse(filename, commentless, c2, &r))
+	{
+		mpc_ast_print(r.output);
+		return r.output;
+	}
+	else
+	{
+		mpc_err_print(r.error);
+		printf(ANSI_COLOR_YELLOW "%s\n" ANSI_COLOR_RESET, getline(commentless, r.error->state.row));
+		int32 i = 0;
+		printf(ANSI_COLOR_GREEN);
+		while (i < r.error->state.col) { printf(" "); i++; }
+		printf("^\n" ANSI_COLOR_RESET);
+		mpc_err_delete(r.error);
+	}
+		//mpc_print(c2);
 
-	return 0;
+	mpc_cleanup(48, start, end, unaryop, ptrop, ident, number, string, attrtype, attrwval, attribute, val, emptyindices, indices, anyindices, module,
+		import, define, natives, typeident, member, memblock, structure, locunion, globunion, decltype, alias, arg, args, funcdecl, factor, term, lexp, vardecl, funccall,
+		whileloop, dowhile, forloop, ifstmt, switchcase, switchstmt, stmt, exp, logic, block, function, head, body, c2);
+
+	return NULL;
 }
