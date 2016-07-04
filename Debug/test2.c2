@@ -2,5 +2,7 @@ module test;
 
 import test2;
 import test3 as test4;
-import test5 local; banananivpxvncvp
+import test5 local;
 import test6 as test7 local;
+
+func int32 test() {}
