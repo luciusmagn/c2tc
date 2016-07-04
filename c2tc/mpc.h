@@ -262,6 +262,7 @@ typedef struct mpc_ast_t {
 	mpc_state_t state;
 	int children_num;
 	struct mpc_ast_t** children;
+	struct mpc_ast_t* parent;
 } mpc_ast_t;
 
 mpc_ast_t *mpc_ast_new(const char *tag, const char *contents);

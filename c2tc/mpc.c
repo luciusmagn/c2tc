@@ -2750,6 +2750,7 @@ mpc_ast_t *mpc_ast_add_child(mpc_ast_t *r, mpc_ast_t *a) {
 	r->children_num++;
 	r->children = realloc(r->children, sizeof(mpc_ast_t*) * r->children_num);
 	r->children[r->children_num - 1] = a;
+	a->parent = r;
 	return r;
 }
 
