@@ -10,9 +10,9 @@ A tiny compiler to compile C2 code. C2 is a language invented and its first and 
 
 ## Waypoints
 - [X] Parse recipe files
-- [ ] Process recipes
+- [X] Process recipes
 - [X] Parse C2
-- [ ] Parse each C2 file
+- [X] Parse each C2 file
 - [ ] Command-line arguments
 - [ ] Recipe options
 - [ ] First C2 pass - throw out unneeded tokens

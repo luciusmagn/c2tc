@@ -1,9 +1,12 @@
 #ifndef shared_h
 #define shared_h
 
+#define debug
+
 #include "inttypes.h"
 #include "mpc.h"
 #include "vector.h"
+#include "dict.h"
 
 /// <summary>
 ///  This function is the c2 parser main entrypoint
@@ -39,14 +42,26 @@ void handleline(char* line);
 /// </summary>
 void runtests();
 
+#define test() do { testf(__FILE__, __LINE__); } while(0)
+_inline void testf(char* file, int32 line)
+{
+	printf("%s:%d\n", file, line);
+}
+
+_inline void remove_element(mpc_ast_t** arr, int32 index, int32 array_length)
+{
+	int i;
+	for (i = index; i < array_length - 1; i++) arr[i] = arr[i + 1];
+}
+
 int32 lsize;
 FILE* current;
 char* currenttxt;
 char* commentless;
 mpc_ast_t* currenttree;
-vector* trees;
+mpc_ast_t* trees;
 vector* modules;
-
+dict* knownmodules;
 
 
 #endif

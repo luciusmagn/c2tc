@@ -48,10 +48,10 @@
     <ClCompile Include="throw.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="dict.c">
+    <ClCompile Include="c2.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="c2.c">
+    <ClCompile Include="map.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -89,10 +89,10 @@
     <ClInclude Include="log.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dict.h">
+    <ClInclude Include="c2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="c2.h">
+    <ClInclude Include="map.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -162,11 +162,9 @@ void parserecipe(char* recipetext)
 void handleline(char* line)
 {
 	if (issornull(line)) return;
-	puts(line);
 	char** words = strsplit(line, " ");
 	int32 words_num = occurences(line, ' ');
 	if (!words) return;
-	puts(words[0]);
 	switch (state)
 	{
 		case START:
@@ -181,6 +179,8 @@ void handleline(char* line)
 				currenttrg->type = executable;
 				currenttrg->files = malloc(sizeof(vector));
 				vector_init(currenttrg->files);
+				currenttrg->options = malloc(sizeof(vector));
+				vector_init(currenttrg->options);
 				state = INSIDE_TARGET;
 			}
 			else if (strcmp(words[0], "lib") == 0)
@@ -196,6 +196,8 @@ void handleline(char* line)
 					currenttrg->type = libstatic;
 					currenttrg->files = malloc(sizeof(vector));
 					vector_init(currenttrg->files);
+					currenttrg->options = malloc(sizeof(vector));
+					vector_init(currenttrg->options);
 					state = INSIDE_TARGET;
 				}
 				else if (strcmp(words[2], "shared") == 0)
@@ -203,6 +205,8 @@ void handleline(char* line)
 					currenttrg->type = libshared;
 					currenttrg->files = malloc(sizeof(vector));
 					vector_init(currenttrg->files);
+					currenttrg->options = malloc(sizeof(vector));
+					vector_init(currenttrg->options);
 					state = INSIDE_TARGET;
 				}
 				else
@@ -222,7 +226,6 @@ void handleline(char* line)
 		case INSIDE_TARGET:
 			if (strcmp(words[0], "end") == 0)
 			{
-				puts("a means to an end");
 				vector_add(recipe->targets, currenttrg);
 				recipe->count++;
 				state = START;
@@ -239,6 +242,7 @@ void handleline(char* line)
 				{
 					vector_add(opt->opts, words[i]);
 				}
+				vector_add(currenttrg->options, opt);
 			}
 			else if (words_num >= 1)
 			{

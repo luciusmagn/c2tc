@@ -124,9 +124,9 @@
   <ItemGroup>
     <ClCompile Include="c2.c" />
     <ClCompile Include="c2main.c" />
-    <ClCompile Include="dict.c" />
     <ClCompile Include="errors.c" />
     <ClCompile Include="main.c" />
+    <ClCompile Include="map.c" />
     <ClCompile Include="mpc.c" />
     <ClCompile Include="recipe.c" />
     <ClCompile Include="recipeparser.c" />
@@ -138,10 +138,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="c2.h" />
-    <ClInclude Include="dict.h" />
     <ClInclude Include="errors.h" />
     <ClInclude Include="inttypes.h" />
     <ClInclude Include="log.h" />
+    <ClInclude Include="map.h" />
     <ClInclude Include="microtest.h" />
     <ClInclude Include="mpc.h" />
     <ClInclude Include="recipe.h" />
