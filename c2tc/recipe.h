@@ -24,9 +24,9 @@ typedef struct
 /// </summary>
 typedef struct
 {
-	mpc_ast_t* node;
-	vector* options;
-	vector* files;
+	vector* nodes;	//mpc_ast_t*
+	vector* options; //option*
+	vector* files; //char*
 	char* name;
 	int8 type;
 } target;
