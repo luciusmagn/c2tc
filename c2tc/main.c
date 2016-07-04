@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "microtest.h"
 #include "inttypes.h"
 #include "shared.h"
 #include "stringutils.h"
