@@ -1,6 +1,7 @@
 #ifndef microtest_h
 #define microtest_h
 #include "vasprintf.h"
+#include "inttypes.h"
 
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
@@ -11,6 +12,8 @@
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
 char* finalmessage;
+int32 tests_run;
+int32 tests_passed;
 /// <summary>
 ///  Use this to signify a start of a file
 /// </summary>
@@ -26,8 +29,7 @@ char* finalmessage;
 #define tiny_test(test) do { char *message = test(); tests_run++; \
                                 if (message){char* error; asprintf(&error, "[%s:%d]\x1b[31mTEST FAILED\x1b[0m: %s\n",__FILE__,__LINE__, message); asprintf(&finalmessage, "%s%s", finalmessage, error);}\
 								else {char* success; tests_passed++; asprintf(&success, "[%s:%d]\x1b[32mTEST PASSED\x1b[0m: %s\n", __FILE__,__LINE__, message); asprintf(&finalmessage, "%s%s", finalmessage, success);} } while (0)
-int32 tests_run;
-int32 tests_passed;
+
 /// <summary>
 ///  This function runs all tests and prints verdict to stdout
 /// </summary>
