@@ -257,12 +257,12 @@ mpc_ast_t* c2parse(char* filename)
 		}
 		commentless = malloc(sizeof(char) * strlen(temp));
 		strcpy(commentless, temp);
-		puts(commentless);
+		//puts(commentless);
 		free(currenttxt);
 	}
 	else
 	{
-		throw(&enoaccs, "Cannot access recipe file");
+		throw(&enoaccs, "Cannot access file");
 	}
 
 	mpc_result_t r;
