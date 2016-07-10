@@ -33,7 +33,7 @@ int32 tests_passed;
 /// <summary>
 ///  This function runs all tests and prints verdict to stdout
 /// </summary>
-__inline void tiny_verdict()
+static __inline void tiny_verdict()
 {
 	printf("\x1b[36mmicrotest framework - results [Tests passed: %d/%d]\n\x1b[36m", tests_passed, tests_run);
 	  puts("==============================================");
