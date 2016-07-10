@@ -1,7 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef _WIN32
 #include <io.h>
+#else
+#include <unistd.h>
+#endif
 
 #include "mpc.h"
 #include "inttypes.h"
@@ -17,6 +22,10 @@ mpc_ast_t* c2main(int32 argc, char** argv)
 	if (argc > 1)
 	{
 		return c2parse(argv[1]);
+	}
+	else
+	{
+		return NULL;
 	}
 }
 
@@ -170,7 +179,7 @@ mpc_ast_t* c2parse(char* filename)
 		"                                   | <globunion> | <alias>                                                \n"
 		"                                   | <function> | <vardecl>)*;                                            \n"
 		" c2                                : <start> <head> <body> <end> ;                                        \n",
-		start, end, unaryop, ptrop, ident, number, string, attrtype, attrwval, attribute, val, emptyindices, indices, anyindices, module,
+		start, end, unaryop, ptrop, ident, number, character, string, attrtype, attrwval, attribute, val, emptyindices, indices, anyindices, module,
 		import, define, natives, typeident, member, memblock, structure, locunion, globunion, decltype,
 		alias, arg, args, funcdecl, factor, term, lexp, vardecl, funccall, stmt, funccall, whileloop, dowhile, forloop, ifstmt, switchcase, switchstmt, exp, logic, block, function, head, body, c2, NULL
 		);
@@ -274,7 +283,7 @@ mpc_ast_t* c2parse(char* filename)
 	else
 	{
 		mpc_err_print(r.error);
-		printf(ANSI_COLOR_YELLOW "%s\n" ANSI_COLOR_RESET, getline(commentless, r.error->state.row));
+		printf(ANSI_COLOR_YELLOW "%s\n" ANSI_COLOR_RESET, get_line(commentless, r.error->state.row));
 		int32 i = 0;
 		printf(ANSI_COLOR_GREEN);
 		while (i < r.error->state.col) { printf(" "); i++; }
@@ -283,7 +292,7 @@ mpc_ast_t* c2parse(char* filename)
 	}
 		//mpc_print(c2);
 
-	mpc_cleanup(48, start, end, unaryop, ptrop, ident, number, string, attrtype, attrwval, attribute, val, emptyindices, indices, anyindices, module,
+	mpc_cleanup(49, start, end, unaryop, ptrop, ident, number, character, string, attrtype, attrwval, attribute, val, emptyindices, indices, anyindices, module,
 		import, define, natives, typeident, member, memblock, structure, locunion, globunion, decltype, alias, arg, args, funcdecl, factor, term, lexp, vardecl, funccall,
 		whileloop, dowhile, forloop, ifstmt, switchcase, switchstmt, stmt, exp, logic, block, function, head, body, c2);
 
