@@ -35,6 +35,20 @@ void deluseless(mpc_ast_t* node)
 				remove_element(node->children, i, node->children_num + 1);
 				break;
 			}
+			if (strcmp(node->children[i]->tag, "char") == 0 && strcmp(node->children[i]->contents, "\"") == 0)
+			{
+				found++;
+				printf("found:%d", found);
+				node->children_num--;
+				remove_element(node->children, i, node->children_num + 1); 
+			}
+			if (strcmp(node->children[i]->tag, "char") == 0 && strcmp(node->children[i]->contents, "'") == 0 )
+			{
+				found++;
+				printf("found:%d", found);
+				node->children_num--;
+				remove_element(node->children, i, node->children_num + 1);
+			}
 		}
 		if (found == 0)
 		{
