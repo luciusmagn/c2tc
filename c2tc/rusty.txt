@@ -1,0 +1,19 @@
+compiler: "gcc";
+
+target c2tc:
+	name: "c2tc";
+	type: executable;
+	flags: { "-Wall", "-Wno-discarded-qualifiers" };
+	file: "c2.c";
+	file: "errors.c";
+        file: "c2main.c";
+	file: "main.c";
+	file: "map.c";
+	file: "mpc.c";
+	file: "stringutils.c";
+	file: "recipe.c";
+	file: "recipeparser.c";
+	file: "throw.c";
+	file: "tests.c";
+	file: "vasprintf.c";
+	file: "vector.c";
