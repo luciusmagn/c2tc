@@ -21,7 +21,7 @@ char *skip_spaces(const char *str);
 /// <summary>
 ///  This function returns a line given by index from a string
 /// </summary>
-char* getline(char* src, int32 index);
+char* get_line(char* src, int32 index);
 /// <summary>
 ///  This function returns a number of occurrences of given character in the string
 /// </summary>

@@ -67,7 +67,7 @@ char *skip_spaces(const char *str)
 /// <summary>
 ///  This function returns a line given by index from a string. Zero-indexed
 /// </summary>
-char* getline(char* src, int32 index)
+char* get_line(char* src, int32 index)
 {
 	return strsplit(src, "\n")[index];
 }
@@ -105,7 +105,7 @@ char *str_replace(char *orig, char *rep, char *with)
 	len_with = strlen(with);
 
 	ins = orig;
-	for (count = 0; tmp = strstr(ins, rep); ++count) {
+	for (count = 0; (tmp = strstr(ins, rep)); ++count) {
 		ins = tmp + len_rep;
 	}
 
@@ -151,7 +151,7 @@ void teststrings()
 	tiny_assert("test if split() works properly", (strcmp(strsplit("This is a test", " ")[0], "This") == 0));
 	char* str = "       test";
 	tiny_assert("test if skip_spaces() works properly", (strcmp(skip_spaces(str), "test") == 0));
-	tiny_assert("test if getline() works properly", (strcmp(getline("a\nb\nc", 1), "b") == 0));
+	tiny_assert("test if getline() works properly", (strcmp(get_line("a\nb\nc", 1), "b") == 0));
 	tiny_assert("test if occurences() is working properly", occurences("bbb", 'b') == 3);
 	tiny_assert("test if str_replace() is working properly", (strcmp(str_replace("abab", "a", "c"), "cbcb") == 0));
 	tiny_assert("test if issornull()", issornull("      "));
