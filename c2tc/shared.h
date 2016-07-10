@@ -6,8 +6,13 @@
 #include "inttypes.h"
 #include "mpc.h"
 #include "vector.h"
-#include "dict.h"
 
+#ifndef _WIN32
+#define __inline inline
+#define PATH_SEPARATOR "/"
+#else
+#define PATH_SEPARATOR "\\"
+#endif
 /// <summary>
 ///  This function is the c2 parser main entrypoint
 /// </summary>
@@ -43,12 +48,12 @@ void handleline(char* line);
 void runtests();
 
 #define test() do { testf(__FILE__, __LINE__); } while(0)
-_inline void testf(char* file, int32 line)
+static __inline void testf(char* file, int32 line)
 {
 	printf("%s:%d\n", file, line);
 }
 
-_inline void remove_element(mpc_ast_t** arr, int32 index, int32 array_length)
+static __inline void remove_element(mpc_ast_t** arr, int32 index, int32 array_length)
 {
 	int i;
 	for (i = index; i < array_length - 1; i++) arr[i] = arr[i + 1];
@@ -61,7 +66,6 @@ char* commentless;
 mpc_ast_t* currenttree;
 mpc_ast_t* trees;
 vector* modules;
-dict* knownmodules;
 
 
 #endif
