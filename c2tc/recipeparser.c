@@ -112,7 +112,7 @@ char* findrecipe()
 	_getcwd(buf, 1024);
 	while (strlen(buf) != 3)
 #else
-	getcwd(buf, 1024)
+	getcwd(buf, 1024);
 	while (strcmp(buf, "/") != 0)
 #endif
 	{
@@ -122,13 +122,13 @@ char* findrecipe()
 		if (access("recipe.txt", R_OK) == 0)
 #endif
 		{
-			char path[1024];
+			char* path = malloc(1024);
 #ifdef _WIN32
 			_getcwd(path, 1024);
 #else
 			getcwd(path, 1024);
 #endif
-			strcat(path, "\\recipe.txt");
+			strcat(path, PATH_SEPARATOR "recipe.txt");
 			return path;
 		}
 		chdir("../");
