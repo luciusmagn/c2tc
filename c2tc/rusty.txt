@@ -1,19 +1,30 @@
 compiler: "gcc";
 
 target c2tc:
-	name: "c2tc";
-	type: executable;
-	flags: { "-Wall", "-Wno-discarded-qualifiers" };
-	file: "c2.c";
-	file: "errors.c";
-        file: "c2main.c";
-	file: "main.c";
-	file: "map.c";
-	file: "mpc.c";
-	file: "stringutils.c";
-	file: "recipe.c";
-	file: "recipeparser.c";
-	file: "throw.c";
-	file: "tests.c";
-	file: "vasprintf.c";
-	file: "vector.c";
+    name: "c2tc";
+    type: executable;
+    flags: { "-Wall", "-Wno-discarded-qualifiers", "-g", "-flto" };
+    output: ".";
+    depends: "inttypes.h";
+    depends: "shared.h";
+    depends: "microtest.h";
+    file: "c2.c" @depends("c2.h");
+    file: "errors.c" @depends("vasprintf.h", "errors.h");
+    file: "c2main.c" @depends("mpc.h", "throw.h",
+                              "errors.h", "log.h",
+                              "stringutils.h");
+    file: "main.c" @depends("stringutils.h", "throw.h",
+                            "errors.h");
+    file: "map.c" @depends("map.h");
+    file: "mpc.c" @depends("mpc.c");
+    file: "stringutils.c" @depends("stringutils.h");
+    file: "recipe.c" @depends("recipe.h", "mpc.h",
+                              "vector.h", "errors.h",
+                              "throw.h", "log.h", "c2.h");
+    file: "recipeparser.c" @depends("mpc.h", "recipe.h",
+                                    "throw.h", "errors.h",
+                                    "stringutils.h");
+    file: "throw.c" @depends("log.h", "throw.h");
+    file: "tests.c" @depends("stringutils.h", "vector.h");
+    file: "vasprintf.c" @depends("vasprintf.h");
+    file: "vector.c" @depends("vector.h");
