@@ -106,7 +106,6 @@ mpc_ast_t* c2parse(char* filename)
         "                                   | (\"local\" ';')                                                      \n"
         "                                   | (\"as\" <ident> ';')                                                 \n"
         "                                   | (\"as\" <ident> \"local\" ';')) ;                                    \n"
-        " define           \"Define macro\" : \"#define\" <ident> /((\\w*)\\s)/ ;                                  \n"
         " natives           \"Native type\" : \"char\"    | \"bool\"                                               \n"
         "                                   | \"int8\"    | \"uint8\"                                              \n"
         "                                   | \"int16\"   | \"uint16\"                                             \n"
@@ -126,7 +125,7 @@ mpc_ast_t* c2parse(char* filename)
         " vardecl  \"Variable declaration\" : <decltype> <ident> ('=' <lexp>)? ';' ;                               \n"
         " funcdecl \"Function declaration\" : (\"public\")? \"func\" <decltype> <ident> <args>;                    \n"
         " whileloop          \"While loop\" : \"while\" '(' <logic> ')' <stmt> ;                                   \n"
-        " dowhile         \"Do-while loop\" : \"do\" <stmt> \"while\" '(' <logic> ')' ';' ;                           \n"
+        " dowhile         \"Do-while loop\" : \"do\" <stmt> \"while\" '(' <logic> ')' ';' ;                        \n"
         " forloop              \"For loop\" : \"for\" '('(<vardecl>|';') (<logic>';'|';') <factor>? ')' <stmt>;    \n"
         " ifstmt           \"If statement\" : \"if\" '(' <logic> ')' <stmt> (\"else\" <stmt>)*  ;                  \n"
         " switchcase        \"Switch case\" : ((\"case\" <factor>) | \"default\") ':' <stmt>* ;                    \n"
@@ -225,40 +224,14 @@ mpc_ast_t* c2parse(char* filename)
         //comment skip
         /*puts(currenttxt);
         puts("\n======================\n");*/
-        char* temp = malloc(sizeof(char) * strlen(currenttxt));
-        int8 flag = 0;
-        int32 cursor = 0;
-        for (int32 i = 0; i < strlen(currenttxt) + 1; i++)
-        {
-            if (currenttxt[i] != '/' && flag == 0)
-            {
-                temp[cursor] = currenttxt[i];
-                cursor++;
-            }
-            else if (currenttxt[i] == '*' && currenttxt[i + 1] == '/' && flag == 1)
-            {
-                flag = 0;
-                i++;
-            }
-            else if (currenttxt[i] == '\n' && flag == 2)
-            {
-                flag = 0;
-                temp[cursor] = currenttxt[i];
-                cursor++;
-            }
-            else if (currenttxt[i] == '/' && currenttxt[i + 1] == '/' && flag == 0)
-                flag = 2;
-            else if (currenttxt[i] == '/' && currenttxt[i + 1] == '*' && flag == 0)
-                flag = 1;
-            else if (currenttxt[i] == '\n')
-            {
-                temp[cursor] = currenttxt[i];
-                cursor++;
-            }
-        }
-        commentless = malloc(sizeof(char) * strlen(temp));
-        strcpy(commentless, temp);
-        //puts(commentless);
+		char* commentless = calloc(sizeof(char) * strlen(currenttxt), 1);
+		for (int32 i = 0, k = 0; i < strlen(currenttxt); i++, k++)
+		{
+			if (strncmp(&currenttxt[i], "//", 2) == 0) { while (currenttxt[i] != '\n' && currenttxt[i] != EOF) i++; }
+			if (strncmp(&currenttxt[i], "/*", 2) == 0) { while (strncmp(&currenttxt[i], "*/", 2) != 0 && currenttxt[i] != EOF) i++; i++; i++; }
+			commentless[k] = currenttxt[i];
+		}
+        puts(commentless);
         free(currenttxt);
     }
     else

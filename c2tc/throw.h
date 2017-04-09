@@ -17,6 +17,10 @@
 
 #define ERROR_NEW_CONSTANT(c) error_new(c, QUOTE_X(#c))
 
+#ifdef __CYGWIN__
+#define error_t _error_t
+#endif
+
 typedef struct
 {
 	int code;

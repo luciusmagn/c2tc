@@ -15,7 +15,8 @@ int32 main(int32 argc, char** argv)
 	switch (argc)
 	{
 	case 1:
-		recipemain(1, argv);
+
+		//recipemain(1, argv);
 		break;
 	case 2:
 		if (argv[1][1] == 't')
@@ -50,6 +51,6 @@ int32 main(int32 argc, char** argv)
 		recipemain(2, argv);
 		break;
 	}
-	//getchar();
+	getchar();
 }
 

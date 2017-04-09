@@ -9,9 +9,6 @@
 #define FUNCTYPE 0x01
 #define STRUCTTYPE 0x02
 
-typedef struct
-{} buildoptions;
-
 void cleanup_trg(target* trg);
 void cleanup(mpc_ast_t* node);
 void deluseless(mpc_ast_t* node);
