@@ -62,8 +62,8 @@ int32 recipemain(int32 argc, char** argv)
             char* temp = calloc(sizeof(char) * strlen(recipetxt), 1);
             for (int32 i = 0, k = 0; i < strlen(recipetxt) + 1; i++, k++)
             {
-                if(recipetxt[i] == '#') while(recipetxt[i] != '\n') i++
-                commentless[k] = raw[i];
+                if(recipetxt[i] == '#') while(recipetxt[i] != '\n') i++;
+                commentless[k] = recipetxt[i];
             }
             commentlessrecipe = malloc(sizeof(char) * strlen(temp));
             strcpy(commentlessrecipe, temp);
