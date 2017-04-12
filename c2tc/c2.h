@@ -3,7 +3,6 @@
 #include "mpc.h"
 #include "util.h"
 #include "recipe.h"
-#include "vector.h"
 
 #define ALIASTYPE 0x00
 #define FUNCTYPE 0x01

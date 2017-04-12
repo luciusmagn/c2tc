@@ -5,7 +5,7 @@
 
 #include "inttypes.h"
 #include "mpc.h"
-#include "vector.h"
+#include "util.h"
 
 #ifndef _WIN32
 #define __inline inline

@@ -5,7 +5,6 @@
 #include "util.h"
 #include "recipe.h"
 #include "mpc.h"
-#include "vector.h"
 #include "shared.h"
 #include "errors.h"
 #include "log.h"

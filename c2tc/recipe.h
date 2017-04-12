@@ -2,8 +2,7 @@
 #define recipe_h
 
 #include "mpc.h"
-#include "vector.h"
-#include "inttypes.h"
+#include "util.h"
 #include "shared.h"
 
 #define executable 0x00
