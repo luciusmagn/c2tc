@@ -1,7 +1,8 @@
 # c2tc (C2 Tiny Compiler)
 A tiny compiler to compile C2 code. C2 is a language invented and its first and main compiler written by [bvdberg](https://github.com/bvdberg). The compiler can be found at [c2lang/c2compiler](https://github.com/c2lang/c2compiler/).
 
-##Libraries in use
+Warning: like nothing works right now.
+## Libraries in use
 
 - [thlorenz/log.h](https://github.com/thlorenz/log.h) - Minimal yet colorful logging lib
 - [jwerle/throw.h](https://github.com/jwerle/throw.h) - Create and throw errors easily
