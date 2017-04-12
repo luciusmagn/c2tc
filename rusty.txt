@@ -4,7 +4,8 @@ target c2tc:
     name: "c2tc";
     type: executable;
     flags: { "-Wall", "-Wno-discarded-qualifiers", "-g", "-flto" };
-    output: "../x64/Debug/";
+    output: "build";
+    sourcedir: "c2tc";
     depends: "inttypes.h";
     depends: "shared.h";
     depends: "microtest.h";
