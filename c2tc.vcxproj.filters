@@ -15,57 +15,57 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="c2tc\c2.h">
+    <ClInclude Include="src\c2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="c2tc\errors.h">
+    <ClInclude Include="src\errors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="c2tc\log.h">
+    <ClInclude Include="src\log.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="c2tc\microtest.h">
+    <ClInclude Include="src\microtest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="c2tc\mpc.h">
+    <ClInclude Include="src\mpc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="c2tc\recipe.h">
+    <ClInclude Include="src\recipe.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="c2tc\shared.h">
+    <ClInclude Include="src\shared.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="c2tc\util.h">
+    <ClInclude Include="src\util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="c2tc\c2.c">
+    <ClCompile Include="src\c2.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="c2tc\c2main.c">
+    <ClCompile Include="src\c2main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="c2tc\errors.c">
+    <ClCompile Include="src\errors.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="c2tc\main.c">
+    <ClCompile Include="src\main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="c2tc\mpc.c">
+    <ClCompile Include="src\mpc.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="c2tc\recipe.c">
+    <ClCompile Include="src\recipe.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="c2tc\recipeparser.c">
+    <ClCompile Include="src\recipeparser.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="c2tc\tests.c">
+    <ClCompile Include="src\tests.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="c2tc\util.c">
+    <ClCompile Include="src\util.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
