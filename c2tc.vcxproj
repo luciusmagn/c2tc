@@ -40,6 +40,7 @@
     <ClCompile Include="c2tc\util.c" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".gitignore" />
     <None Include="build\commenttest.c2" />
     <None Include="build\test.c2" />
     <None Include="build\test2.c2" />

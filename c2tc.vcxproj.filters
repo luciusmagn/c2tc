@@ -79,6 +79,9 @@
     <None Include="build\test2.c2">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include=".gitignore">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="build\recipe.txt">
