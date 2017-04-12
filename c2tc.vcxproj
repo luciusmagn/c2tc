@@ -19,25 +19,25 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="c2tc\c2.h" />
-    <ClInclude Include="c2tc\errors.h" />
-    <ClInclude Include="c2tc\log.h" />
-    <ClInclude Include="c2tc\microtest.h" />
-    <ClInclude Include="c2tc\mpc.h" />
-    <ClInclude Include="c2tc\recipe.h" />
-    <ClInclude Include="c2tc\shared.h" />
-    <ClInclude Include="c2tc\util.h" />
+    <ClInclude Include="src\c2.h" />
+    <ClInclude Include="src\errors.h" />
+    <ClInclude Include="src\log.h" />
+    <ClInclude Include="src\microtest.h" />
+    <ClInclude Include="src\mpc.h" />
+    <ClInclude Include="src\recipe.h" />
+    <ClInclude Include="src\shared.h" />
+    <ClInclude Include="src\util.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="c2tc\c2.c" />
-    <ClCompile Include="c2tc\c2main.c" />
-    <ClCompile Include="c2tc\errors.c" />
-    <ClCompile Include="c2tc\main.c" />
-    <ClCompile Include="c2tc\mpc.c" />
-    <ClCompile Include="c2tc\recipe.c" />
-    <ClCompile Include="c2tc\recipeparser.c" />
-    <ClCompile Include="c2tc\tests.c" />
-    <ClCompile Include="c2tc\util.c" />
+    <ClCompile Include="src\c2.c" />
+    <ClCompile Include="src\c2main.c" />
+    <ClCompile Include="src\errors.c" />
+    <ClCompile Include="src\main.c" />
+    <ClCompile Include="src\mpc.c" />
+    <ClCompile Include="src\recipe.c" />
+    <ClCompile Include="src\recipeparser.c" />
+    <ClCompile Include="src\tests.c" />
+    <ClCompile Include="src\util.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
