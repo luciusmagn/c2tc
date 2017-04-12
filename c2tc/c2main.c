@@ -17,12 +17,13 @@
 #include "stringutils.h"
 #include "microtest.h"
 
-mpc_ast_t* c2main(int32 argc, char** argv)
+int c2main(int32 argc, char** argv)
 {
     if (argc > 1)
-        return c2parse(argv[1]);
+        c2parse(argv[1]);
     else
-        return NULL;
+        return -1;
+    return 0;
 }
 
 mpc_ast_t* c2parse(char* filename)
@@ -45,7 +46,6 @@ mpc_ast_t* c2parse(char* filename)
     mpc_parser_t* anyindices = mpc_new("anyindices");
     mpc_parser_t* module = mpc_new("module");
     mpc_parser_t* import = mpc_new("import");
-    mpc_parser_t* define = mpc_new("define");
     mpc_parser_t* natives = mpc_new("natives");
     mpc_parser_t* typeident = mpc_new("typeident");
     mpc_parser_t* member = mpc_new("member");
@@ -55,6 +55,7 @@ mpc_ast_t* c2parse(char* filename)
     mpc_parser_t* globunion = mpc_new("globunion");
     mpc_parser_t* alias = mpc_new("alias");
     mpc_parser_t* decltype = mpc_new("decltype");
+    mpc_parser_t* functype = mpc_new("functype");//TODO
     mpc_parser_t* arg = mpc_new("arg");
     mpc_parser_t* args = mpc_new("args");
     mpc_parser_t* head = mpc_new("head");
@@ -86,7 +87,7 @@ mpc_ast_t* c2parse(char* filename)
         " end                               : /$/ ;                                                                \n"
         " unaryop        \"Unary operator\" : '&' | '!' | '-' | '~' | '+' ;                                        \n"
         " ptrop        \"Pointer operator\" : '*' ;                                                                \n"
-        " ident              \"Identifier\" : /[a-zA-Z_\\.\\#][a-zA-Z0-9_-]*/ ;                                    \n"
+        " ident              \"Identifier\" : /[a-zA-Z_\\.\\#][a-zA-Z0-9_-#]*/ ;                                   \n"
         " number                 \"Number\" : /[0-9]+/ ;                                                           \n"
         " character       \"Any character\" : /'.'/ ;                                                              \n"
         " string         \"String literal\" : /\"\"(\\\\.|[^\"])*\"/ ;                                             \n"
@@ -113,19 +114,20 @@ mpc_ast_t* c2parse(char* filename)
         "                                   | \"int64\"   | \"uint64\"                                             \n"
         "                                   | \"float32\" | \"float64\" ;                                          \n"
         " typeident           \"Type name\" : <natives> | <ident> ;                                                \n"
-        " member     \"Member declaration\" : <typeident> <ident> ';' ;                                            \n"
+        " member     \"Member declaration\" : <decltype> <ident> ';' ;                                             \n"
         " memblock         \"Member block\" : '{' (<member> | <locunion>)* '}' ;                                   \n"
         " structure      \"Structure type\" : \"type\" <ident> \"struct\" <memblock> <attribute>? ;                \n"
         " locunion                \"Union\" : \"union\" (<ident> <memblock> | <memblock>) ;                        \n"
         " globunion               \"Union\" : \"type\" <ident> \"union\" <memblock> ;                              \n"
-        " decltype     \"Declaration type\" : <typeident> <ptrop>* <anyindices>* ;                                 \n"
+        " decltype     \"Declaration type\" : (\"const\")? <typeident> <ptrop>* <anyindices>* ;                    \n"
+        " functype        \"Function type\" : (\"public\")? <ident> \"func\" <decltype> ;                          \n"
         " alias              \"Alias type\" : \"type\" <ident> <decltype> ';' ;                                    \n"
         " arg                  \"Argument\" : <decltype> <ident>;                                                  \n"
         " args                \"Arguments\" : '(' (<arg> ',')* <arg>? ')' ;                                        \n"
-        " vardecl  \"Variable declaration\" : <decltype> <ident> ('=' <lexp>)? ';' ;                               \n"
+        " vardecl  \"Variable declaration\" : (\"public\")? <decltype> <ident> ('=' <lexp>)? ';' ;                 \n"
         " funcdecl \"Function declaration\" : (\"public\")? \"func\" <decltype> <ident> <args>;                    \n"
         " whileloop          \"While loop\" : \"while\" '(' <logic> ')' <stmt> ;                                   \n"
-        " dowhile         \"Do-while loop\" : \"do\" <stmt> \"while\" '(' <logic> ')' ';' ;                        \n"
+        " dowhile         \"Do-while loop\" : \"do\" <stmt> \"while\" '(' <logic> ')' ';' ;                           \n"
         " forloop              \"For loop\" : \"for\" '('(<vardecl>|';') (<logic>';'|';') <factor>? ')' <stmt>;    \n"
         " ifstmt           \"If statement\" : \"if\" '(' <logic> ')' <stmt> (\"else\" <stmt>)*  ;                  \n"
         " switchcase        \"Switch case\" : ((\"case\" <factor>) | \"default\") ':' <stmt>* ;                    \n"
@@ -175,7 +177,7 @@ mpc_ast_t* c2parse(char* filename)
         "                                   | <function> | <vardecl>)*;                                            \n"
         " c2                                : <start> <head> <body> <end> ;                                        \n",
         start, end, unaryop, ptrop, ident, number, character, string, attrtype, attrwval, attribute, val, emptyindices, indices, anyindices, module,
-        import, define, natives, typeident, member, memblock, structure, locunion, globunion, decltype,
+        import, natives, typeident, member, memblock, structure, locunion, globunion, decltype, functype,
         alias, arg, args, funcdecl, factor, term, lexp, vardecl, funccall, stmt, funccall, whileloop, dowhile, forloop, ifstmt, switchcase, switchstmt, exp, logic, block, function, head, body, c2, NULL
         );
     mpc_optimise(c2);
@@ -222,20 +224,30 @@ mpc_ast_t* c2parse(char* filename)
         fclose(current);
 
         //comment skip
-        /*puts(currenttxt);
-        puts("\n======================\n");*/
-		char* commentless = calloc(sizeof(char) * strlen(currenttxt), 1);
-		for (int32 i = 0, k = 0; i < strlen(currenttxt); i++, k++)
-		{
-			if (strncmp(&currenttxt[i], "//", 2) == 0) { while (currenttxt[i] != '\n' && currenttxt[i] != EOF) i++; }
-			if (strncmp(&currenttxt[i], "/*", 2) == 0) { while (strncmp(&currenttxt[i], "*/", 2) != 0 && currenttxt[i] != EOF) i++; i++; i++; }
-			commentless[k] = currenttxt[i];
-		}
+        //puts(currenttxt);
+        char* temp = calloc(sizeof(char) * strlen(currenttxt), 1);
+        for (int32 i = 0, k = 0; i < strlen(currenttxt) + 1; i++, k++)
+        {
+            if(strncmp(&currenttxt[i], "//", 2) == 0)
+                while(currenttxt[i] != '\n' && currenttxt[i] != '\0') i++;
+            if(currenttxt[i] == '/' && currenttxt[i+1] == '*')
+            {
+                i += 2;
+                while(currenttxt[i] != '*' && currenttxt[i+1] != '/' && currenttxt[i] != '\0') i++;
+                if(currenttxt[i] != '\0')
+                    i += 2;
+            }
+            temp[k] = currenttxt[i];
+        }
+        commentless = malloc(sizeof(char) * strlen(temp));
+        strcpy(commentless, temp);
         puts(commentless);
         free(currenttxt);
     }
     else
+    {
         throw(&enoaccs, "Cannot access file");
+    }
 
     mpc_result_t r;
     if (mpc_parse(filename, commentless, c2, &r))
@@ -256,8 +268,9 @@ mpc_ast_t* c2parse(char* filename)
         //mpc_print(c2);
 
     mpc_cleanup(49, start, end, unaryop, ptrop, ident, number, character, string, attrtype, attrwval, attribute, val, emptyindices, indices, anyindices, module,
-        import, define, natives, typeident, member, memblock, structure, locunion, globunion, decltype, alias, arg, args, funcdecl, factor, term, lexp, vardecl, funccall,
+        import, natives, typeident, member, memblock, structure, locunion, globunion, decltype, functype, alias, arg, args, funcdecl, factor, term, lexp, vardecl, funccall,
         whileloop, dowhile, forloop, ifstmt, switchcase, switchstmt, stmt, exp, logic, block, function, head, body, c2);
 
     return NULL;
 }
+
