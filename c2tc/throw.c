@@ -1,5 +1,6 @@
 #include "throw.h"
 #include "log.h"
+#include "util.h"
 
 error_t error_new(int code, char *name)
 {

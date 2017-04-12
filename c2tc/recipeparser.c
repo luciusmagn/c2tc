@@ -9,13 +9,12 @@
 #include <unistd.h>
 #endif
 
+#include "util.h"
 #include "mpc.h"
-#include "inttypes.h"
 #include "shared.h"
 #include "recipe.h"
 #include "throw.h"
 #include "errors.h"
-#include "stringutils.h"
 #include "microtest.h"
 
 int32 recipemain(int32 argc, char** argv)

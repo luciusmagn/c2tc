@@ -1,5 +1,5 @@
 #include "c2.h"
-#include "inttypes.h"
+#include "util.h"
 #include "shared.h"
 
 void cleanup_trg(target* trg)

@@ -1,7 +1,7 @@
 #ifndef c2_h
 #define c2_h
 #include "mpc.h"
-#include "inttypes.h"
+#include "util.h"
 #include "recipe.h"
 #include "vector.h"
 

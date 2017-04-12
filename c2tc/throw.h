@@ -1,16 +1,15 @@
 #ifndef THROW_H
 #define THROW_H
 
-//
 // throw.h
 // copyright (c) 2013 joseph werle <joseph.werle@gmail.com>
-//
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include "inttypes.h"
+
+#include "util.h"
 
 #define QUOTE_X(t)#t
 #define QUOTE(t)QUOTE_X(t)

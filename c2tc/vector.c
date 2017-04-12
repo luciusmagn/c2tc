@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "inttypes.h"
+#include "util.h"
 #include "vector.h"
 #include "microtest.h"
-//Implementation of a vector. Based on tutorial a by Edd Mann
 
+//Implementation of a vector. Based on tutorial a by Edd Mann
 void vector_init(vector* v)
 {
     v->capacity = 4;

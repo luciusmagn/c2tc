@@ -8,13 +8,12 @@
 #include <unistd.h>
 #endif
 
+#include "util.h"
 #include "mpc.h"
-#include "inttypes.h"
 #include "shared.h"
 #include "throw.h"
 #include "errors.h"
 #include "log.h"
-#include "stringutils.h"
 #include "microtest.h"
 
 int c2main(int32 argc, char** argv)
