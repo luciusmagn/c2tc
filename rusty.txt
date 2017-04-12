@@ -18,10 +18,9 @@ target c2tc:
     file: "mpc.c" @depends("mpc.c");
     file: "util.c";
     file: "recipe.c" @depends("recipe.h", "mpc.h",
-                              "vector.h", "errors.h",
-                              "log.h", "c2.h");
+                              "errors.h","log.h", 
+                              "c2.h");
     file: "recipeparser.c" @depends("mpc.h", "recipe.h",
                                     "errors.h");
-    file: "tests.c" @depends("vector.h");
+    file: "tests.c";
     file: "vasprintf.c" @depends("vasprintf.h");
-    file: "vector.c" @depends("vector.h");
