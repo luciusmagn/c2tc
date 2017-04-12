@@ -13,7 +13,7 @@ target c2tc:
     file: "errors.c" @depends("errors.h", "log.h");
     file: "c2main.c" @depends("mpc.h","errors.h",
                               "log.h");
-    file: "main.c" @depends("errors.h");
+    file: "main.c" @depends("errors.h", "arg.h");
     file: "mpc.c" @depends("mpc.c");
     file: "util.c";
     file: "recipe.c" @depends("recipe.h", "mpc.h",
