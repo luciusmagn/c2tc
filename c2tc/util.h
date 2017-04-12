@@ -1,6 +1,8 @@
 #ifndef inttypes_h
 #define inttypes_h
 
+#include <stdarg.h>
+
 //numbers
 #include <stdint.h>
 
@@ -21,8 +23,7 @@ typedef uint32_t uint32;
 typedef uint64_t uint64;
 
 //strings
-
-//zero-indexed
+/*zero-indexed*/
 #define get_line(src, index) strsplit(src, "\n")[index]
 #define startswith(str1, str2) strncmp(str1, str2, strlen(str2))
 int8 endswith(char* str1,char* str2);
@@ -31,6 +32,15 @@ char *skip_spaces(const char *str);
 int32 occurences(char* str, char c);
 char *str_replace(char *orig, char *rep, char *with);
 int8 issornull(char* test);
+
+
+//asprintf & vasprintf
+#ifndef HAVE_ASPRINTF
+//copyright (c) 2014 joseph werle <joseph.werle@gmail.com>
+//modified by me (Lukáš Hozda <luk.hozda@gmail.com>)
+int vasprintf(char** str, const char* fmt, va_list args);
+int asprintf(char** str, const char *fmt, ...);
+#endif
 
 //colors
 #define ANSI_COLOR_RED     "\x1b[31m"
@@ -58,8 +68,7 @@ void* vector_get(vector* v, int32 index);
 void vector_delete(vector* v, int32 index);
 void vector_free(vector* v);
 
+//tests
 void testvector();
 void teststrings();
-
-
 #endif
