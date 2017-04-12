@@ -1,0 +1,5 @@
+target test
+    $generate-c
+    test.c2
+    test2.c2
+end

@@ -1,0 +1,9 @@
+module main;
+
+//asdasdasdasdas
+/*asdacyxcacas*/
+
+public func int32 main(int32 argc, char** argv)
+{
+    return 0;
+}
