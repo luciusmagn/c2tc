@@ -23,17 +23,9 @@ void parserecipe(char* recipetext);
 void handleline(char* line);
 void runtests();
 
-static __inline void _test(char* file, int32 line)
-{
-	printf("%s:%d\n", file, line);
-}
-#define test() do { _test(__FILE__, __LINE__); } while(0)
-
-static __inline void remove_element(mpc_ast_t** arr, int32 index, int32 array_length)
-{
-	int i;
-	for (i = index; i < array_length - 1; i++) arr[i] = arr[i + 1];
-}
+//mpc_ast_t** arr, int32 index, int32 array_len
+#define remove_element(x,y,z) do { int i; for(i=y;i<z;i++) x[i] = x[i+1]; } while(0)
+#define test() do { printf("%s:%d\n", __FILE__, __LINE__); } while(0)
 
 int32 lsize;
 FILE* current;
