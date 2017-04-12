@@ -1,6 +1,5 @@
 #include "log.h"
 #include "errors.h"
-#include "vasprintf.h"
 
 error_t error_new(int code, char *name)
 {

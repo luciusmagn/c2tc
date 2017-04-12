@@ -18,6 +18,37 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="c2tc\c2.h" />
+    <ClInclude Include="c2tc\errors.h" />
+    <ClInclude Include="c2tc\log.h" />
+    <ClInclude Include="c2tc\microtest.h" />
+    <ClInclude Include="c2tc\mpc.h" />
+    <ClInclude Include="c2tc\recipe.h" />
+    <ClInclude Include="c2tc\shared.h" />
+    <ClInclude Include="c2tc\util.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="c2tc\c2.c" />
+    <ClCompile Include="c2tc\c2main.c" />
+    <ClCompile Include="c2tc\errors.c" />
+    <ClCompile Include="c2tc\main.c" />
+    <ClCompile Include="c2tc\mpc.c" />
+    <ClCompile Include="c2tc\recipe.c" />
+    <ClCompile Include="c2tc\recipeparser.c" />
+    <ClCompile Include="c2tc\tests.c" />
+    <ClCompile Include="c2tc\util.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="build\commenttest.c2" />
+    <None Include="build\test.c2" />
+    <None Include="build\test2.c2" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="build\recipe.txt" />
+    <Text Include="build\recipetest1.txt" />
+    <Text Include="rusty.txt" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8D22C7BA-BAD6-46C0-AD01-5B3C9B9AA5BC}</ProjectGuid>
     <RootNamespace>c2tc</RootNamespace>
@@ -68,7 +99,10 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>build</OutDir>
+    <IntDir>intermediate</IntDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level2</WarningLevel>
@@ -123,36 +157,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="c2.c" />
-    <ClCompile Include="c2main.c" />
-    <ClCompile Include="errors.c" />
-    <ClCompile Include="main.c" />
-    <ClCompile Include="map.c" />
-    <ClCompile Include="mpc.c" />
-    <ClCompile Include="recipe.c" />
-    <ClCompile Include="recipeparser.c" />
-    <ClCompile Include="stringutils.c" />
-    <ClCompile Include="tests.c" />
-    <ClCompile Include="throw.c" />
-    <ClCompile Include="vasprintf.c" />
-    <ClCompile Include="vector.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="c2.h" />
-    <ClInclude Include="errors.h" />
-    <ClInclude Include="inttypes.h" />
-    <ClInclude Include="log.h" />
-    <ClInclude Include="map.h" />
-    <ClInclude Include="microtest.h" />
-    <ClInclude Include="mpc.h" />
-    <ClInclude Include="recipe.h" />
-    <ClInclude Include="shared.h" />
-    <ClInclude Include="stringutils.h" />
-    <ClInclude Include="throw.h" />
-    <ClInclude Include="vasprintf.h" />
-    <ClInclude Include="vector.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
