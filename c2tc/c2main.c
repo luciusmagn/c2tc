@@ -13,7 +13,6 @@
 #include "shared.h"
 #include "errors.h"
 #include "log.h"
-#include "microtest.h"
 
 int c2main(int32 argc, char** argv)
 {

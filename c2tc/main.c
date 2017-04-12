@@ -3,7 +3,6 @@
 #include <stdlib.h>
 
 #include "util.h"
-#include "microtest.h"
 #include "shared.h"
 #include "errors.h"
 

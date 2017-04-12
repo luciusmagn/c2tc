@@ -1,7 +1,6 @@
 #include "log.h"
 #include "errors.h"
 #include "vasprintf.h"
-#include "microtest.h"
 
 error_t error_new(int code, char *name)
 {

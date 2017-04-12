@@ -14,7 +14,6 @@
 #include "shared.h"
 #include "recipe.h"
 #include "errors.h"
-#include "microtest.h"
 
 int32 recipemain(int32 argc, char** argv)
 {
