@@ -6,7 +6,6 @@ import test5 local;
 import test6 as test7 local;
 //asfyxvx
 /*a cvxvcx */
-#define lol lol
 
 type Point struct 
 {

@@ -27,7 +27,6 @@ mpc_ast_t* c2main(int32 argc, char** argv)
 
 mpc_ast_t* c2parse(char* filename)
 {
-    //general
     mpc_parser_t* start = mpc_new("start");
     mpc_parser_t* end = mpc_new("end");
     mpc_parser_t* unaryop = mpc_new("unaryop");
@@ -80,7 +79,7 @@ mpc_ast_t* c2parse(char* filename)
     mpc_parser_t* body = mpc_new("body");
     mpc_parser_t* c2 = mpc_new("c2");
 
-    //TODO: Parse enums
+    //TODO enums
     mpc_err_t* err = mpca_lang(MPCA_LANG_DEFAULT,
         //general
         " start                             : /^/ ;                                                                \n"
@@ -225,8 +224,6 @@ mpc_ast_t* c2parse(char* filename)
         fclose(current);
 
         //comment skip
-        /*puts(currenttxt);
-        puts("\n======================\n");*/
         char* temp = malloc(sizeof(char) * strlen(currenttxt));
         int8 flag = 0;
         int32 cursor = 0;
@@ -264,7 +261,6 @@ mpc_ast_t* c2parse(char* filename)
         }
         commentless = malloc(sizeof(char) * strlen(temp));
         strcpy(commentless, temp);
-        //puts(commentless);
         free(currenttxt);
     }
     else
@@ -288,7 +284,6 @@ mpc_ast_t* c2parse(char* filename)
         printf("^\n" ANSI_COLOR_RESET);
         mpc_err_delete(r.error);
     }
-        //mpc_print(c2);
 
     mpc_cleanup(50, start, end, unaryop, ptrop, ident, number, character, string, attrtype, attrwval, attribute, val, emptyindices, indices, anyindices, module,
         import, define, natives, typeident, member, memblock, structure, locunion, globunion, decltype, functype, alias, arg, args, funcdecl, factor, term, lexp, vardecl, funccall,

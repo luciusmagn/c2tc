@@ -22,8 +22,8 @@ int c2main(int32 argc, char** argv)
     if (argc > 1)
         c2parse(argv[1]);
     else
-        return -1;
-    return 0;
+        recipemain(argc, argv);
+     return 0;
 }
 
 mpc_ast_t* c2parse(char* filename)

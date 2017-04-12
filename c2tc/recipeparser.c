@@ -18,9 +18,6 @@
 #include "stringutils.h"
 #include "microtest.h"
 
-/// <summary>
-///  Entry point for the recipe parser
-/// </summary>
 int32 recipemain(int32 argc, char** argv)
 {
     char* recipepath = findrecipe();
@@ -131,9 +128,6 @@ char* findrecipe()
     return 0;
 }
 
-/// <summary>
-///  This function parses the recipe file and builds a recipe structure from it.
-/// </summary>
 void parserecipe(char* recipetext)
 {
     state = START;
@@ -151,9 +145,6 @@ void parserecipe(char* recipetext)
     processrecipe();
 }
 
-/// <summary>
-///  This function parses a line and builds a recipe structure from it.
-/// </summary>
 void handleline(char* line)
 {
     if (issornull(line)) return;

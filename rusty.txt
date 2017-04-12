@@ -3,7 +3,7 @@ compiler: "gcc";
 target c2tc:
     name: "c2tc";
     type: executable;
-    flags: { "-Wall", "-Wno-discarded-qualifiers", "-g", "-flto" };
+    flags: { "-Wall", "-Wno-discarded-qualifiers", "-g", "-flto", "-pg" };
     output: "build";
     sourcedir: "c2tc";
     depends: "inttypes.h";
@@ -16,7 +16,6 @@ target c2tc:
                               "stringutils.h");
     file: "main.c" @depends("stringutils.h", "throw.h",
                             "errors.h");
-    file: "map.c" @depends("map.h");
     file: "mpc.c" @depends("mpc.c");
     file: "stringutils.c" @depends("stringutils.h");
     file: "recipe.c" @depends("recipe.h", "mpc.h",
