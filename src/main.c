@@ -2,19 +2,25 @@
 #include <string.h>
 #include <stdlib.h>
 
+#ifdef _WIN32
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
+
 #include "arg.h"
 #include "util.h"
 #include "shared.h"
 #include "errors.h"
 
-int8 option(char**, int32);
+int8 option(char**, int32*);
 void help();
 void usage();
 
 int32 main(int32 argc, char** argv)
 {
 	init_errors();
-	wanted_targets = malloc(sizeof(vector)); vector_init(desired_targets);
+	wanted_targets = malloc(sizeof(vector)); vector_init(wanted_targets);
     ARGBEGIN
     {
         FLAG('h', help())
@@ -22,7 +28,7 @@ int32 main(int32 argc, char** argv)
         FLAG('?', usage());
         FLAG('f', mpc_ast_print(c2parse((++argv)[0])); return 0;)
         default:
-            printf("unrecognized option: %c\n" ARGC());
+            printf("unrecognized option: %c\n", ARGC());
             break;
     }
     ARGEND
@@ -34,12 +40,13 @@ int8 option(char** argv, int32* argc)
     if(!argv[0]) return 1;
     if(argv[0][0] == '-' && strlen(argv[0]) > 1 && argv[0][1] != '-') return 1;
     START_OPTION("--help", help())
-         _OPTION("--usage", usage())
-         _PARAMETER("--dir", chdir(++argv[0]); (*argc)++)
-         _PARAMETER("--file", mpc_ast_print(c2parse((++argv[0])); exit(0);)
-    else if(strncmp(argv[0], "--", 2) printf("unrecognized option: %s", argv[0]);
+          OPTION("--usage", usage())
+          PARAMETER("--dir", chdir(++argv[0]); (*argc)++)
+          PARAMETER("--file", mpc_ast_print(c2parse((++argv)[0])); exit(0);)
+    else if(strncmp(argv[0], "--", 2) == 0) printf("unrecognized option: %s", argv[0]);
     else
         vector_add(wanted_targets, argv[0]);
+    return 1;
 }
 
 void help()
