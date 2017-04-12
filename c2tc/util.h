@@ -19,14 +19,36 @@ typedef uint16_t uint16;
 typedef uint32_t uint32;
 typedef uint64_t uint64;
 
+//strings
+
+//zero-indexed
+#define get_line(src, index) strsplit(src, "\n")[index]
+#define startswith(str1, str2) strncmp(str1, str2, strlen(str2))
 int8 endswith(char* str1,char* str2);
-int8 startswith(char* str1, char* str2);
 char** strsplit(char* str, const char* delim);
 char *skip_spaces(const char *str);
-char* get_line(char* src, int32 index);
 int32 occurences(char* str, char c);
 char *str_replace(char *orig, char *rep, char *with);
 int8 issornull(char* test);
+
+//vector
+typedef struct
+{
+	void** items;
+	int32 capacity;
+	int32 total;
+} vector;
+
+void vector_init(vector* v);
+int32 vector_total(vector* v);
+void vector_resize(vector* v, int32 capacity);
+void vector_add(vector* v, void* item);
+void vector_set(vector* v, int32 index, void* item);
+void* vector_get(vector* v, int32 index);
+void vector_delete(vector* v, int32 index);
+void vector_free(vector* v);
+
+void testvector();
 void teststrings();
 
 

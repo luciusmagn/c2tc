@@ -7,29 +7,16 @@
 #include "util.h"
 #include "microtest.h"
 
-/// <summary>
-///  This function checks if a string ends with the given suffix
-/// </summary>
+/***********
+ * STRINGS *
+ ***********/
 int8 endswith(char *string, char* suffix)
 {
     char* loc = strstr(string, suffix);
-
-    if (string != NULL)
-        return !strcmp(loc, suffix);
-
+    if (string) return !strcmp(loc, suffix);
     return(0);
 }
-/// <summary>
-///  This function checks if a string starts with the given prefix
-/// </summary>
-int8 startswith(char* str1, char* str2)
-{
-    return !strncmp(str1, str2, strlen(str2));
-}
 
-/// <summary>
-///  This function splits a string divided by a delimiter to an array of strings
-/// </summary>
 char** strsplit(char* str, const char* delim)
 {
     char** res = NULL;
@@ -43,7 +30,6 @@ char** strsplit(char* str, const char* delim)
     while (part) {
         res = (char**)realloc(res, (i + 1) * sizeof(char*));
         *(res + i) = strdup(part);
-
         part = strdup(strtok(NULL, delim));
         i++;
     }
@@ -54,25 +40,14 @@ char** strsplit(char* str, const char* delim)
     return res;
 }
 
-/// <summary>
-///  This function skips leading whitespace
-/// </summary>
+//skip leading whitespace. proudly stolen from linux kernel in 2015
 char *skip_spaces(const char *str)
 {
     while (isspace(*str))
         ++str;
     return str;
 }
-/// <summary>
-///  This function returns a line given by index from a string. Zero-indexed
-/// </summary>
-char* get_line(char* src, int32 index)
-{
-    return strsplit(src, "\n")[index];
-}
-/// <summary>
-///  This function returns a number of occurrences of given character in the string
-/// </summary>
+
 int32 occurences(char* str, char c)
 {
     int32 i, count;
@@ -81,9 +56,7 @@ int32 occurences(char* str, char c)
     return count;
 }
 
-/// <summary>
-/// This function replaces every occurency of char* rep with char* in given string
-/// </summary>
+//replace every occurence of char* rep with char* with
 char *str_replace(char *orig, char *rep, char *with)
 {
     char *result; // the return string
@@ -127,9 +100,8 @@ char *str_replace(char *orig, char *rep, char *with)
     strcpy(tmp, orig);
     return result;
 }
-/// <summary>
-/// This function tests whether a string is whitespace or null
-/// <summary>
+
+//tests whether a string is whitespace or null
 int8 issornull(char* test)
 {
     if (!test) return 0;
@@ -138,9 +110,76 @@ int8 issornull(char* test)
     if (i != strlen(test)) return 0;
     return 1;
 }
-/// <summary>
-///  This function performs tests of stringutils' functions
-/// </summary>
+
+
+/**********
+ * VECTOR *
+ **********/
+
+//Implementation of a vector. Based on a guide by Edd Mann
+void vector_init(vector* v)
+{
+    v->capacity = 4;
+    v->total = 0;
+    v->items = malloc(sizeof(void *) * v->capacity);
+}
+
+int32 vector_total(vector* v) { return v->total; }
+
+void vector_resize(vector* v, int32 capacity)
+{
+    void** items = realloc(v->items, sizeof(void *) * capacity);
+    if (items != NULL)
+    {
+        v->items = items;
+        v->capacity = capacity;
+    }
+}
+
+void vector_add(vector* v, void* item)
+{
+    if (v->capacity == v->total)
+        vector_resize(v, v->capacity * 2);
+    v->items[v->total++] = item;
+}
+
+void vector_set(vector* v, int32 index, void* item)
+{
+    if (index >= 0 && index < v->total)
+        v->items[index] = item;
+}
+
+void* vector_get(vector* v, int32 index)
+{
+    if (index >= 0 && index < v->total)
+        return v->items[index];
+    return NULL;
+}
+
+void vector_delete(vector* v, int32 index)
+{
+    if (index < 0 || index >= v->total)
+        return;
+    v->items[index] = NULL;
+    for (int32 i = 0; i < v->total - 1; i++)
+    {
+        v->items[i] = v->items[i + 1];
+        v->items[i + 1] = NULL;
+    }
+    v->total--;
+    if (v->total > 0 && v->total == v->capacity / 4)
+        vector_resize(v, v->capacity / 2);
+}
+
+void vector_free(vector* v)
+{
+    free(v->items);
+    v->items = NULL;
+}
+
+/*********
+ * TESTS *
+ *********/
 void teststrings()
 {
     tiny_file();
@@ -154,3 +193,21 @@ void teststrings()
     tiny_assert("test if str_replace() is working properly", (strcmp(str_replace("abab", "a", "c"), "cbcb") == 0));
     tiny_assert("test if issornull()", issornull("      "));
 }
+
+void testvector()
+{
+    vector* v = malloc(sizeof(vector));
+    vector_init(v);
+    tiny_file();
+    vector_add(v, "test");
+    tiny_assert("test if vector_add() works properly", vector_total(v) == 1);
+    tiny_assert("test if vector_get() works properly", (strcmp(vector_get(v, 0), "test") == 0));
+    vector_set(v, 0, "test2");
+    tiny_assert("test if vector_set() works properly", (strcmp(vector_get(v, 0), "test2") == 0));
+    tiny_assert("test if vector_total() works properly", vector_total(v) == 1);
+    vector_delete(v, 0);
+    tiny_assert("test if vector_delete() works properly", vector_total(v) == 0);
+    vector_free(v);
+    tiny_assert("test if vector_free() is working properly", !v->items);
+}
+
