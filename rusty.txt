@@ -3,25 +3,25 @@ compiler: "gcc";
 target c2tc:
     name: "c2tc";
     type: executable;
-    flags: { "-Wall", "-Wno-discarded-qualifiers", "-g", "-flto", "-pg" };
+    flags: { "-Wall", "-Wno-discarded-qualifiers", "-g", "-flto" };
     output: "build";
     sourcedir: "c2tc";
     depends: "util.h";
     depends: "shared.h";
     depends: "microtest.h";
     file: "c2.c" @depends("c2.h");
-    file: "errors.c" @depends("vasprintf.h", "errors.h");
-    file: "c2main.c" @depends("mpc.h", "throw.h",
-                              "errors.h", "log.h");
-    file: "main.c" @depends("throw.h","errors.h");
+    file: "errors.c" @depends("vasprintf.h", "errors.h", 
+                              "log.h");
+    file: "c2main.c" @depends("mpc.h","errors.h",
+                              "log.h");
+    file: "main.c" @depends("errors.h");
     file: "mpc.c" @depends("mpc.c");
     file: "util.c";
     file: "recipe.c" @depends("recipe.h", "mpc.h",
                               "vector.h", "errors.h",
-                              "throw.h", "log.h", "c2.h");
+                              "log.h", "c2.h");
     file: "recipeparser.c" @depends("mpc.h", "recipe.h",
-                                    "throw.h", "errors.h");
-    file: "throw.c" @depends("log.h", "throw.h");
+                                    "errors.h");
     file: "tests.c" @depends("vector.h");
     file: "vasprintf.c" @depends("vasprintf.h");
     file: "vector.c" @depends("vector.h");
