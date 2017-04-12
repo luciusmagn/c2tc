@@ -11,7 +11,6 @@
 #include "util.h"
 #include "mpc.h"
 #include "shared.h"
-#include "throw.h"
 #include "errors.h"
 #include "log.h"
 #include "microtest.h"

@@ -8,7 +8,6 @@
 #include "vector.h"
 #include "shared.h"
 #include "errors.h"
-#include "throw.h"
 #include "log.h"
 #include "c2.h"
 

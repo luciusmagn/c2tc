@@ -13,7 +13,6 @@
 #include "mpc.h"
 #include "shared.h"
 #include "recipe.h"
-#include "throw.h"
 #include "errors.h"
 #include "microtest.h"
 

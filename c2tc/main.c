@@ -5,7 +5,6 @@
 #include "util.h"
 #include "microtest.h"
 #include "shared.h"
-#include "throw.h"
 #include "errors.h"
 
 int32 main(int32 argc, char** argv)
