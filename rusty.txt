@@ -6,25 +6,22 @@ target c2tc:
     flags: { "-Wall", "-Wno-discarded-qualifiers", "-g", "-flto", "-pg" };
     output: "build";
     sourcedir: "c2tc";
-    depends: "inttypes.h";
+    depends: "util.h";
     depends: "shared.h";
     depends: "microtest.h";
     file: "c2.c" @depends("c2.h");
     file: "errors.c" @depends("vasprintf.h", "errors.h");
     file: "c2main.c" @depends("mpc.h", "throw.h",
-                              "errors.h", "log.h",
-                              "stringutils.h");
-    file: "main.c" @depends("stringutils.h", "throw.h",
-                            "errors.h");
+                              "errors.h", "log.h");
+    file: "main.c" @depends("throw.h","errors.h");
     file: "mpc.c" @depends("mpc.c");
-    file: "stringutils.c" @depends("stringutils.h");
+    file: "util.c";
     file: "recipe.c" @depends("recipe.h", "mpc.h",
                               "vector.h", "errors.h",
                               "throw.h", "log.h", "c2.h");
     file: "recipeparser.c" @depends("mpc.h", "recipe.h",
-                                    "throw.h", "errors.h",
-                                    "stringutils.h");
+                                    "throw.h", "errors.h");
     file: "throw.c" @depends("log.h", "throw.h");
-    file: "tests.c" @depends("stringutils.h", "vector.h");
+    file: "tests.c" @depends("vector.h");
     file: "vasprintf.c" @depends("vasprintf.h");
     file: "vector.c" @depends("vector.h");

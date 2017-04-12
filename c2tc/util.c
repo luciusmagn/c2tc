@@ -4,8 +4,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-#include "stringutils.h"
-#include "inttypes.h"
+#include "util.h"
 #include "microtest.h"
 
 /// <summary>
