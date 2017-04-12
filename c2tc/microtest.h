@@ -1,6 +1,5 @@
 #ifndef microtest_h
 #define microtest_h
-#include "vasprintf.h"
 #include "util.h"
 
 char* finalmessage;

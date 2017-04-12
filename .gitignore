@@ -3,3 +3,8 @@ output
 object
 .rusty
 .vs/
+obj/
+Debug/
+*.exe
+*.ilk
+*.pdb
