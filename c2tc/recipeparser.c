@@ -59,26 +59,11 @@ int32 recipemain(int32 argc, char** argv)
             }
             fclose(current);
 
-            char* temp = malloc(sizeof(char) * strlen(recipetxt));
-            int8 flag = 0;
-            int32 cursor = 0;
-            for (int32 i = 0; i < strlen(recipetxt) + 1; i++)
+            char* temp = calloc(sizeof(char) * strlen(recipetxt), 1);
+            for (int32 i = 0, k = 0; i < strlen(recipetxt) + 1; i++, k++)
             {
-                if (recipetxt[i] != '#' && flag == 0)
-                {
-                    temp[cursor] = recipetxt[i];
-                    cursor++;
-                }
-                else if (recipetxt[i] == '\n' && flag == 1)
-                {
-                    flag = 0;
-                    temp[cursor] = recipetxt[i];
-                    cursor++;
-                }
-                else if (recipetxt[i] == '#' && flag == 0)
-                {
-                    flag = 1;
-                }
+                if(recipetxt[i] == '#') while(recipetxt[i] != '\n') i++
+                commentless[k] = raw[i];
             }
             commentlessrecipe = malloc(sizeof(char) * strlen(temp));
             strcpy(commentlessrecipe, temp);
