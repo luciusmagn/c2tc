@@ -18,7 +18,7 @@ typedef struct
 typedef struct
 {
 	vector* nodes;	 //mpc_ast_t*
-	vector* options; //option*
+	vector* options; //target_option*
 	vector* files;   //char*
 	char* name;
 	int8 type;
@@ -28,7 +28,7 @@ typedef struct
 {
 	char* name;
 	vector* opts;
-} option;
+} target_option;
 
 enum
 {
