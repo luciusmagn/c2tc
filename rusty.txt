@@ -11,7 +11,7 @@ target c2tc:
     depends: "microtest.h";
     file: "c2.c" @depends("c2.h");
     file: "errors.c" @depends("errors.h", "log.h");
-    file: "c2main.c" @depends("mpc.h","errors.h",
+    file: "parsers.c" @depends("mpc.h","errors.h",
                               "log.h");
     file: "main.c" @depends("errors.h", "arg.h");
     file: "mpc.c" @depends("mpc.c");
@@ -19,6 +19,4 @@ target c2tc:
     file: "recipe.c" @depends("recipe.h", "mpc.h",
                               "errors.h","log.h", 
                               "c2.h");
-    file: "recipeparser.c" @depends("mpc.h", "recipe.h",
-                                    "errors.h");
     file: "tests.c";
