@@ -13,7 +13,7 @@
 void processrecipe()
 {
     test();
-    printf("number of targets:%d\n", recipe->count);
+    if(opts->print_info) printf("number of targets:%d\n", recipe->count);
     for (int32 i = 0; i < recipe->count; i++)
         processtarget(vector_get(recipe->targets, i));
 }
@@ -22,15 +22,18 @@ void processtarget(target* trg)
 {
     trg->nodes = malloc(sizeof(vector));
     vector_init(trg->nodes);
-    for (int32 i = 0; i < vector_total(trg->files); i++)
+    for(int32 i = 0; i < vector_total(trg->files); i++)
     {
         mpc_ast_t* ast = malloc(sizeof(mpc_ast_t*));
         ast = c2parse(vector_get(trg->files, i));
 
-        if (ast)
+        if(ast)
         {
             vector_add(trg->nodes, ast);
-            printf("module name: %s\n", ast->children[1]->children[0]->children[1]->contents);
+            if(opts->print_info)
+                printf("module name: %s\n", MODULE(ast)->contents);
+            if(opts->print_ast1)
+                mpc_ast_print(ast);
         }
         else
         {
@@ -39,5 +42,5 @@ void processtarget(target* trg)
             exit(-1);
         }
     }
-    cleanup_trg(trg);
+    //cleanup_trg(trg);
 }
