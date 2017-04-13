@@ -29,12 +29,13 @@ mpc_ast_t* c2parse(char* filename)
     //general
     mpc_parser_t* start = mpc_new("start");
     mpc_parser_t* end = mpc_new("end");
-    mpc_parser_t* unaryop = mpc_new("unaryop");
     mpc_parser_t* ptrop = mpc_new("ptrop");
     mpc_parser_t* ident = mpc_new("ident");
+    mpc_parser_t* symbol = mpc_new("symbol");
     mpc_parser_t* number = mpc_new("number");
     mpc_parser_t* character = mpc_new("character");
     mpc_parser_t* string = mpc_new("string");
+    mpc_parser_t* public_m = mpc_new("public");
     mpc_parser_t* attrtype = mpc_new("attrtype");
     mpc_parser_t* attrwval = mpc_new("attrwval");
     mpc_parser_t* attribute = mpc_new("attribute");
@@ -86,16 +87,17 @@ mpc_ast_t* c2parse(char* filename)
         //general
         " start                             : /^/ ;                                                                \n"
         " end                               : /$/ ;                                                                \n"
-        " unaryop        \"Unary operator\" : '&' | '!' | '-' | '~' | '+' ;                                        \n"
         " ptrop        \"Pointer operator\" : '*' ;                                                                \n"
         " ident              \"Identifier\" : /[a-zA-Z_\\.\\#][a-zA-Z0-9_-#]*/ ;                                   \n"
+        " symbol                 \"Symbol\" : (<ident> '.')? <ident> ('.'<ident>)* ;                               \n"
         " number                 \"Number\" : /[0-9]+/ ;                                                           \n"
-        " character       \"Any character\" : /'.'/ ;                                                              \n"
+        " character       \"Any character\" : /'\\\\?.'/ ;                                                         \n"
         " string         \"String literal\" : /\"(\\\\.|[^\"])*\"/ ;                                               \n"
         " attrtype       \"Attribute type\" :(\"export\"    | \"packed\"                                           \n"
         "                                   |  \"unused\"   | \"unused_params\"                                    \n"
         "                                   |  \"noreturn\" | \"inline\"                                           \n"
         "                                   |  \"weak\"     | \"opaque\") ;                                        \n"
+        " public                            : (\"public\")? ;                                                      \n"
         " attrwval \"Param attribute type\" : (\"aligned\" | \"section\") '=' (<string>|<number>) ;                \n"
         " attribute  \"Attribute notation\" : \"@(\" (<attrwal>|<attrtype>) (',' (<attrwval>                       \n"
         "                                   |<attrtype>))* ')' ;                                                   \n"
@@ -114,25 +116,25 @@ mpc_ast_t* c2parse(char* filename)
         "                                   | \"int32\"   | \"uint32\"                                             \n"
         "                                   | \"int64\"   | \"uint64\"                                             \n"
         "                                   | \"float32\" | \"float64\" ;                                          \n"
-        " typeident           \"Type name\" : <natives> | <ident> ;                                                \n"
+        " typeident           \"Type name\" : <natives> | <symbol> ;                                               \n"
         " member     \"Member declaration\" : <decltype> <ident> ';' ;                                             \n"
         " memblock         \"Member block\" : '{' (<member> | <locunion>)* '}' ;                                   \n"
-        " structure      \"Structure type\" : \"type\" <ident> \"struct\" <memblock> <attribute>? ;                \n"
-        " locunion                \"Union\" : \"union\" (<ident> <memblock> | <memblock>) ;                        \n"
+        " structure      \"Structure type\" : (\"public\")? \"type\" <ident> \"struct\" <memblock> <attribute>?  ; \n"
+        " locunion                \"Union\" : \"union\" <ident>? <memblock> ;                                      \n"
         " globunion               \"Union\" : \"type\" <ident> \"union\" <memblock> ;                              \n"
         " decltype     \"Declaration type\" : (\"const\")? <typeident> <ptrop>* <anyindices>* ;                    \n"
-        " functype        \"Function type\" : (\"public\")? \"type\" <ident> \"func\" <decltype> <args> ';' ;      \n"
-        " incrarray     \"Array increment\" : <ident> \"+=\" ( (<lexp> ';') | <arraylit>) ;                        \n"
+        " functype        \"Function type\" : <public> \"type\" <ident> \"func\" <decltype> <args> ';' ;           \n"
+        " incrarray     \"Array increment\" : <symbol> \"+=\" ( (<lexp> ';') | <arraylit>) ;                       \n"
         " structinit        \"Initializer\" : '{' ('.' <ident> '=')? <lexp> (',' ('.' <ident> '=')? <lexp>)* '}' ; \n"
         " arraylit        \"Array literal\" : '{' <lexp> (',' <lexp>)* '}' ;                                       \n"
-        " alias              \"Alias type\" : (\"public\")? \"type\" <ident> <decltype> ';' ;                      \n"
+        " alias              \"Alias type\" : <public> \"type\" <ident> <decltype> ';' ;                           \n"
         " arg                  \"Argument\" : <decltype> <ident>;                                                  \n"
         " args                \"Arguments\" : '(' (<arg> ',')* <arg>? ')' ;                                        \n"
-        " vardecl  \"Variable declaration\" : (\"public\")? <decltype> <ident> ('=' <lexp>)? ';' ;                 \n"
-        " funcdecl \"Function declaration\" : (\"public\")? \"func\" <decltype> <ident> <args> ;                   \n"
+        " vardecl  \"Variable declaration\" : <decltype> <ident> ('=' <lexp>)? ;                                   \n"
+        " funcdecl \"Function declaration\" : <public> \"func\" <decltype> <ident> <args> ;                        \n"
         " whileloop          \"While loop\" : \"while\" '(' <logic> ')' <stmt> ;                                   \n"
         " dowhile         \"Do-while loop\" : \"do\" <stmt> \"while\" '(' <logic> ')' ';' ;                        \n"
-        " forloop              \"For loop\" : \"for\" '('(<vardecl>|';') (<logic>';'|';') <factor>? ')' <stmt>;    \n"
+        " forloop              \"For loop\" : \"for\" '(' <lexp>? ';' <lexp>? ';' <lexp>? ')' <stmt>;              \n"
         " ifstmt           \"If statement\" : \"if\" '(' <logic> ')' <stmt> (\"else\" <stmt>)*  ;                  \n"
         " switchcase        \"Switch case\" : ((\"case\" <factor>) | \"default\") ':' <stmt>* ;                    \n"
         " switchstmt   \"Switch statement\" : \"switch\" '(' <factor> ')' '{' <switchcase>* '}' ;                  \n"
@@ -140,61 +142,63 @@ mpc_ast_t* c2parse(char* filename)
         "                                   | <number>                                                             \n"
         "                                   | <character>                                                          \n"
         "                                   | <string>                                                             \n"
-        "                                   | <ident> (\"++\"|\"--\")                                              \n"
-        "                                   | (\"++\"|\"--\") <ident>                                              \n"
+        "                                   | <vardecl>                                                            \n"
+        "                                   | <symbol> (\"++\"|\"--\")                                             \n"
+        "                                   | (\"++\"|\"--\") <symbol>                                             \n"
         "                                   | '~' <term>                                                           \n"
-        "                                   | '&' <ident>                                                          \n"
+        "                                   | '&' <symbol>                                                         \n"
         "                                   | \"(->\"<decltype>')' <lexp>                                          \n"
-        "                                   | <ident> '(' <lexp>? (',' <lexp>)* ')'                                \n"
-        "                                   | <ident>                                                              \n"
+        "                                   | <funccall>                                                           \n"
+        "                                   | <symbol>                                                             \n"
         "                                   | <arraylit>                                                           \n"
         "                                   | <structinit> ;                                                       \n"
         " term                     \"Term\" : <factor> (('*' | '/' | '%') <factor>)* ;                             \n"
         " lexp     \"Left-side expression\" : <term> (('+' | '-') <term>)* ;                                       \n"
-        " funccall        \"Function call\" : <ident> '(' <ident>? (',' <ident>)* ')' ';' ;                        \n"
+        " funccall        \"Function call\" : <symbol> '(' <lexp>? (',' <lexp>)* ')' ;                             \n"
         " stmt                \"Statement\" : '{' <stmt>* '}'                                                      \n"
-        "                                   | <vardecl>                                                            \n"
+        "                                   | <vardecl> ';'                                                        \n"
         "                                   | <whileloop>                                                          \n"
         "                                   | <dowhile>                                                            \n"
         "                                   | <forloop>                                                            \n"
         "                                   | <ifstmt>                                                             \n"
         "                                   | <switchstmt>                                                         \n"
-        "                                   | <ident> '=' <lexp> ';'                                               \n"
+        "                                   | <lexp> ';'                                                           \n"
         "                                   | \"return\" <lexp>? ';'                                               \n"
         "                                   | \"continue\" ';'                                                     \n"
         "                                   | \"break\" ';'                                                        \n"
-        "                                   | <funccall> ;                                                         \n"
+        "                                   | <funccall> ';' ;                                                     \n"
         " exp        \"Boolean comparison\" : <lexp> '>' <lexp>                                                    \n"
         "                                   | <lexp> '<' <lexp>                                                    \n"
-        "                                   | '!'<lexp>                                                            \n"
-        "                                   | <lexp>                                                               \n"
         "                                   | <lexp> \"<<\" <lexp>                                                 \n"
         "                                   | <lexp> \">>\" <lexp>                                                 \n"
         "                                   | <lexp> \">=\" <lexp>                                                 \n"
         "                                   | <lexp> \"<=\" <lexp>                                                 \n"
         "                                   | <lexp> \"!=\" <lexp>                                                 \n"
-        "                                   | <lexp> \"==\" <lexp> ;                                               \n"
+        "                                   | <lexp> \"==\" <lexp>                                                 \n"
+        "                                   | '!'<lexp>                                                            \n"
+        "                                   | <lexp> ;                                                             \n"
         " logic     \"Boolean expressions\" : <exp> ((\"&&\" | \"||\") <exp>)* ;                                   \n"
         " block              \"Code block\" : '{' <stmt>* '}' ;                                                    \n"
         " function             \"Function\" : <funcdecl> <block> ;                                                 \n"
         " head                \"File head\" : <module> <import>* ;                                                 \n"
-        " body                \"File body\" : (<define> | <structure>                                              \n"
+        " body                \"File body\" : ( <public> <vardecl> ';'                                             \n"
+        "                                   | <structure> | <function>                                             \n"
         "                                   | <globunion> | <alias>                                                \n"
-        "                                   | <function> | <vardecl>                                               \n"
         "                                   | <functype> | <incrarray>)*;                                          \n"
         " c2                                : <start> <head> <body> <end> ;                                        \n",
-        start, end, unaryop, ptrop, ident, number, character, string, attrtype, attrwval, attribute, val, emptyindices,
-        indices, anyindices, module, import, natives, typeident, member, memblock, structure, locunion, globunion,
-        decltype, functype, incrarray, arraylit, structinit, alias, arg, args, funcdecl, factor, term, lexp, vardecl,
-        funccall, stmt, funccall, whileloop, dowhile, forloop, ifstmt, switchcase, switchstmt, exp, logic, block,
-        function, head, body, c2, NULL
+        start, end, ptrop, ident, symbol, number, character, string, public_m, attrtype, attrwval, attribute, val,
+        emptyindices, indices, anyindices, module, import, natives, typeident, member, memblock, structure, locunion,
+        globunion, decltype, functype, incrarray, arraylit, structinit, alias, arg, args, funcdecl, factor, term, lexp,
+        vardecl, funccall, stmt, funccall, whileloop, dowhile, forloop, ifstmt, switchcase, switchstmt, exp, logic,
+        block, function, head, body, c2, NULL
         );
     mpc_optimise(c2);
     if (err != NULL)
     {
         mpc_err_print(err);
         mpc_err_delete(err);
-        exit(1);
+        if(!opts->test)
+            exit(1);
     }
 
 
@@ -252,9 +256,7 @@ mpc_ast_t* c2parse(char* filename)
         free(currenttxt);
     }
     else
-    {
         throw(&enoaccs, "Cannot access file");
-    }
 
     mpc_result_t r;
     if (mpc_parse(filename, commentless, c2, &r))
@@ -262,15 +264,10 @@ mpc_ast_t* c2parse(char* filename)
     else
     {
         mpc_err_print(r.error);
-        printf(ANSI_COLOR_YELLOW "%s\n" ANSI_COLOR_RESET, get_line(commentless, r.error->state.row));
-        int32 i = 0;
-        printf(ANSI_COLOR_GREEN);
-        while (i < r.error->state.col) { printf(" "); i++; }
-        printf("^\n" ANSI_COLOR_RESET);
         mpc_err_delete(r.error);
     }
 
-    mpc_cleanup(52, start, end, unaryop, ptrop, ident, number, character, string, attrtype, attrwval, attribute,
+    mpc_cleanup(53, start, end, ptrop, ident, symbol, number, character, string, public_m, attrtype, attrwval, attribute,
                 val, emptyindices, indices, anyindices, module, import, natives, typeident, member, memblock,
                 structure, locunion, globunion, decltype, functype, incrarray, structinit, arraylit, alias, arg,
                 args, funcdecl, factor, term, lexp, vardecl, funccall, whileloop, dowhile, forloop, ifstmt,
