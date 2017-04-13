@@ -13,7 +13,6 @@
 #define PATH_SEPARATOR "\\"
 #endif
 
-int c2main(int32 argc, char** argv);
 mpc_ast_t* c2parse(char* filename);
 int32 recipemain(int32 argc, char** argv);
 

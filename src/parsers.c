@@ -15,15 +15,6 @@
 #include "recipe.h"
 #include "errors.h"
 
-int c2main(int32 argc, char** argv)
-{
-    if (argc > 1)
-        c2parse(argv[1]);
-    else
-        recipemain(argc, argv);
-     return 0;
-}
-
 mpc_ast_t* c2parse(char* filename)
 {
     //general
