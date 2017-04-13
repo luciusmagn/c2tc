@@ -33,6 +33,7 @@ int32 main(int32 argc, char** argv)
         FLAG('o', opts->target_name = (++argv)[0])
         FLAG('a', opts->print_ast1 = 1)
         FLAG('A', opts->print_ast2 = 1)
+        FLAG('t', opts->test = 1);
         default:
             printf("unrecognized option: %c\n", ARGC());
             break;
@@ -61,8 +62,12 @@ int8 option(char** argv, int32* argc)
     if(argv[0][0] == '-' && strlen(argv[0]) > 1 && argv[0][1] != '-') return 1;
     START_OPTION("--help", help())
           OPTION("--usage", usage())
+          OPTION("--file", opts->file_mode = 1)
+          OPTION("--output", opts->target_name = (++argv)[0]; (*argc)++)
+          OPTION("--ast0", opts->print_ast1 = 1)
+          OPTION("--ast1", opts->print_ast2 = 1)
+          OPTION("--test", opts->test = 1)
           PARAMETER("--dir", chdir(++argv[0]); (*argc)++)
-          PARAMETER("--file", opts->file_mode = 1;)
     else if(strncmp(argv[0], "--", 2) == 0) printf("unrecognized option: %s", argv[0]);
     else
         vector_add(opts->wanted_targets, argv[0]);

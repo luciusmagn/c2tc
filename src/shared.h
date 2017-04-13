@@ -42,6 +42,7 @@ typedef struct
     unsigned int print_ast2 :1;
     unsigned int print_info :1;
     unsigned int library    :1; //if the file-mode target is a library
+    unsigned int test       :1; //continue even when some errors occur
     vector* wanted_targets;
     char* target_name; //name for file-mode target
 } options;
