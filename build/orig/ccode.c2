@@ -35,7 +35,7 @@ public func int32 func2() {
 
 func void func1() {
     int32 a = 'a';
-    int32[2] aa = { 1, 2}
+    int32[2] aa = { 1, 2 }
     uint16 b;
     {
         int32 c;

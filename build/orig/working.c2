@@ -8,6 +8,7 @@ public const char* nName = "Hallo";
 
 int32[] numbers = { 1, 1, 2, 3, 5, 8, 13 }
 
+
 type Buffer struct {
     int32 size;
     uint8* data;
