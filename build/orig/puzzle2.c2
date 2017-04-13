@@ -1,0 +1,35 @@
+module puzzle;
+
+const uint32 LIST_SIZE = 100;
+int32[LIST_SIZE] activeList;
+int32 readIndex = 0;
+int32 writeIndex = 0;
+
+func int32 listSize() {
+    if (readIndex == writeIndex) return 0;
+    if (writeIndex > readIndex) {
+        return writeIndex - readIndex;
+    } else {
+        return LIST_SIZE + writeIndex - readIndex;
+    }
+    return 0;   // to satisfy C2 analyser
+}
+
+func int32 listGet() {
+    int32 v = activeList[readIndex];
+    readIndex++;
+    if (readIndex == LIST_SIZE) readIndex = 0;
+    return v;
+}
+
+func void listAdd(int32 v) {
+    activeList[writeIndex] = v;
+    writeIndex++;
+    if (writeIndex == LIST_SIZE) writeIndex = 0;
+}
+
+func void listClear() {
+    readIndex = 0;
+    writeIndex = 0;
+}
+

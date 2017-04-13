@@ -1,0 +1,31 @@
+module working;
+
+import stdio;
+
+type Number int32;
+
+public const char* nName = "Hallo";
+
+int32[] numbers = { 1, 1, 2, 3, 5, 8, 13 }
+
+type Buffer struct {
+    int32 size;
+    uint8* data;
+    uint16 count;
+}
+
+public func void foo(int32 a, const char* text) {
+    stdio.printf("foo %d %s\n", a, text);
+}
+
+public func int32 main(int32 argc, int8*[] argv) {
+    Buffer buf;
+
+    if (argc == 1) {
+        stdio.printf("Hello World!\n");
+    } else {
+        stdio.printf("Goodbye!\n");
+    }
+    return 0;
+}
+

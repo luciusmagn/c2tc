@@ -1,0 +1,6 @@
+#ifdef FOOBAR
+module deftest;
+#endif
+
+public func int32 main() { return 0; }
+

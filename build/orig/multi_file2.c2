@@ -1,0 +1,7 @@
+module multi;
+
+func int32 getNumber2() {
+    getNumber1();
+    return 20;
+}
+

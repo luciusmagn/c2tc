@@ -1,0 +1,13 @@
+module layer3;
+
+import layer2;
+
+public type Layer3 struct {
+    layer2.Layer2 l2;
+}
+
+public func int32 main(int32 argc, int8*[] argv) {
+    layer2.count = 20;
+    return 0;
+}
+

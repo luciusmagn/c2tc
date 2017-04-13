@@ -1,0 +1,67 @@
+module body_test;
+
+public func void getMax() {
+    int32 a;
+    {
+        int32 b;
+        {
+            int32 c;
+        }
+    }
+}
+
+int32 number = 10;
+
+type CB func void();
+
+func void callback(CB cb) {}
+
+func void convert(int32 a, int32 b, int32 c) {
+}
+
+public func void myFunc() {
+    if (3) goto end;
+    convert(3, 4, number);
+    callback(myFunc);
+end:
+    return;
+}
+
+func void test() {
+    int32 a;
+    int32[10] a2;
+    int32[5][5] buffer;
+    char* text;
+    uint32*[10] pointers;
+    //const char* text2;
+}
+
+func void test2() {
+    return;
+}
+
+func void test3() {
+    int32 a;
+label1:
+    test2();
+label2:
+    test2();
+}
+
+func void test4() {
+    int32 a = 10;
+}
+
+func int32 test5() {
+    if (1) {
+
+    } else {
+        goto error;
+    }
+    return 10;
+error:
+    return 13;
+}
+
+public func int32 main() { return 0; }
+
