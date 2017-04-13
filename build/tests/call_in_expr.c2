@@ -1,0 +1,11 @@
+module call_in_expr_test;
+
+import stdio as io;
+
+public func int32 main()
+{
+    if(test())
+        return 0;
+
+    return 1;
+}

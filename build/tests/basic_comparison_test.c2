@@ -1,0 +1,11 @@
+module basic_comparison_test;
+
+import stdio as io;
+
+public func int32 main()
+{
+    if( getchar() == 'c' )
+        return 0;
+
+    return 1;
+}

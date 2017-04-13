@@ -1,0 +1,6 @@
+module func_decl_test;
+
+public func void potato()
+{
+    return;
+}
