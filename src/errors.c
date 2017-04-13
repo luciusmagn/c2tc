@@ -36,6 +36,6 @@ void init_errors()
 
 char* get_file_error(char* filename)
 {
-	char* str; asprintf(&str, "Failed to parse file" ANSI_COLOR_GREEN " %s" ANSI_COLOR_RESET ".", filename);
+	char* str; asprintf(&str, "Failed to parse file" ANSI_GREEN " %s" ANSI_RESET ".", filename);
 	return str;
 }
