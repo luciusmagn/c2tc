@@ -1,6 +1,6 @@
-module struct_test;
+module struct_type_test;
 
-type Mystruct struct
+public type TestStruct struct
 {
     int32 number;
     char c;
