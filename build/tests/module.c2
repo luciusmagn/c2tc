@@ -1,0 +1,6 @@
+module testmodule;
+
+import stdio;
+import stdarg local;
+import unistd as std;
+import stdlib as lib local;

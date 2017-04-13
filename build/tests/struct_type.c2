@@ -1,0 +1,8 @@
+module struct_test;
+
+type Mystruct struct
+{
+    int32 number;
+    char c;
+    const char[16] name;
+}

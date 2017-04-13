@@ -1,0 +1,25 @@
+module var_test;
+
+char c;
+public char pc;
+
+bool b;
+public bool p_b;
+
+int8   i8;
+int16 i16;
+int32 i32;
+int64 i64;
+uint8   ui8;
+uint16 ui16;
+uint32 ui32;
+uint64 ui64;
+
+public int8   p_i8;
+public int16 p_i16;
+public int32 p_i32;
+public int64 p_i64;
+public uint8   p_ui8;
+public uint16 p_ui16;
+public uint32 p_ui32;
+public uint64 p_ui64;
