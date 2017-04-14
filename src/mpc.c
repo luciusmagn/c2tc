@@ -1539,7 +1539,7 @@ mpc_parser_t *mpc_fail(const char *m) {
 }
 
 /*
-** As `snprintf` is not ANSI standard this 
+** As `snprintf` is not ANSI standard this
 ** function `mpc_failf` should be considered
 ** unsafe.
 **
@@ -1550,7 +1550,7 @@ mpc_parser_t *mpc_fail(const char *m) {
 **   the buffer length using precision specifiers
 **   such as `%.512s`.
 **
-** - Patch this function in your code base to 
+** - Patch this function in your code base to
 **   use `snprintf` or whatever variant your
 **   system supports.
 **
@@ -3582,7 +3582,7 @@ mpc_err_t *mpca_lang(int flags, const char *language, ...) {
   i = mpc_input_new_string("<mpca_lang>", language);
   err = mpca_lang_st(i, &st);
   mpc_input_delete(i);
-  
+
   free(st.parsers);
   va_end(va);
   return err;
