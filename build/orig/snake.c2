@@ -3,23 +3,23 @@ module snake;
 import stdio as io;
 import string local;
 
-#define ANSI_BLACK    "\033[0;30m"
-#define ANSI_RED      "\033[0;31m"
-#define ANSI_GREEN    "\033[0;32m"
-#define ANSI_YELLOW   "\033[0;33m"
-#define ANSI_BLUE     "\033[0;34m"
-#define ANSI_MAGENTA  "\033[0;35m"
-#define ANSI_CYAN     "\033[0;36m"
-#define ANSI_GREY     "\033[0;37m"
-#define ANSI_DARKGREY "\033[01;30m"
-#define ANSI_BRED     "\033[01;31m"
-#define ANSI_BGREEN   "\033[01;32m"
-#define ANSI_BYELLOW  "\033[01;33m"
-#define ANSI_BBLUE    "\033[01;34m"
-#define ANSI_BMAGENTA "\033[01;35m"
-#define ANSI_BCYAN    "\033[01;36m"
-#define ANSI_WHITE    "\033[01;37m"
-#define ANSI_NORMAL   "\033[0m"
+const char* ANSI_BLACK      = "\033[0;30m";
+const char* ANSI_RED        = "\033[0;31m";
+const char* ANSI_GREEN      = "\033[0;32m";
+const char* ANSI_YELLOW     = "\033[0;33m";
+const char* ANSI_BLUE       = "\033[0;34m";
+const char* ANSI_MAGENTA    = "\033[0;35m";
+const char* ANSI_CYAN       = "\033[0;36m";
+const char* ANSI_GREY       = "\033[0;37m";
+const char* ANSI_DARKGREY   = "\033[01;30m";
+const char* ANSI_BRED       = "\033[01;31m";
+const char* ANSI_BGREEN     = "\033[01;32m";
+const char* ANSI_BYELLOW    = "\033[01;33m";
+const char* ANSI_BBLUE      = "\033[01;34m";
+const char* ANSI_BMAGENTA   = "\033[01;35m";
+const char* ANSI_BCYAN      ="\033[01;36m";
+const char* ANSI_WHITE      = "\033[01;37m";
+const char* ANSI_NORMAL     = "\033[0m";
 
 type Coor struct {
     int8 x;
@@ -39,12 +39,6 @@ type FieldStatus enum int8 {
 }
 
 type Field struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
@@ -253,7 +247,7 @@ func void board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, flags2char(field.expected));
+                    cp += io.sprintf(cp, "%s%c%s", ANSI_RED, flags2char(field.expected), ANSI_NORMAL);
                 } else {
                     *cp++ = ' ';
                 }
@@ -261,17 +255,17 @@ func void board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "%sXXX%s", ANSI_DARKGREY, ANSI_NORMAL);
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, flags2char(field.expected));
+                    cp += io.sprintf(cp, "%s%c", ANSI_RED, flags2char(field.expected), ANSI_NORMAL);
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "%s%c", ANSI_GREEN, '0' + field.piece_id);
                 *cp++ = flags2char(flags);
                 cp += io.sprintf(cp, ANSI_NORMAL);
                 break;
