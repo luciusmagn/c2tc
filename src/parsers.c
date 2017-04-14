@@ -21,6 +21,7 @@ mpc_ast_t* c2parse(char* filename)
     mpc_parser_t* start = mpc_new("start");
     mpc_parser_t* end = mpc_new("end");
     mpc_parser_t* ptrop = mpc_new("ptrop");
+    mpc_parser_t* assigop = mpc_new("assigop");
     mpc_parser_t* ident = mpc_new("ident");
     mpc_parser_t* symbol = mpc_new("symbol");
     mpc_parser_t* number = mpc_new("number");
@@ -79,6 +80,8 @@ mpc_ast_t* c2parse(char* filename)
         " start                             : /^/ ;                                                                \n"
         " end                               : /$/ ;                                                                \n"
         " ptrop        \"Pointer operator\" : '*' ;                                                                \n"
+        " assigop   \"Assignment operator\" :( \"=\"  | \"+=\" | \"-=\" | \"*=\"                                   \n"
+        "                                   |  \"/=\" | \"|=\" | \"~=\" | \"&=\" );                                \n"
         " ident              \"Identifier\" : /[a-zA-Z_\\.\\#][a-zA-Z0-9_-#]*/ ;                                   \n"
         " symbol                 \"Symbol\" : (<ident> '.')? <ident> ('.'<ident>)* ;                               \n"
         " number                 \"Number\" : /[0-9]+/ ;                                                           \n"
@@ -116,8 +119,8 @@ mpc_ast_t* c2parse(char* filename)
         " decltype     \"Declaration type\" : (\"const\")? <typeident> <ptrop>* <anyindices>* ;                    \n"
         " functype        \"Function type\" : <public> \"type\" <ident> \"func\" <decltype> <args> ';' ;           \n"
         " incrarray     \"Array increment\" : <symbol> \"+=\" ( (<lexp> ';') | <arraylit>) ;                       \n"
-        " structinit        \"Initializer\" : '{' ('.' <ident> '=')? <lexp> (',' ('.' <ident> '=')? <lexp>)* '}' ; \n"
-        " arraylit        \"Array literal\" : '{' <lexp> (',' <lexp>)* '}' ;                                       \n"
+        " structinit        \"Initializer\" : '{' ('.'<ident>'=')? <lexp> (',' ('.' <ident> '=')? <lexp>)*',' '}'; \n"
+        " arraylit        \"Array literal\" : '{' <lexp> (',' <lexp>)* ','? '}' ;                                  \n"
         " alias              \"Alias type\" : <public> \"type\" <ident> <decltype> ';' ;                           \n"
         " arg                  \"Argument\" : <decltype> <ident>;                                                  \n"
         " args                \"Arguments\" : '(' (<arg> ',')* <arg>? ')' ;                                        \n"
@@ -129,7 +132,7 @@ mpc_ast_t* c2parse(char* filename)
         " ifstmt           \"If statement\" : \"if\" '(' <logic> ')' <stmt> (\"else\" <stmt>)*  ;                  \n"
         " switchcase        \"Switch case\" : ((\"case\" <factor>) | \"default\") ':' <stmt>* ;                    \n"
         " switchstmt   \"Switch statement\" : \"switch\" '(' <factor> ')' '{' <switchcase>* '}' ;                  \n"
-        " factor                 \"Factor\" : '(' <lexp> ')'                                                       \n"
+        " factor                 \"Factor\" : '(' <exp> ')'                                                       \n"
         "                                   | <number>                                                             \n"
         "                                   | <character>                                                          \n"
         "                                   | <string>                                                             \n"
@@ -142,6 +145,7 @@ mpc_ast_t* c2parse(char* filename)
         "                                   | <funccall>                                                           \n"
         "                                   | <symbol>                                                             \n"
         "                                   | <arraylit>                                                           \n"
+        "                                   | <ptrop>* <symbol> <assigop> <exp>                                    \n"
         "                                   | <structinit> ;                                                       \n"
         " term                     \"Term\" : <factor> (('*' | '/' | '%') <factor>)* ;                             \n"
         " lexp     \"Left-side expression\" : <term> (('+' | '-') <term>)* ;                                       \n"
@@ -177,7 +181,7 @@ mpc_ast_t* c2parse(char* filename)
         "                                   | <globunion> | <alias>                                                \n"
         "                                   | <functype> | <incrarray>)*;                                          \n"
         " c2                                : <start> <head> <body> <end> ;                                        \n",
-        start, end, ptrop, ident, symbol, number, character, string, public_m, attrtype, attrwval, attribute, val,
+        start, end, ptrop, assigop, ident, symbol, number, character, string, public_m, attrtype, attrwval, attribute, val,
         emptyindices, indices, anyindices, module, import, natives, typeident, member, memblock, structure, locunion,
         globunion, decltype, functype, incrarray, arraylit, structinit, alias, arg, args, funcdecl, factor, term, lexp,
         vardecl, funccall, stmt, funccall, whileloop, dowhile, forloop, ifstmt, switchcase, switchstmt, exp, logic,
@@ -258,7 +262,7 @@ mpc_ast_t* c2parse(char* filename)
         mpc_err_delete(r.error);
     }
 
-    mpc_cleanup(53, start, end, ptrop, ident, symbol, number, character, string, public_m, attrtype, attrwval, attribute,
+    mpc_cleanup(54, start, end, ptrop, assigop, ident, symbol, number, character, string, public_m, attrtype, attrwval, attribute,
                 val, emptyindices, indices, anyindices, module, import, natives, typeident, member, memblock,
                 structure, locunion, globunion, decltype, functype, incrarray, structinit, arraylit, alias, arg,
                 args, funcdecl, factor, term, lexp, vardecl, funccall, whileloop, dowhile, forloop, ifstmt,
