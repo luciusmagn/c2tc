@@ -1,0 +1,7 @@
+module union_type_test;
+
+type Test union
+{
+    int8  t1;
+    int16 t2;
+}
