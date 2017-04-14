@@ -19,88 +19,165 @@
 #define R_OK _A_NORMAL
 #endif
 
-#define parser mpc_parser_t*
+#define parser(x) mpc_parser_t* x = mpc_new(#x)
 mpc_ast_t* ex_c2parse(char* filename)
 {
     //basic
-    parser start = mpc_new("start");
-    parser end = mpc_new("end");
-    parser ptrop = mpc_new("ptrop");
-    parser assigop = mpc_new("assigop");
-    parser ident = mpc_new("ident");
-    parser symbol = mpc_new("symbol");
-    parser number = mpc_new("number");
-    parser character = mpc_new("character");
-    parser string = mpc_new("string");
-    parser public_m = mpc_new("public");
-    parser val = mpc_new("val");
-    parser natives = mpc_new("natives");
-    parser index = mpc_new("index");
+    parser(start);      parser(end);
+    parser(ptrop);      parser(index);
+    parser(ident);      parser(symbol);
+    parser(integer);    parser(character);
+    parser(string);     parser(public);
+    parser(floatn);     parser(natives);
+    parser(number);     parser(constant);
+
+    //expressions - dragons here, lmao
+    parser(uop);        parser(asop);   //unary operators;          assignment operators
+    parser(pexp);       parser(pfexp);  //primary expression;       prefix expression
+    parser(params);     parser(cast);   //function call parameters; cast expression
+    parser(uexp);       parser(mexp);   //unary expression;         multiplicative expression
+    parser(aexp);       parser(sexp);   //addition expression;      shift expression
+    parser(rexp);       parser(eexp);   //relation expression;      equivalence expression
+    parser(bexp);
+    parser(lexp);       parser(elexp);  //logic disjunction expr;   conditional expression
+    parser(asexp);      parser(cexp);   //assignment expression;    constant expression
+    parser(exp);                        //expression (yay!)
 
     //function
-    parser arg = mpc_new("arg");
-    parser args = mpc_new("args");
+    parser(arg);        parser(args);
 
     //types
-    parser type = mpc_new("type");
-    parser member = mpc_new("member");
-    parser member_block = mpc_new("member_block");
-    parser alias = mpc_new("alias");
-    parser uniontype = mpc_new("union");
-    parser global_union = mpc_new("global_union");
-    parser functype = mpc_new("functype");
-    parser structure = mpc_new("struct");
-    parser usertype = mpc_new("usertype");
+    parser(type);       parser(member);
+    parser(memberblock);parser(alias);
+    parser(uniontype);  parser(globalunion);
+    parser(functype);   parser(structure);
+    parser(usertype);
+
+    //declarations
+    parser(vardecl);    parser(arraydecl);
+    parser(arrayinit);  parser(structinit);
+    parser(decl);
 
     //head
-    parser module = mpc_new("module");
-    parser import = mpc_new("import");
+    parser(module);
+    parser(import);
 
     //head and shoulders
-    parser head = mpc_new("head");
-    parser body = mpc_new("body");
-    parser c2 = mpc_new("c2");
+    parser(head);       parser(body);
+    parser(c2);
 
     mpc_err_t* err = mpca_lang(MPCA_LANG_DEFAULT,
+       /**************************************************************************************************************
+        *============================================================================================================*
+        *----------------------------------------------BASIC PARSERS-------------------------------------------------*
+        *============================================================================================================*
+        **************************************************************************************************************/
         " start                             : /^/ ;                                                                \n"
         " end                               : /$/ ;                                                                \n"
         " ptrop        \"Pointer operator\" : '*' ;                                                                \n"
-        " assigop   \"Assignment operator\" :( \"=\"  | \"+=\" | \"-=\" | \"*=\"                                   \n"
-        "                                   |  \"/=\" | \"|=\" | \"~=\" | \"&=\" );                                \n"
+        " uop                               :  '&' | '*' | '+' | '-' | '~' | '!'  ;                                \n"
+        " asop   \"Assignment operator\" :( \"=\"  | \"+=\" | \"-=\" | \"*=\" | \"/=\"                             \n"
+        "                                   |  \"&=\" | \"|=\" | \"~=\" | \"<<=\"| \">>=\" );                      \n"
         " ident              \"Identifier\" : /[a-zA-Z_][a-zA-Z0-9_]*/ ;                                           \n"
         " symbol                 \"Symbol\" : (<ident> '.')? <ident> ('.'<ident>)* ;                               \n"
-        " number                 \"Number\" : /[0-9]+/ ;                                                           \n"
-        " character       \"Any character\" : /'\\\\?.'/ ;                                                         \n"
+        " integer               \"Integer\" : /[0-9]+/ ;                                                           \n"
+        " character       \"Any character\" : '\'' /\\\\?./ '\'' ;                                                 \n"
         " string         \"String literal\" : /\"(\\\\.|[^\"])*\"/ ;                                               \n"
         " public                            : (\"public\")? ;                                                      \n"
-        " val      \"Floating-point value\" : /[0-9]+(\\.[0-9]+)*[a-zA-Z_]*/ ;                                     \n"
-        " natives           \"Native type\" : \"char\"    | \"bool\"                                               \n"
+        " floatn   \"Floating-point value\" : /[0-9]+\\.[0-9]+[a-zA-Z]*/ ;                                         \n"
+        " natives           \"Native type\" : \"void\"                                                             \n"
+        "                                   | \"char\"    | \"bool\"                                               \n"
         "                                   | \"int8\"    | \"uint8\"                                              \n"
         "                                   | \"int16\"   | \"uint16\"                                             \n"
         "                                   | \"int32\"   | \"uint32\"                                             \n"
         "                                   | \"int64\"   | \"uint64\"                                             \n"
         "                                   | \"float32\" | \"float64\" ;                                          \n"
-        " index                   \"Index\" : '[' ( '+' | <number> | <symbol> )? ']' ;                             \n"
+        " index                   \"Index\" : '[' ( '+' | <integer> | <symbol> )? ']' ;                            \n"
+        " number                 \"Number\" :  <floatn> | <integer>  ;                                             \n"
+        " constant             \"Constant\" :  <number> | <string> | <ident> ;                                     \n"
+       /**************************************************************************************************************
+        *============================================================================================================*
+        *%%%%%%%%%%%%%%%/------------------------------------------------------------------------------\%%%%%%%%%%%%%*
+        *%%%%%%%%%%%%%%%|                           Here lie EXPRESSIONS                               |%%%%%%%%%%%%%*
+        *%%%%%%%%%%%%%%%|Pain in the ass to make, but now finally 100% working. No regrets, I am happy.|%%%%%%%%%%%%%*
+        *%%%%%%%%%%%%%%%|                Will eat your dog if you try to modify it                     |%%%%%%%%%%%%%*
+        *%%%%%%%%%%%%%%%\------------------------------------------------------------------------------/%%%%%%%%%%%%%*
+        *============================================================================================================*
+        *Hours wasted: 8;                                                                       --Lukáš Hozda, 2017  *
+        **************************************************************************************************************/
+        " pexp                              : <ident> | <number> | <string> | <character> |'(' <exp> ')' ;         \n"
+        " pfexp                             : <pexp>                                                               \n"
+        "                                   ( <params>                                                             \n"
+        "                                   | '[' <exp> ']'                                                        \n"
+        "                                   | '[' <integer> ':' <integer> ']'                                      \n"
+        "                                   | '.' <ident>                                                          \n"
+        "                                   | (\"++\"|\"--\")                                                      \n"
+        "                                   )* ;                                                                   \n"
+        " uexp                              : <pfexp>                                                              \n"
+        "                                   | (\"++\"|\"--\") <uexp>                                               \n"
+        "                                   | <uop> <cast>                                                         \n"
+        "                                   | \"sizeof\" ( <uexp> | '(' <type> ')' ) ;                             \n"
+        " cast                              : ( \"(->\" <type> ')' )? <uexp> ;                                     \n"
+        " mexp                              : <cast> (('*'|'/'|'%') <cast>)* ;                                     \n"
+        " aexp                              : <mexp> (('+'|'-') <mexp>)* ;                                         \n"
+        " sexp                              : <aexp> (( \"<<\" | \">>\" ) <aexp>)* ;                               \n"
+        " rexp                              : <sexp> (( \"<=\" | \">=\" | \"<\" | \">\" ) <sexp>)* ;               \n"
+        " eexp                              : <rexp> ((\"==\"|\"!=\") <rexp>)* ;                                   \n"
+        " bexp                              : <eexp> (('|'|'^'|'&') <eexp>)* ;                                     \n"
+        " lexp                              : <bexp> ((\"&&\"|\"||\") <bexp>)* ;                                   \n"
+        " elexp                             : <lexp> ('?' <lexp> ':' <lexp>)* ;                                    \n"
+        " asexp                             : <elexp> (<asop> <asexp>)* ;                                          \n"
+        " exp                \"Expression\" : <asexp> (',' <asexp> )* ;                                            \n"
+        " params                            : '(' (<elexp> (',' <elexp>)*)? ')' ;                                  \n"
+       /**************************************************************************************************************
+        *============================================================================================================*
+        *---------------------------------------------FUNCTION STUFF-------------------------------------------------*
+        *============================================================================================================*
+        **************************************************************************************************************/
         " arg                               : <type> <ident> ;                                                     \n"
         " args      \"Function parameters\" : '(' (<arg> (',' <arg>)*)* ')' ;                                      \n"
+       /**************************************************************************************************************
+        *============================================================================================================*
+        *--------------------------------------------------TYPES-----------------------------------------------------*
+        *============================================================================================================*
+        **************************************************************************************************************/
         " type                     \"Type\" : \"const\"? (<natives> | <symbol>) <ptrop>* <index>* ;                \n"
         " member                 \"Member\" : (<type> <ident> ';' | <union>) ;                                     \n"
         " member_block          \"Members\" : '{' <member>* '}' ;                                                  \n"
         " alias                   \"Alias\" : <ident> <type> ';' ;                                                 \n"
-        " union                   \"Union\" : \"union\" <ident>? <member_block> ;                                  \n"
-        " global_union       \"Union type\" : <ident> \"union\" <member_block> ;                                   \n"
+        " union                   \"Union\" : \"union\" <ident>? <memberblock> ;                                   \n"
+        " global_union       \"Union type\" : <ident> \"union\" <memberblock> ;                                    \n"
         " functype        \"Function type\" : <ident> \"func\" <type> <args> ';' ;                                 \n"
-        " struct          \"Struct\"        : <ident> \"struct\" <member_block> ;                                  \n"
+        " structure              \"Struct\" : <ident> \"struct\" <memberblock> ;                                   \n"
         " usertype    \"User-defined type\" : <public> \"type\" ( <alias>  | <functype>                            \n"
-        "                                                       | <struct> | <global_union>) ;                     \n"
+        "                                                       | <structure> | <globalunion>) ;                   \n"
+       /**************************************************************************************************************
+        *============================================================================================================*
+        *----------------------------------------------DECLARATIONS--------------------------------------------------*
+        *============================================================================================================*
+        **************************************************************************************************************/
+        " vardecl  \"Variable declaration\" : <public> <type> <ident> ('=' <exp>)? ';' ;                           \n"
+        " arrayinit                         : '{' (<elexp>|<arrayinit>)* '}';                                      \n"
+        " structinit                        : '{'(('.'<ident> '=')? (<arrayinit>|<structinit>|<elexp>)             \n"
+        "                                   (',' ('.'<ident> '=')? (<arrayinit>|<structinit>|<elexp>))* '.'?)?'}'; \n"
+        //TODO
+        " arraydecl   \"Array declaration\" : <public> <type> <ident> '=' <arrayinit>  ;                           \n"
+       /**************************************************************************************************************
+        *============================================================================================================*
+        *-----------------------------------------------FILE STUFF---------------------------------------------------*
+        *============================================================================================================*
+        **************************************************************************************************************/
         " module                 \"Module\" : \"module\" <ident> ';' ;                                             \n"
         " import                 \"Import\" : \"import\" <ident> (\"as\" <ident>)? (\"local\")? ';' ;              \n"
         " head                              : <module> <import>* ;                                                 \n"
-        " body                              : (<usertype>)* ;                                                      \n"
+        " body                              : (<usertype> | <vardecl>)* ;                                          \n"
         " c2                                : <start> <head> <body> <end> ;                                        \n",
-        start, end, ptrop, assigop, ident, symbol, number, character, string, public_m, val, natives, index,
-        arg, args, member, member_block,
-        type, alias, uniontype, global_union, functype, structure, usertype,
+        start, end, ptrop, ident, symbol, integer, character, string, public, floatn, natives, index, number, constant,
+        pexp, pfexp, params, cast, uexp, uop, mexp, aexp, sexp, rexp, eexp,bexp,
+        lexp, elexp, asexp, asop, cexp, exp,
+        arg, args, member, memberblock,
+        type, alias, uniontype, globalunion, functype, structure, usertype,
+        vardecl,
         module, import,
         head, body, c2, NULL
         );
@@ -175,10 +252,13 @@ mpc_ast_t* ex_c2parse(char* filename)
         mpc_err_delete(r.error);
     }
 
-    mpc_cleanup(30, start, end, ptrop, assigop, ident, symbol, number, character, string,
-                    public_m, val, natives, index,
-                    arg, args, member, member_block,
-                    type, alias, uniontype, global_union, functype, structure, usertype,
+    mpc_cleanup(49, start, end, ptrop, ident, symbol, integer, character, string,
+                    public, floatn, natives, index, number, constant,
+                    pexp, pfexp, params, cast, uexp, uop, mexp,
+                    aexp, sexp, rexp, eexp, bexp,
+                    lexp, elexp, asexp, asop, cexp, exp,
+                    arg, args, member, memberblock,
+                    type, alias, uniontype, globalunion, functype, structure, usertype,
                     module, import,
                     head, body, c2);
 
