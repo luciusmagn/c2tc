@@ -33,7 +33,8 @@ int32 main(int32 argc, char** argv)
         FLAG('o', opts->target_name = (++argv)[0])
         FLAG('a', opts->print_ast1 = 1)
         FLAG('A', opts->print_ast2 = 1)
-        FLAG('t', opts->test = 1);
+        FLAG('t', opts->test = 1)
+        FLAG('e', opts->experiment = 1);
         default:
             printf("unrecognized option: %c\n", ARGC());
             break;
@@ -67,6 +68,7 @@ int8 option(char** argv, int32* argc)
           OPTION("--ast0", opts->print_ast1 = 1)
           OPTION("--ast1", opts->print_ast2 = 1)
           OPTION("--test", opts->test = 1)
+          OPTION("--experiment", opts->experiment = 1)
           PARAMETER("--dir", chdir(++argv[0]); (*argc)++)
     else if(strncmp(argv[0], "--", 2) == 0) printf("unrecognized option: %s", argv[0]);
     else
