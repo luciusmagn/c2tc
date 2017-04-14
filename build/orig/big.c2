@@ -1,29 +1,7 @@
-/*
-    This is snake example with copied/renamed functions to make a big program
-*/
 module big;
 
 import stdio as io;
 import string local;
-
-#define ANSI_BLACK    "\033[0;30m"
-#define ANSI_RED      "\033[0;31m"
-#define ANSI_GREEN    "\033[0;32m"
-#define ANSI_YELLOW   "\033[0;33m"
-#define ANSI_BLUE     "\033[0;34m"
-#define ANSI_MAGENTA  "\033[0;35m"
-#define ANSI_CYAN     "\033[0;36m"
-#define ANSI_GREY     "\033[0;37m"
-#define ANSI_DARKGREY "\033[01;30m"
-#define ANSI_BRED     "\033[01;31m"
-#define ANSI_BGREEN   "\033[01;32m"
-#define ANSI_BYELLOW  "\033[01;33m"
-#define ANSI_BBLUE    "\033[01;34m"
-#define ANSI_BMAGENTA "\033[01;35m"
-#define ANSI_BCYAN    "\033[01;36m"
-#define ANSI_WHITE    "\033[01;37m"
-#define ANSI_NORMAL   "\033[0m"
-
 
 public func int32 main() {
     aaa_calculate_rotations();
@@ -35,20 +13,20 @@ public func int32 main() {
 
 type Flags enum int8 {
     NORTH = 1,
-    EAST  = 2,
+    EAST = 2,
     SOUTH = 3,
-    WEST  = 4,
-    HEAD  = 5,
-    TAIL  = 6,
+    WEST = 4,
+    HEAD = 5,
+    TAIL = 6,
 }
 
 type FieldStatus enum int8 {
     FIELD_FREE = 0,
     FIELD_BLOCKED,
-    FIELD_TAKEN,    // + index of piece
+    FIELD_TAKEN,
 }
 
-// ---- TEMPLATE aaa ------------------------------------------
+
 
 type AaaCoor struct {
     int8 x;
@@ -60,16 +38,10 @@ uint32 aaa_found;
 uint64 aaa_tried;
 
 type AaaField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type AaaBoard struct {
@@ -90,35 +62,35 @@ type AaaOption struct {
 AaaBoard aaa_board;
 
 AaaPiece[] aaa_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -134,24 +106,24 @@ func AaaCoor aaa_coor_rotate(AaaCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -161,20 +133,20 @@ func AaaCoor aaa_coor_rotate(AaaCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void aaa_calculate_rotations() {
     memset(aaa_options, 0, sizeof(aaa_options));
     for (uint32 p=0; p<AaaNumPieces; p++) {
         const AaaPiece* pp = &aaa_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             AaaOption* o1 = &aaa_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 AaaCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = aaa_coor_rotate(c, o);
             }
             AaaOption* o2 = &aaa_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 AaaCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = aaa_coor_rotate(c, o);
@@ -246,7 +218,7 @@ func void aaa_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, aaa_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", aaa_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -254,19 +226,19 @@ func void aaa_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, aaa_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", aaa_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = aaa_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -294,11 +266,11 @@ func int32 aaa_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 aaa_board_try_option(const AaaOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         AaaCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -349,7 +321,7 @@ func void aaa_board_add(const AaaOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         AaaField field = aaa_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -436,7 +408,7 @@ func void aaa_board_try_piece(uint8 p) {
     }
 }
 
-// ---- TEMPLATE bbb ------------------------------------------
+
 
 type BbbCoor struct {
     int8 x;
@@ -448,16 +420,10 @@ uint32 bbb_found;
 uint64 bbb_tried;
 
 type BbbField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type BbbBoard struct {
@@ -478,35 +444,35 @@ type BbbOption struct {
 BbbBoard bbb_board;
 
 BbbPiece[] bbb_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -522,24 +488,24 @@ func BbbCoor bbb_coor_rotate(BbbCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -549,20 +515,20 @@ func BbbCoor bbb_coor_rotate(BbbCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void bbb_calculate_rotations() {
     memset(bbb_options, 0, sizeof(bbb_options));
     for (uint32 p=0; p<BbbNumPieces; p++) {
         const BbbPiece* pp = &bbb_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             BbbOption* o1 = &bbb_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 BbbCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = bbb_coor_rotate(c, o);
             }
             BbbOption* o2 = &bbb_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 BbbCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = bbb_coor_rotate(c, o);
@@ -634,7 +600,7 @@ func void bbb_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, bbb_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", bbb_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -642,19 +608,19 @@ func void bbb_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, bbb_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", bbb_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = bbb_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -682,11 +648,11 @@ func int32 bbb_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 bbb_board_try_option(const BbbOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         BbbCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -737,7 +703,7 @@ func void bbb_board_add(const BbbOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         BbbField field = bbb_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -824,7 +790,7 @@ func void bbb_board_try_piece(uint8 p) {
     }
 }
 
-// ---- TEMPLATE ccc ------------------------------------------
+
 
 type CccCoor struct {
     int8 x;
@@ -836,16 +802,16 @@ uint32 ccc_found;
 uint64 ccc_tried;
 
 type CccField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
+
+
+
+
+
+
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type CccBoard struct {
@@ -866,35 +832,35 @@ type CccOption struct {
 CccBoard ccc_board;
 
 CccPiece[] ccc_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -910,24 +876,24 @@ func CccCoor ccc_coor_rotate(CccCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -937,20 +903,20 @@ func CccCoor ccc_coor_rotate(CccCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void ccc_calculate_rotations() {
     memset(ccc_options, 0, sizeof(ccc_options));
     for (uint32 p=0; p<CccNumPieces; p++) {
         const CccPiece* pp = &ccc_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             CccOption* o1 = &ccc_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 CccCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = ccc_coor_rotate(c, o);
             }
             CccOption* o2 = &ccc_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 CccCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = ccc_coor_rotate(c, o);
@@ -1022,7 +988,7 @@ func void ccc_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, ccc_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", ccc_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -1030,19 +996,19 @@ func void ccc_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, ccc_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", ccc_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = ccc_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -1070,11 +1036,11 @@ func int32 ccc_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 ccc_board_try_option(const CccOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         CccCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -1125,7 +1091,7 @@ func void ccc_board_add(const CccOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         CccField field = ccc_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -1212,7 +1178,7 @@ func void ccc_board_try_piece(uint8 p) {
     }
 }
 
-// ---- TEMPLATE ddd ------------------------------------------
+
 
 type DddCoor struct {
     int8 x;
@@ -1224,16 +1190,16 @@ uint32 ddd_found;
 uint64 ddd_tried;
 
 type DddField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
+
+
+
+
+
+
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type DddBoard struct {
@@ -1254,35 +1220,35 @@ type DddOption struct {
 DddBoard ddd_board;
 
 DddPiece[] ddd_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -1298,24 +1264,24 @@ func DddCoor ddd_coor_rotate(DddCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -1325,20 +1291,20 @@ func DddCoor ddd_coor_rotate(DddCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void ddd_calculate_rotations() {
     memset(ddd_options, 0, sizeof(ddd_options));
     for (uint32 p=0; p<DddNumPieces; p++) {
         const DddPiece* pp = &ddd_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             DddOption* o1 = &ddd_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 DddCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = ddd_coor_rotate(c, o);
             }
             DddOption* o2 = &ddd_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 DddCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = ddd_coor_rotate(c, o);
@@ -1410,7 +1376,7 @@ func void ddd_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, ddd_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", ddd_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -1418,19 +1384,19 @@ func void ddd_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, ddd_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", ddd_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = ddd_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -1458,11 +1424,11 @@ func int32 ddd_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 ddd_board_try_option(const DddOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         DddCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -1513,7 +1479,7 @@ func void ddd_board_add(const DddOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         DddField field = ddd_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -1600,7 +1566,7 @@ func void ddd_board_try_piece(uint8 p) {
     }
 }
 
-// ---- TEMPLATE eee ------------------------------------------
+
 
 type EeeCoor struct {
     int8 x;
@@ -1612,16 +1578,16 @@ uint32 eee_found;
 uint64 eee_tried;
 
 type EeeField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
+
+
+
+
+
+
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type EeeBoard struct {
@@ -1642,35 +1608,35 @@ type EeeOption struct {
 EeeBoard eee_board;
 
 EeePiece[] eee_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -1686,24 +1652,24 @@ func EeeCoor eee_coor_rotate(EeeCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -1713,20 +1679,20 @@ func EeeCoor eee_coor_rotate(EeeCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void eee_calculate_rotations() {
     memset(eee_options, 0, sizeof(eee_options));
     for (uint32 p=0; p<EeeNumPieces; p++) {
         const EeePiece* pp = &eee_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             EeeOption* o1 = &eee_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 EeeCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = eee_coor_rotate(c, o);
             }
             EeeOption* o2 = &eee_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 EeeCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = eee_coor_rotate(c, o);
@@ -1798,7 +1764,7 @@ func void eee_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, eee_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", eee_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -1806,19 +1772,19 @@ func void eee_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, eee_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", eee_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = eee_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -1846,11 +1812,11 @@ func int32 eee_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 eee_board_try_option(const EeeOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         EeeCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -1901,7 +1867,7 @@ func void eee_board_add(const EeeOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         EeeField field = eee_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -1988,7 +1954,7 @@ func void eee_board_try_piece(uint8 p) {
     }
 }
 
-// ---- TEMPLATE fff ------------------------------------------
+
 
 type FffCoor struct {
     int8 x;
@@ -2000,16 +1966,16 @@ uint32 fff_found;
 uint64 fff_tried;
 
 type FffField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
+
+
+
+
+
+
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type FffBoard struct {
@@ -2030,35 +1996,35 @@ type FffOption struct {
 FffBoard fff_board;
 
 FffPiece[] fff_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -2074,24 +2040,24 @@ func FffCoor fff_coor_rotate(FffCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -2101,20 +2067,20 @@ func FffCoor fff_coor_rotate(FffCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void fff_calculate_rotations() {
     memset(fff_options, 0, sizeof(fff_options));
     for (uint32 p=0; p<FffNumPieces; p++) {
         const FffPiece* pp = &fff_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             FffOption* o1 = &fff_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 FffCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = fff_coor_rotate(c, o);
             }
             FffOption* o2 = &fff_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 FffCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = fff_coor_rotate(c, o);
@@ -2186,7 +2152,7 @@ func void fff_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, fff_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", fff_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -2194,19 +2160,19 @@ func void fff_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, fff_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", fff_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = fff_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -2234,11 +2200,11 @@ func int32 fff_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 fff_board_try_option(const FffOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         FffCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -2289,7 +2255,7 @@ func void fff_board_add(const FffOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         FffField field = fff_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -2376,7 +2342,7 @@ func void fff_board_try_piece(uint8 p) {
     }
 }
 
-// ---- TEMPLATE ggg ------------------------------------------
+
 
 type GggCoor struct {
     int8 x;
@@ -2388,16 +2354,16 @@ uint32 ggg_found;
 uint64 ggg_tried;
 
 type GggField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
+
+
+
+
+
+
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type GggBoard struct {
@@ -2418,35 +2384,35 @@ type GggOption struct {
 GggBoard ggg_board;
 
 GggPiece[] ggg_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -2462,24 +2428,24 @@ func GggCoor ggg_coor_rotate(GggCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -2489,20 +2455,20 @@ func GggCoor ggg_coor_rotate(GggCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void ggg_calculate_rotations() {
     memset(ggg_options, 0, sizeof(ggg_options));
     for (uint32 p=0; p<GggNumPieces; p++) {
         const GggPiece* pp = &ggg_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             GggOption* o1 = &ggg_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 GggCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = ggg_coor_rotate(c, o);
             }
             GggOption* o2 = &ggg_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 GggCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = ggg_coor_rotate(c, o);
@@ -2574,7 +2540,7 @@ func void ggg_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, ggg_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", ggg_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -2582,19 +2548,19 @@ func void ggg_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, ggg_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", ggg_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = ggg_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -2622,11 +2588,11 @@ func int32 ggg_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 ggg_board_try_option(const GggOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         GggCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -2677,7 +2643,7 @@ func void ggg_board_add(const GggOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         GggField field = ggg_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -2764,7 +2730,7 @@ func void ggg_board_try_piece(uint8 p) {
     }
 }
 
-// ---- TEMPLATE hhh ------------------------------------------
+
 
 type HhhCoor struct {
     int8 x;
@@ -2776,16 +2742,16 @@ uint32 hhh_found;
 uint64 hhh_tried;
 
 type HhhField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
+
+
+
+
+
+
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type HhhBoard struct {
@@ -2806,35 +2772,35 @@ type HhhOption struct {
 HhhBoard hhh_board;
 
 HhhPiece[] hhh_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -2850,24 +2816,24 @@ func HhhCoor hhh_coor_rotate(HhhCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -2877,20 +2843,20 @@ func HhhCoor hhh_coor_rotate(HhhCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void hhh_calculate_rotations() {
     memset(hhh_options, 0, sizeof(hhh_options));
     for (uint32 p=0; p<HhhNumPieces; p++) {
         const HhhPiece* pp = &hhh_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             HhhOption* o1 = &hhh_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 HhhCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = hhh_coor_rotate(c, o);
             }
             HhhOption* o2 = &hhh_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 HhhCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = hhh_coor_rotate(c, o);
@@ -2962,7 +2928,7 @@ func void hhh_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, hhh_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", hhh_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -2970,19 +2936,19 @@ func void hhh_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, hhh_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", hhh_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = hhh_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -3010,11 +2976,11 @@ func int32 hhh_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 hhh_board_try_option(const HhhOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         HhhCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -3065,7 +3031,7 @@ func void hhh_board_add(const HhhOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         HhhField field = hhh_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -3153,7 +3119,7 @@ func void hhh_board_try_piece(uint8 p) {
 }
 
 
-// ---- TEMPLATE iii ------------------------------------------
+
 
 type IiiCoor struct {
     int8 x;
@@ -3165,16 +3131,16 @@ uint32 iii_found;
 uint64 iii_tried;
 
 type IiiField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
+
+
+
+
+
+
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type IiiBoard struct {
@@ -3195,35 +3161,35 @@ type IiiOption struct {
 IiiBoard iii_board;
 
 IiiPiece[] iii_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -3239,24 +3205,24 @@ func IiiCoor iii_coor_rotate(IiiCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -3266,20 +3232,20 @@ func IiiCoor iii_coor_rotate(IiiCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void iii_calculate_rotations() {
     memset(iii_options, 0, sizeof(iii_options));
     for (uint32 p=0; p<IiiNumPieces; p++) {
         const IiiPiece* pp = &iii_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             IiiOption* o1 = &iii_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 IiiCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = iii_coor_rotate(c, o);
             }
             IiiOption* o2 = &iii_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 IiiCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = iii_coor_rotate(c, o);
@@ -3351,7 +3317,7 @@ func void iii_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, iii_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", iii_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -3359,19 +3325,19 @@ func void iii_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, iii_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", iii_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = iii_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -3399,11 +3365,11 @@ func int32 iii_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 iii_board_try_option(const IiiOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         IiiCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -3454,7 +3420,7 @@ func void iii_board_add(const IiiOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         IiiField field = iii_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -3541,7 +3507,7 @@ func void iii_board_try_piece(uint8 p) {
     }
 }
 
-// ---- TEMPLATE jjj ------------------------------------------
+
 
 type JjjCoor struct {
     int8 x;
@@ -3553,16 +3519,16 @@ uint32 jjj_found;
 uint64 jjj_tried;
 
 type JjjField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
+
+
+
+
+
+
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type JjjBoard struct {
@@ -3583,35 +3549,35 @@ type JjjOption struct {
 JjjBoard jjj_board;
 
 JjjPiece[] jjj_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -3627,24 +3593,24 @@ func JjjCoor jjj_coor_rotate(JjjCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -3654,20 +3620,20 @@ func JjjCoor jjj_coor_rotate(JjjCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void jjj_calculate_rotations() {
     memset(jjj_options, 0, sizeof(jjj_options));
     for (uint32 p=0; p<JjjNumPieces; p++) {
         const JjjPiece* pp = &jjj_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             JjjOption* o1 = &jjj_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 JjjCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = jjj_coor_rotate(c, o);
             }
             JjjOption* o2 = &jjj_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 JjjCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = jjj_coor_rotate(c, o);
@@ -3739,7 +3705,7 @@ func void jjj_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, jjj_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", jjj_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -3747,19 +3713,19 @@ func void jjj_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, jjj_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", jjj_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = jjj_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -3787,11 +3753,11 @@ func int32 jjj_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 jjj_board_try_option(const JjjOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         JjjCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -3842,7 +3808,7 @@ func void jjj_board_add(const JjjOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         JjjField field = jjj_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -3929,7 +3895,7 @@ func void jjj_board_try_piece(uint8 p) {
     }
 }
 
-// ---- TEMPLATE kkk ------------------------------------------
+
 
 type KkkCoor struct {
     int8 x;
@@ -3941,16 +3907,16 @@ uint32 kkk_found;
 uint64 kkk_tried;
 
 type KkkField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
+
+
+
+
+
+
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type KkkBoard struct {
@@ -3971,35 +3937,35 @@ type KkkOption struct {
 KkkBoard kkk_board;
 
 KkkPiece[] kkk_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -4015,24 +3981,24 @@ func KkkCoor kkk_coor_rotate(KkkCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -4042,20 +4008,20 @@ func KkkCoor kkk_coor_rotate(KkkCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void kkk_calculate_rotations() {
     memset(kkk_options, 0, sizeof(kkk_options));
     for (uint32 p=0; p<KkkNumPieces; p++) {
         const KkkPiece* pp = &kkk_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             KkkOption* o1 = &kkk_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 KkkCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = kkk_coor_rotate(c, o);
             }
             KkkOption* o2 = &kkk_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 KkkCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = kkk_coor_rotate(c, o);
@@ -4127,7 +4093,7 @@ func void kkk_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, kkk_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", kkk_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -4135,19 +4101,19 @@ func void kkk_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, kkk_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", kkk_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = kkk_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -4175,11 +4141,11 @@ func int32 kkk_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 kkk_board_try_option(const KkkOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         KkkCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -4230,7 +4196,7 @@ func void kkk_board_add(const KkkOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         KkkField field = kkk_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -4317,7 +4283,7 @@ func void kkk_board_try_piece(uint8 p) {
     }
 }
 
-// ---- TEMPLATE lll ------------------------------------------
+
 
 type LllCoor struct {
     int8 x;
@@ -4329,16 +4295,16 @@ uint32 lll_found;
 uint64 lll_tried;
 
 type LllField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
+
+
+
+
+
+
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type LllBoard struct {
@@ -4359,35 +4325,35 @@ type LllOption struct {
 LllBoard lll_board;
 
 LllPiece[] lll_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -4403,24 +4369,24 @@ func LllCoor lll_coor_rotate(LllCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -4430,20 +4396,20 @@ func LllCoor lll_coor_rotate(LllCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void lll_calculate_rotations() {
     memset(lll_options, 0, sizeof(lll_options));
     for (uint32 p=0; p<LllNumPieces; p++) {
         const LllPiece* pp = &lll_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             LllOption* o1 = &lll_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 LllCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = lll_coor_rotate(c, o);
             }
             LllOption* o2 = &lll_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 LllCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = lll_coor_rotate(c, o);
@@ -4515,7 +4481,7 @@ func void lll_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, lll_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", lll_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -4523,19 +4489,19 @@ func void lll_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, lll_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", lll_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = lll_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -4563,11 +4529,11 @@ func int32 lll_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 lll_board_try_option(const LllOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         LllCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -4618,7 +4584,7 @@ func void lll_board_add(const LllOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         LllField field = lll_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -4705,7 +4671,7 @@ func void lll_board_try_piece(uint8 p) {
     }
 }
 
-// ---- TEMPLATE mmm ------------------------------------------
+
 
 type MmmCoor struct {
     int8 x;
@@ -4717,16 +4683,16 @@ uint32 mmm_found;
 uint64 mmm_tried;
 
 type MmmField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
+
+
+
+
+
+
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type MmmBoard struct {
@@ -4747,35 +4713,35 @@ type MmmOption struct {
 MmmBoard mmm_board;
 
 MmmPiece[] mmm_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -4791,24 +4757,24 @@ func MmmCoor mmm_coor_rotate(MmmCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -4818,20 +4784,20 @@ func MmmCoor mmm_coor_rotate(MmmCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void mmm_calculate_rotations() {
     memset(mmm_options, 0, sizeof(mmm_options));
     for (uint32 p=0; p<MmmNumPieces; p++) {
         const MmmPiece* pp = &mmm_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             MmmOption* o1 = &mmm_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 MmmCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = mmm_coor_rotate(c, o);
             }
             MmmOption* o2 = &mmm_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 MmmCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = mmm_coor_rotate(c, o);
@@ -4903,7 +4869,7 @@ func void mmm_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, mmm_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", mmm_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -4911,19 +4877,19 @@ func void mmm_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, mmm_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", mmm_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = mmm_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -4951,11 +4917,11 @@ func int32 mmm_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 mmm_board_try_option(const MmmOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         MmmCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -5006,7 +4972,7 @@ func void mmm_board_add(const MmmOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         MmmField field = mmm_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -5093,7 +5059,7 @@ func void mmm_board_try_piece(uint8 p) {
     }
 }
 
-// ---- TEMPLATE nnn ------------------------------------------
+
 
 type NnnCoor struct {
     int8 x;
@@ -5105,16 +5071,16 @@ uint32 nnn_found;
 uint64 nnn_tried;
 
 type NnnField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
+
+
+
+
+
+
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type NnnBoard struct {
@@ -5135,35 +5101,35 @@ type NnnOption struct {
 NnnBoard nnn_board;
 
 NnnPiece[] nnn_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -5179,24 +5145,24 @@ func NnnCoor nnn_coor_rotate(NnnCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -5206,20 +5172,20 @@ func NnnCoor nnn_coor_rotate(NnnCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void nnn_calculate_rotations() {
     memset(nnn_options, 0, sizeof(nnn_options));
     for (uint32 p=0; p<NnnNumPieces; p++) {
         const NnnPiece* pp = &nnn_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             NnnOption* o1 = &nnn_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 NnnCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = nnn_coor_rotate(c, o);
             }
             NnnOption* o2 = &nnn_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 NnnCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = nnn_coor_rotate(c, o);
@@ -5291,7 +5257,7 @@ func void nnn_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, nnn_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", nnn_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -5299,19 +5265,19 @@ func void nnn_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, nnn_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", nnn_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = nnn_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -5339,11 +5305,11 @@ func int32 nnn_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 nnn_board_try_option(const NnnOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         NnnCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -5394,7 +5360,7 @@ func void nnn_board_add(const NnnOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         NnnField field = nnn_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -5481,7 +5447,7 @@ func void nnn_board_try_piece(uint8 p) {
     }
 }
 
-// ---- TEMPLATE ooo ------------------------------------------
+
 
 type OooCoor struct {
     int8 x;
@@ -5493,16 +5459,16 @@ uint32 ooo_found;
 uint64 ooo_tried;
 
 type OooField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
+
+
+
+
+
+
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type OooBoard struct {
@@ -5523,35 +5489,35 @@ type OooOption struct {
 OooBoard ooo_board;
 
 OooPiece[] ooo_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -5567,24 +5533,24 @@ func OooCoor ooo_coor_rotate(OooCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -5594,20 +5560,20 @@ func OooCoor ooo_coor_rotate(OooCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void ooo_calculate_rotations() {
     memset(ooo_options, 0, sizeof(ooo_options));
     for (uint32 p=0; p<OooNumPieces; p++) {
         const OooPiece* pp = &ooo_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             OooOption* o1 = &ooo_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 OooCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = ooo_coor_rotate(c, o);
             }
             OooOption* o2 = &ooo_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 OooCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = ooo_coor_rotate(c, o);
@@ -5679,7 +5645,7 @@ func void ooo_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, ooo_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", ooo_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -5687,19 +5653,19 @@ func void ooo_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, ooo_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", ooo_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = ooo_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -5727,11 +5693,11 @@ func int32 ooo_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 ooo_board_try_option(const OooOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         OooCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -5782,7 +5748,7 @@ func void ooo_board_add(const OooOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         OooField field = ooo_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -5869,7 +5835,7 @@ func void ooo_board_try_piece(uint8 p) {
     }
 }
 
-// ---- TEMPLATE ppp ------------------------------------------
+
 
 type PppCoor struct {
     int8 x;
@@ -5881,16 +5847,16 @@ uint32 ppp_found;
 uint64 ppp_tried;
 
 type PppField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
+
+
+
+
+
+
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type PppBoard struct {
@@ -5911,35 +5877,35 @@ type PppOption struct {
 PppBoard ppp_board;
 
 PppPiece[] ppp_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -5955,24 +5921,24 @@ func PppCoor ppp_coor_rotate(PppCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -5982,20 +5948,20 @@ func PppCoor ppp_coor_rotate(PppCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void ppp_calculate_rotations() {
     memset(ppp_options, 0, sizeof(ppp_options));
     for (uint32 p=0; p<PppNumPieces; p++) {
         const PppPiece* pp = &ppp_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             PppOption* o1 = &ppp_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 PppCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = ppp_coor_rotate(c, o);
             }
             PppOption* o2 = &ppp_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 PppCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = ppp_coor_rotate(c, o);
@@ -6067,7 +6033,7 @@ func void ppp_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, ppp_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", ppp_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -6075,19 +6041,19 @@ func void ppp_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, ppp_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", ppp_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = ppp_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -6115,11 +6081,11 @@ func int32 ppp_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 ppp_board_try_option(const PppOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         PppCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -6170,7 +6136,7 @@ func void ppp_board_add(const PppOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         PppField field = ppp_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -6257,7 +6223,7 @@ func void ppp_board_try_piece(uint8 p) {
     }
 }
 
-// ---- TEMPLATE qqq ------------------------------------------
+
 
 type QqqCoor struct {
     int8 x;
@@ -6269,16 +6235,16 @@ uint32 qqq_found;
 uint64 qqq_tried;
 
 type QqqField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
+
+
+
+
+
+
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type QqqBoard struct {
@@ -6299,35 +6265,35 @@ type QqqOption struct {
 QqqBoard qqq_board;
 
 QqqPiece[] qqq_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -6343,24 +6309,24 @@ func QqqCoor qqq_coor_rotate(QqqCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -6370,20 +6336,20 @@ func QqqCoor qqq_coor_rotate(QqqCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void qqq_calculate_rotations() {
     memset(qqq_options, 0, sizeof(qqq_options));
     for (uint32 p=0; p<QqqNumPieces; p++) {
         const QqqPiece* pp = &qqq_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             QqqOption* o1 = &qqq_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 QqqCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = qqq_coor_rotate(c, o);
             }
             QqqOption* o2 = &qqq_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 QqqCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = qqq_coor_rotate(c, o);
@@ -6455,7 +6421,7 @@ func void qqq_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, qqq_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", qqq_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -6463,19 +6429,19 @@ func void qqq_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, qqq_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", qqq_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = qqq_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -6503,11 +6469,11 @@ func int32 qqq_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 qqq_board_try_option(const QqqOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         QqqCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -6558,7 +6524,7 @@ func void qqq_board_add(const QqqOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         QqqField field = qqq_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -6645,7 +6611,7 @@ func void qqq_board_try_piece(uint8 p) {
     }
 }
 
-// ---- TEMPLATE rrr ------------------------------------------
+
 
 type RrrCoor struct {
     int8 x;
@@ -6657,16 +6623,16 @@ uint32 rrr_found;
 uint64 rrr_tried;
 
 type RrrField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
+
+
+
+
+
+
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type RrrBoard struct {
@@ -6687,35 +6653,35 @@ type RrrOption struct {
 RrrBoard rrr_board;
 
 RrrPiece[] rrr_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -6731,24 +6697,24 @@ func RrrCoor rrr_coor_rotate(RrrCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -6758,20 +6724,20 @@ func RrrCoor rrr_coor_rotate(RrrCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void rrr_calculate_rotations() {
     memset(rrr_options, 0, sizeof(rrr_options));
     for (uint32 p=0; p<RrrNumPieces; p++) {
         const RrrPiece* pp = &rrr_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             RrrOption* o1 = &rrr_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 RrrCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = rrr_coor_rotate(c, o);
             }
             RrrOption* o2 = &rrr_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 RrrCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = rrr_coor_rotate(c, o);
@@ -6843,7 +6809,7 @@ func void rrr_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, rrr_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", rrr_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -6851,19 +6817,19 @@ func void rrr_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, rrr_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", rrr_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = rrr_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -6891,11 +6857,11 @@ func int32 rrr_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 rrr_board_try_option(const RrrOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         RrrCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -6946,7 +6912,7 @@ func void rrr_board_add(const RrrOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         RrrField field = rrr_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -7033,7 +6999,7 @@ func void rrr_board_try_piece(uint8 p) {
     }
 }
 
-// ---- TEMPLATE sss ------------------------------------------
+
 
 type SssCoor struct {
     int8 x;
@@ -7045,16 +7011,16 @@ uint32 sss_found;
 uint64 sss_tried;
 
 type SssField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
+
+
+
+
+
+
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type SssBoard struct {
@@ -7075,35 +7041,35 @@ type SssOption struct {
 SssBoard sss_board;
 
 SssPiece[] sss_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -7119,24 +7085,24 @@ func SssCoor sss_coor_rotate(SssCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -7146,20 +7112,20 @@ func SssCoor sss_coor_rotate(SssCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void sss_calculate_rotations() {
     memset(sss_options, 0, sizeof(sss_options));
     for (uint32 p=0; p<SssNumPieces; p++) {
         const SssPiece* pp = &sss_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             SssOption* o1 = &sss_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 SssCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = sss_coor_rotate(c, o);
             }
             SssOption* o2 = &sss_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 SssCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = sss_coor_rotate(c, o);
@@ -7231,7 +7197,7 @@ func void sss_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, sss_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", sss_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -7239,19 +7205,19 @@ func void sss_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, sss_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", sss_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = sss_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -7279,11 +7245,11 @@ func int32 sss_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 sss_board_try_option(const SssOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         SssCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -7334,7 +7300,7 @@ func void sss_board_add(const SssOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         SssField field = sss_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -7421,7 +7387,7 @@ func void sss_board_try_piece(uint8 p) {
     }
 }
 
-// ---- TEMPLATE ttt ------------------------------------------
+
 
 type TttCoor struct {
     int8 x;
@@ -7433,16 +7399,16 @@ uint32 ttt_found;
 uint64 ttt_tried;
 
 type TttField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
+
+
+
+
+
+
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type TttBoard struct {
@@ -7463,35 +7429,35 @@ type TttOption struct {
 TttBoard ttt_board;
 
 TttPiece[] ttt_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -7507,24 +7473,24 @@ func TttCoor ttt_coor_rotate(TttCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -7534,20 +7500,20 @@ func TttCoor ttt_coor_rotate(TttCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void ttt_calculate_rotations() {
     memset(ttt_options, 0, sizeof(ttt_options));
     for (uint32 p=0; p<TttNumPieces; p++) {
         const TttPiece* pp = &ttt_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             TttOption* o1 = &ttt_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 TttCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = ttt_coor_rotate(c, o);
             }
             TttOption* o2 = &ttt_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 TttCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = ttt_coor_rotate(c, o);
@@ -7619,7 +7585,7 @@ func void ttt_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, ttt_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", ttt_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -7627,19 +7593,19 @@ func void ttt_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, ttt_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", ttt_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = ttt_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -7667,11 +7633,11 @@ func int32 ttt_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 ttt_board_try_option(const TttOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         TttCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -7722,7 +7688,7 @@ func void ttt_board_add(const TttOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         TttField field = ttt_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -7809,7 +7775,7 @@ func void ttt_board_try_piece(uint8 p) {
     }
 }
 
-// ---- TEMPLATE uuu ------------------------------------------
+
 
 type UuuCoor struct {
     int8 x;
@@ -7821,16 +7787,16 @@ uint32 uuu_found;
 uint64 uuu_tried;
 
 type UuuField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
+
+
+
+
+
+
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type UuuBoard struct {
@@ -7851,35 +7817,35 @@ type UuuOption struct {
 UuuBoard uuu_board;
 
 UuuPiece[] uuu_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -7895,24 +7861,24 @@ func UuuCoor uuu_coor_rotate(UuuCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -7922,20 +7888,20 @@ func UuuCoor uuu_coor_rotate(UuuCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void uuu_calculate_rotations() {
     memset(uuu_options, 0, sizeof(uuu_options));
     for (uint32 p=0; p<UuuNumPieces; p++) {
         const UuuPiece* pp = &uuu_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             UuuOption* o1 = &uuu_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 UuuCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = uuu_coor_rotate(c, o);
             }
             UuuOption* o2 = &uuu_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 UuuCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = uuu_coor_rotate(c, o);
@@ -8007,7 +7973,7 @@ func void uuu_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, uuu_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", uuu_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -8015,19 +7981,19 @@ func void uuu_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, uuu_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", uuu_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = uuu_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -8055,11 +8021,11 @@ func int32 uuu_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 uuu_board_try_option(const UuuOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         UuuCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -8110,7 +8076,7 @@ func void uuu_board_add(const UuuOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         UuuField field = uuu_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -8197,7 +8163,7 @@ func void uuu_board_try_piece(uint8 p) {
     }
 }
 
-// ---- TEMPLATE vvv ------------------------------------------
+
 
 type VvvCoor struct {
     int8 x;
@@ -8209,16 +8175,16 @@ uint32 vvv_found;
 uint64 vvv_tried;
 
 type VvvField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
+
+
+
+
+
+
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type VvvBoard struct {
@@ -8239,35 +8205,35 @@ type VvvOption struct {
 VvvBoard vvv_board;
 
 VvvPiece[] vvv_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -8283,24 +8249,24 @@ func VvvCoor vvv_coor_rotate(VvvCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -8310,20 +8276,20 @@ func VvvCoor vvv_coor_rotate(VvvCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void vvv_calculate_rotations() {
     memset(vvv_options, 0, sizeof(vvv_options));
     for (uint32 p=0; p<VvvNumPieces; p++) {
         const VvvPiece* pp = &vvv_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             VvvOption* o1 = &vvv_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 VvvCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = vvv_coor_rotate(c, o);
             }
             VvvOption* o2 = &vvv_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 VvvCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = vvv_coor_rotate(c, o);
@@ -8395,7 +8361,7 @@ func void vvv_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, vvv_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", vvv_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -8403,19 +8369,19 @@ func void vvv_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, vvv_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", vvv_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = vvv_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -8443,11 +8409,11 @@ func int32 vvv_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 vvv_board_try_option(const VvvOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         VvvCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -8498,7 +8464,7 @@ func void vvv_board_add(const VvvOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         VvvField field = vvv_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -8585,7 +8551,7 @@ func void vvv_board_try_piece(uint8 p) {
     }
 }
 
-// ---- TEMPLATE www ------------------------------------------
+
 
 type WwwCoor struct {
     int8 x;
@@ -8597,16 +8563,16 @@ uint32 www_found;
 uint64 www_tried;
 
 type WwwField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
+
+
+
+
+
+
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type WwwBoard struct {
@@ -8627,35 +8593,35 @@ type WwwOption struct {
 WwwBoard www_board;
 
 WwwPiece[] www_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -8671,24 +8637,24 @@ func WwwCoor www_coor_rotate(WwwCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -8698,20 +8664,20 @@ func WwwCoor www_coor_rotate(WwwCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void www_calculate_rotations() {
     memset(www_options, 0, sizeof(www_options));
     for (uint32 p=0; p<WwwNumPieces; p++) {
         const WwwPiece* pp = &www_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             WwwOption* o1 = &www_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 WwwCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = www_coor_rotate(c, o);
             }
             WwwOption* o2 = &www_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 WwwCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = www_coor_rotate(c, o);
@@ -8783,7 +8749,7 @@ func void www_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, www_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", www_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -8791,19 +8757,19 @@ func void www_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, www_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", www_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = www_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -8831,11 +8797,11 @@ func int32 www_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 www_board_try_option(const WwwOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         WwwCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -8886,7 +8852,7 @@ func void www_board_add(const WwwOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         WwwField field = www_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -8973,7 +8939,7 @@ func void www_board_try_piece(uint8 p) {
     }
 }
 
-// ---- TEMPLATE xxx ------------------------------------------
+
 
 type XxxCoor struct {
     int8 x;
@@ -8985,16 +8951,16 @@ uint32 xxx_found;
 uint64 xxx_tried;
 
 type XxxField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
+
+
+
+
+
+
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type XxxBoard struct {
@@ -9015,35 +8981,35 @@ type XxxOption struct {
 XxxBoard xxx_board;
 
 XxxPiece[] xxx_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -9059,24 +9025,24 @@ func XxxCoor xxx_coor_rotate(XxxCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -9086,20 +9052,20 @@ func XxxCoor xxx_coor_rotate(XxxCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void xxx_calculate_rotations() {
     memset(xxx_options, 0, sizeof(xxx_options));
     for (uint32 p=0; p<XxxNumPieces; p++) {
         const XxxPiece* pp = &xxx_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             XxxOption* o1 = &xxx_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 XxxCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = xxx_coor_rotate(c, o);
             }
             XxxOption* o2 = &xxx_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 XxxCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = xxx_coor_rotate(c, o);
@@ -9171,7 +9137,7 @@ func void xxx_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, xxx_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", xxx_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -9179,19 +9145,19 @@ func void xxx_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, xxx_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", xxx_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = xxx_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -9219,11 +9185,11 @@ func int32 xxx_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 xxx_board_try_option(const XxxOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         XxxCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -9274,7 +9240,7 @@ func void xxx_board_add(const XxxOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         XxxField field = xxx_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -9361,7 +9327,7 @@ func void xxx_board_try_piece(uint8 p) {
     }
 }
 
-// ---- TEMPLATE yyy ------------------------------------------
+
 
 type YyyCoor struct {
     int8 x;
@@ -9373,16 +9339,16 @@ uint32 yyy_found;
 uint64 yyy_tried;
 
 type YyyField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
+
+
+
+
+
+
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type YyyBoard struct {
@@ -9403,35 +9369,35 @@ type YyyOption struct {
 YyyBoard yyy_board;
 
 YyyPiece[] yyy_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -9447,24 +9413,24 @@ func YyyCoor yyy_coor_rotate(YyyCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -9474,20 +9440,20 @@ func YyyCoor yyy_coor_rotate(YyyCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void yyy_calculate_rotations() {
     memset(yyy_options, 0, sizeof(yyy_options));
     for (uint32 p=0; p<YyyNumPieces; p++) {
         const YyyPiece* pp = &yyy_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             YyyOption* o1 = &yyy_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 YyyCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = yyy_coor_rotate(c, o);
             }
             YyyOption* o2 = &yyy_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 YyyCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = yyy_coor_rotate(c, o);
@@ -9559,7 +9525,7 @@ func void yyy_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, yyy_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", yyy_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -9567,19 +9533,19 @@ func void yyy_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, yyy_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", yyy_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = yyy_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -9607,11 +9573,11 @@ func int32 yyy_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 yyy_board_try_option(const YyyOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         YyyCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -9662,7 +9628,7 @@ func void yyy_board_add(const YyyOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         YyyField field = yyy_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -9749,7 +9715,7 @@ func void yyy_board_try_piece(uint8 p) {
     }
 }
 
-// ---- TEMPLATE zzz ------------------------------------------
+
 
 type ZzzCoor struct {
     int8 x;
@@ -9761,16 +9727,16 @@ uint32 zzz_found;
 uint64 zzz_tried;
 
 type ZzzField struct {
-#if 0
-    FieldStatus status : 2;
-    uint32 piece_id : 4;
-    uint32 flags : 3;
-    uint32 expected : 3;  // set by other pieces
-#endif
+
+
+
+
+
+
     FieldStatus status;
     uint8 piece_id;
     uint8 flags;
-    uint8 expected;  // set by other pieces
+    uint8 expected;
 }
 
 type ZzzBoard struct {
@@ -9791,35 +9757,35 @@ type ZzzOption struct {
 ZzzBoard zzz_board;
 
 ZzzPiece[] zzz_pieces = {
-    { // Hollow piece
+    {
         .side1 = { { 0, 0, 0 } },
         .side2 = { { 0, 0, 0 } },
     },
-    { // S-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, NORTH }, { 1, 1, SOUTH }, { 1, 2, 0 } },
         .side2 = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, WEST }, { 2, 1, SOUTH } },
     },
-    { // L-shaped
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1 , 0 }, { 0, 2, NORTH }, { 1, 0, EAST } },
         .side2 = { { 0, 0, 0 }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, 0 } }
     },
-    { // L-shaped, head
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 2, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, NORTH }, { 1, 0 , 0 }, { 1, 1, 0 }, { 1, 2, HEAD } }
     },
-    { // 3 1-side empty
+    {
         .side1 = { { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 } },
         .side2 = { { 0, 0, 0 }, { 0, 1, EAST }, { 1, 0, EAST } },
     },
-    { // 3 2-tails
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, TAIL }, { 1, 0, 0 } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 1, 0, TAIL } },
     },
-    { // I-shaped, 3-straight
+    {
         .side1 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, HEAD } },
         .side2 = { { 0, 0, SOUTH }, { 0, 1, 0 }, { 0, 2, WEST } },
     },
-    { // I-shaped, 2 long
+    {
         .side1 = { { 0, 0, WEST }, { 0, 1, NORTH } },
         .side2 = { { 0, 0, 0 }, { 0, 1, 0 } },
     },
@@ -9835,24 +9801,24 @@ func ZzzCoor zzz_coor_rotate(ZzzCoor input, uint32 rotation) @(unused) {
     int8 y = input.y;
     int8 t;
     switch (rotation) {
-    case 0: // nothing to do
+    case 0:
         break;
-    case 1: // 90 degrees right
+    case 1:
         t = x;
         x = y;
         y = -t;
         break;
-    case 2: // 180 degrees right
+    case 2:
         x = -x;
         y = -y;
         break;
-    case 3: // 270 degrees right
+    case 3:
         t = x;
         x = -y;
         y = t;
         break;
     }
-    uint8 flags = input.flags;  // keep HEAD/TAIL, rotate NESW
+    uint8 flags = input.flags;
     if (rotation > 0 && flags >= NORTH && flags <= WEST) {
         flags += rotation;
         if (flags > 4) flags -= 4;
@@ -9862,20 +9828,20 @@ func ZzzCoor zzz_coor_rotate(ZzzCoor input, uint32 rotation) @(unused) {
     return result;
 }
 
-// calculate all rotations + flipped rotations
+
 func void zzz_calculate_rotations() {
     memset(zzz_options, 0, sizeof(zzz_options));
     for (uint32 p=0; p<ZzzNumPieces; p++) {
         const ZzzPiece* pp = &zzz_pieces[p];
-        for (uint32 o=0; o<4; o++) {  // 4 rotations
+        for (uint32 o=0; o<4; o++) {
             ZzzOption* o1 = &zzz_options[o][p];
-            for (uint32 i=0; i<4; i++) {  // side1
+            for (uint32 i=0; i<4; i++) {
                 ZzzCoor c = pp.side1[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o1.parts[i] = zzz_coor_rotate(c, o);
             }
             ZzzOption* o2 = &zzz_options[o+4][p];
-            for (uint32 i=0; i<4; i++) {  // side2
+            for (uint32 i=0; i<4; i++) {
                 ZzzCoor c = pp.side2[i];
                 if (i != 0 && c.x == 0 && c.y == 0) break;
                 o2.parts[i] = zzz_coor_rotate(c, o);
@@ -9947,7 +9913,7 @@ func void zzz_board_print() {
             switch (field.status) {
             case FIELD_FREE:
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, zzz_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", zzz_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
@@ -9955,19 +9921,19 @@ func void zzz_board_print() {
                 *cp++ = ' ';
                 break;
             case FIELD_BLOCKED:
-                cp += io.sprintf(cp, ANSI_DARKGREY"XXX"ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[01;30m""XXX""\033[0m");
                 break;
             default:
             {
                 int32 flags = field.flags;
                 if (field.expected) {
-                    cp += io.sprintf(cp, ANSI_RED"%c"ANSI_NORMAL, zzz_flags2char(field.expected));
+                    cp += io.sprintf(cp, "\033[0;31m""%c""\033[0m", zzz_flags2char(field.expected));
                 } else {
                     *cp++ = ' ';
                 }
-                cp += io.sprintf(cp, ANSI_GREEN"%c", '0' + field.piece_id);
+                cp += io.sprintf(cp, "\033[0;32m""%c", '0' + field.piece_id);
                 *cp++ = zzz_flags2char(flags);
-                cp += io.sprintf(cp, ANSI_NORMAL);
+                cp += io.sprintf(cp, "\033[0m");
                 break;
             }
             }
@@ -9995,11 +9961,11 @@ func int32 zzz_board_check_fault(int32 xx, int32 yy, int32 expect) {
     return 0;
 }
 
-// return 0=OK, 1=Not OK
+
 func int32 zzz_board_try_option(const ZzzOption* pp, int32 x, int32 y) {
     for (uint32 i=0; i<4; i++) {
         ZzzCoor c = pp.parts[i];
-        if (i != 0 && c.x == 0 && c.y == 0) return 0;    // ignore unused parts
+        if (i != 0 && c.x == 0 && c.y == 0) return 0;
         int32 xx = x + c.x;
         if (xx < 0 || xx > 4) return 1;
         int32 yy = y + c.y;
@@ -10050,7 +10016,7 @@ func void zzz_board_add(const ZzzOption* pp, int32 x, int32 y, uint8 id) {
         int32 xx = x + c.x;
         int32 yy = y + c.y;
         ZzzField field = zzz_board_get(xx, yy);
-        //assert(field.status == FIELD_FREE);
+
         field.status = FIELD_TAKEN;
         field.piece_id = id;
         field.flags = c.flags;
@@ -10136,4 +10102,3 @@ func void zzz_board_try_piece(uint8 p) {
         }
     }
 }
-
