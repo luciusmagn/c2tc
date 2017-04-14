@@ -31,7 +31,7 @@ mpc_ast_t* ex_c2parse(char* filename)
     parser(floatn);     parser(natives);
     parser(number);     parser(constant);
 
-    //expressions - dragons here, lmao
+    //expressions - here be dragons, lmao
     parser(uop);        parser(asop);   //unary operators;          assignment operators
     parser(pexp);       parser(pfexp);  //primary expression;       prefix expression
     parser(params);     parser(cast);   //function call parameters; cast expression
