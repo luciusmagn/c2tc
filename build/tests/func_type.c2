@@ -7,10 +7,3 @@ type TestFn_arg func void
     (int32 a, char[] b, int32* c, int64[][] d);
 public type TestFn_arg_p func void
     (int32 a, char[] b, int32* c, int64[][] d);
-
-type Test_struct struct
-{
-    TestFn_void fn;
-    TestFn_arg fn_arg;
-    TestFn_void_p p_fn;
-}
