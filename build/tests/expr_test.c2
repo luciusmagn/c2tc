@@ -1,0 +1,84 @@
+module expression_test;
+
+import stdio local;
+import c2;
+
+//this module is here to kick expression parsing in the balls
+//but nothing else
+
+//pexp
+char c_lit      = 'c';
+int8 i_lit      = 5;
+int8 exp_i_lit   = (5);
+float32 f_lit   = 5.5;
+char* s_lit     = "scaancbyxbcbacsin!";
+char ident      = c_lit;
+
+//pfexp
+char params     = puts("test");
+char* member     = c2.version;
+char index      = s_lit[3];
+char bitoffset  = p_lit[3:1];
+char incr       = c_lit++;
+char decr       = c_lit--;
+
+//uexp
+char p_incr     = ++c_lit;
+char p_decr     = --c_lit;
+int8 not        = !c_lit;
+char deref      = *member;
+char plus       = +c_lit;
+int8 neg        = -c_lit;
+int8 rem        = ~c_lit;
+char* addr      = &c_lit; //ouch, not null-terminated!
+int8 t_s        = sizeof(char);
+int8 test_s     = sizeof(not[5]);
+
+//cast
+void* void_ptr  = (->void*)addr;
+
+//mexp
+int8 m_multi    = 5 * 5;
+int8 m_modulo   = 5 % 5;
+int8 m_divis    = 5 / 5;
+
+//aexp
+int8 a_add      = 5 + 5;
+int8 a_sub      = 5 - 5;
+
+//sexp
+int8 s_left     = 5 << 5;
+int8 s_right    = 5 >> 5;
+
+//rexp
+bool l_than     = 2 < 5;
+bool m_than     = 5 > 2;
+bool l_or_eq    = 2 <= 5;
+bool m_or_eq    = 2 >= 5;
+
+//eexp
+bool eq         = 5 == 5;
+bool not_eq     = 5 != 2;
+
+//rexp + eexp
+bool rexp_sexp  = 2 < 5 == 5 > 2;
+
+//bexp
+int8 b_and      = 5 & 2;
+int8 b_or       = 4 | 12;
+int8 b_noneq    = 5 ^ 7;
+
+//lexp
+bool l_and      = eq && not_eq;
+bool l_or       = eq || nor_eq;
+
+//elexp
+char* elvis     = l_and ? "l_and is true" : "bullshit";
+
+//asexp
+int8 j;
+int8 k;
+int8 l = k = j = 5;
+
+//asexp
+int8 comma_op = 5,6,7;
