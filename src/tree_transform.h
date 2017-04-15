@@ -11,4 +11,5 @@
 void cleanup_trg(target* trg);
 void cleanup(mpc_ast_t* node);
 void deluseless(mpc_ast_t* node);
+void simplify_tags(mpc_ast_t* node);
 #endif
