@@ -15,177 +15,206 @@
 #include "recipe.h"
 #include "errors.h"
 
+#ifndef R_OK
+#define R_OK _A_NORMAL
+#endif
+
+#define parser(x) mpc_parser_t* x = mpc_new(#x)
 mpc_ast_t* c2parse(char* filename)
 {
-    //general
-    mpc_parser_t* start = mpc_new("start");
-    mpc_parser_t* end = mpc_new("end");
-    mpc_parser_t* ptrop = mpc_new("ptrop");
-    mpc_parser_t* assigop = mpc_new("assigop");
-    mpc_parser_t* ident = mpc_new("ident");
-    mpc_parser_t* symbol = mpc_new("symbol");
-    mpc_parser_t* number = mpc_new("number");
-    mpc_parser_t* character = mpc_new("character");
-    mpc_parser_t* string = mpc_new("string");
-    mpc_parser_t* public_m = mpc_new("public");
-    mpc_parser_t* attrtype = mpc_new("attrtype");
-    mpc_parser_t* attrwval = mpc_new("attrwval");
-    mpc_parser_t* attribute = mpc_new("attribute");
-    mpc_parser_t* val = mpc_new("val");
-    mpc_parser_t* emptyindices = mpc_new("emptyindices");
-    mpc_parser_t* indices = mpc_new("indices");
-    mpc_parser_t* anyindices = mpc_new("anyindices");
-    mpc_parser_t* module = mpc_new("module");
-    mpc_parser_t* import = mpc_new("import");
-    mpc_parser_t* natives = mpc_new("natives");
-    mpc_parser_t* typeident = mpc_new("typeident");
-    mpc_parser_t* member = mpc_new("member");
-    mpc_parser_t* memblock = mpc_new("memblock");
-    mpc_parser_t* structure = mpc_new("structure");
-    mpc_parser_t* locunion = mpc_new("locunion");
-    mpc_parser_t* globunion = mpc_new("globunion");
-    mpc_parser_t* alias = mpc_new("alias");
-    mpc_parser_t* decltype = mpc_new("decltype");
-    mpc_parser_t* functype = mpc_new("functype");
-    mpc_parser_t* structinit = mpc_new("structinit");
-    mpc_parser_t* arraylit = mpc_new("arraylit");
-    mpc_parser_t* incrarray = mpc_new("incrarray");
-    mpc_parser_t* arg = mpc_new("arg");
-    mpc_parser_t* args = mpc_new("args");
-    mpc_parser_t* head = mpc_new("head");
-    mpc_parser_t* funcdecl = mpc_new("funcdecl");
-    mpc_parser_t* factor = mpc_new("factor");
-    mpc_parser_t* term = mpc_new("term");
-    mpc_parser_t* lexp = mpc_new("lexp");
-    mpc_parser_t* vardecl = mpc_new("vardecl");
-    mpc_parser_t* funccall = mpc_new("funccall");
-    mpc_parser_t* whileloop = mpc_new("whileloop");
-    mpc_parser_t* dowhile = mpc_new("dowhile");
-    mpc_parser_t* forloop = mpc_new("forloop");
-    mpc_parser_t* ifstmt = mpc_new("ifstmt");
-    mpc_parser_t* switchcase = mpc_new("switchcase");
-    mpc_parser_t* switchstmt = mpc_new("switchstmt");
-    mpc_parser_t* stmt = mpc_new("stmt");
-    mpc_parser_t* exp = mpc_new("exp");
-    mpc_parser_t* logic = mpc_new("logic");
-    mpc_parser_t* block = mpc_new("block");
-    mpc_parser_t* function = mpc_new("function");
+    //basic
+    parser(start);      parser(end);
+    parser(ptrop);      parser(index);
+    parser(ident);      parser(symbol);
+    parser(integer);    parser(character);
+    parser(string);     parser(public);
+    parser(floatn);     parser(natives);
+    parser(number);     parser(constant);
 
-    mpc_parser_t* body = mpc_new("body");
-    mpc_parser_t* c2 = mpc_new("c2");
+    //expressions - here be dragons, lmao
+    parser(uop);        parser(asop);   //unary operators;          assignment operators
+    parser(pexp);       parser(pfexp);  //primary expression;       prefix expression
+    parser(params);     parser(cast);   //function call parameters; cast expression
+    parser(uexp);       parser(mexp);   //unary expression;         multiplicative expression
+    parser(aexp);       parser(sexp);   //addition expression;      shift expression
+    parser(rexp);       parser(eexp);   //relation expression;      equivalence expression
+    parser(bexp);       parser(lexp);   //bit-wise expression;      boolean expression
+    parser(elexp);      parser(asexp);  //conditional expression;   assignment expression
+    parser(cexp);       parser(exp);    //constant expression;      expression (cheers!)
 
-    //TODO: Parse enums
+    //function
+    parser(arg);        parser(args);
+    parser(label);      parser(expstmt);
+    parser(declstmt);   parser(compound);
+    parser(branch);     parser(loop);
+    parser(jump);       parser(stmt);
+    parser(func);
+
+    //types
+    parser(type);       parser(member);
+    parser(memberblock);parser(alias);
+    parser(uniontype);  parser(globalunion);
+    parser(functype);   parser(structure);
+    parser(enumeration);parser(enumtype);
+    parser(usertype);
+
+    //declarations
+    parser(vardecl);    parser(cmpddecl);
+    parser(init);       parser(decl);
+    parser(arrayincr);                      //orphan with no place to go
+
+    //head
+    parser(module);
+    parser(import);
+
+    //head and shoulders
+    parser(head);       parser(body);
+    parser(c2);
+
     mpc_err_t* err = mpca_lang(MPCA_LANG_DEFAULT,
-        //general
+       /**************************************************************************************************************
+        *============================================================================================================*
+        *----------------------------------------------BASIC PARSERS-------------------------------------------------*
+        *============================================================================================================*
+        **************************************************************************************************************/
         " start                             : /^/ ;                                                                \n"
         " end                               : /$/ ;                                                                \n"
         " ptrop        \"Pointer operator\" : '*' ;                                                                \n"
-        " assigop   \"Assignment operator\" :( \"=\"  | \"+=\" | \"-=\" | \"*=\"                                   \n"
-        "                                   |  \"/=\" | \"|=\" | \"~=\" | \"&=\" );                                \n"
-        " ident              \"Identifier\" : /[a-zA-Z_\\.\\#][a-zA-Z0-9_-#]*/ ;                                   \n"
-        " symbol                 \"Symbol\" : (<ident> '.')? <ident> ('.'<ident>)* ;                               \n"
-        " number                 \"Number\" : /[0-9]+/ ;                                                           \n"
-        " character       \"Any character\" : /'\\\\?.'/ ;                                                         \n"
+        " uop                               :  '&' | '*' | '+' | '-' | '~' | '!'  ;                                \n"
+        " asop   \"Assignment operator\" :( \"=\"  | \"+=\" | \"-=\" | \"*=\" | \"/=\"                             \n"
+        "                                   |  \"&=\" | \"|=\" | \"~=\" | \"<<=\"| \">>=\" );                      \n"
+        " ident              \"Identifier\" : /[a-zA-Z_][a-zA-Z0-9_]*/ ;                                           \n"
+        " symbol                 \"Symbol\" : (<ident> '.')? <ident> ;                                             \n"
+        " integer               \"Integer\" : /[0-9]+/ ;                                                           \n"
+        " character       \"Any character\" : '\'' /\\\\?./ '\'' ;                                                 \n"
         " string         \"String literal\" : /\"(\\\\.|[^\"])*\"/ ;                                               \n"
-        " attrtype       \"Attribute type\" :(\"export\"    | \"packed\"                                           \n"
-        "                                   |  \"unused\"   | \"unused_params\"                                    \n"
-        "                                   |  \"noreturn\" | \"inline\"                                           \n"
-        "                                   |  \"weak\"     | \"opaque\") ;                                        \n"
         " public                            : (\"public\")? ;                                                      \n"
-        " attrwval \"Param attribute type\" : (\"aligned\" | \"section\") '=' (<string>|<number>) ;                \n"
-        " attribute  \"Attribute notation\" : \"@(\" (<attrwal>|<attrtype>) (',' (<attrwval>                       \n"
-        "                                   |<attrtype>))* ')' ;                                                   \n"
-        " val      \"Floating-point value\" : /[0-9]+(\\.[0-9]+)*[a-zA-Z_]*/ ;                                     \n"
-        " emptyindices      \"Empty index\" : \"[]\";                                                              \n"
-        " indices        \"Nonempty index\" : '[' (<ident> | <number> | '+' ) ']' ;                                \n"
-        " anyindices              \"Index\" : (<indices> | <emptyindices>) ;                                       \n"
-        " module        \"Module notation\" : \"module\" <ident> ';' ;                                             \n"
-        " import       \"Import statement\" : \"import\" <ident> (';'                                              \n"
-        "                                   | (\"local\" ';')                                                      \n"
-        "                                   | (\"as\" <ident> ';')                                                 \n"
-        "                                   | (\"as\" <ident> \"local\" ';')) ;                                    \n"
-        " natives           \"Native type\" : \"char\"    | \"bool\"                                               \n"
+        " floatn   \"Floating-point value\" : /[0-9]+\\.[0-9]+[a-zA-Z]*/ ;                                         \n"
+        " natives           \"Native type\" : \"void\"                                                             \n"
+        "                                   | \"char\"    | \"bool\"                                               \n"
         "                                   | \"int8\"    | \"uint8\"                                              \n"
         "                                   | \"int16\"   | \"uint16\"                                             \n"
         "                                   | \"int32\"   | \"uint32\"                                             \n"
         "                                   | \"int64\"   | \"uint64\"                                             \n"
         "                                   | \"float32\" | \"float64\" ;                                          \n"
-        " typeident           \"Type name\" : <natives> | <symbol> ;                                               \n"
-        " member     \"Member declaration\" : <decltype> <ident> ';' ;                                             \n"
-        " memblock         \"Member block\" : '{' (<member> | <locunion>)* '}' ;                                   \n"
-        " structure      \"Structure type\" : (\"public\")? \"type\" <ident> \"struct\" <memblock> <attribute>?  ; \n"
-        " locunion                \"Union\" : \"union\" <ident>? <memblock> ;                                      \n"
-        " globunion               \"Union\" : \"type\" <ident> \"union\" <memblock> ;                              \n"
-        " decltype     \"Declaration type\" : (\"const\")? <typeident> <ptrop>* <anyindices>* ;                    \n"
-        " functype        \"Function type\" : <public> \"type\" <ident> \"func\" <decltype> <args> ';' ;           \n"
-        " incrarray     \"Array increment\" : <symbol> \"+=\" ( (<lexp> ';') | <arraylit>) ;                       \n"
-        " structinit        \"Initializer\" : '{' ('.'<ident>'=')? <lexp> (',' ('.' <ident> '=')? <lexp>)*',' '}'; \n"
-        " arraylit        \"Array literal\" : '{' <lexp> (',' <lexp>)* ','? '}' ;                                  \n"
-        " alias              \"Alias type\" : <public> \"type\" <ident> <decltype> ';' ;                           \n"
-        " arg                  \"Argument\" : <decltype> <ident>;                                                  \n"
-        " args                \"Arguments\" : '(' (<arg> ',')* <arg>? ')' ;                                        \n"
-        " vardecl  \"Variable declaration\" : <decltype> <ident> ('=' <lexp>)? ;                                   \n"
-        " funcdecl \"Function declaration\" : <public> \"func\" <decltype> <ident> <args> ;                        \n"
-        " whileloop          \"While loop\" : \"while\" '(' <logic> ')' <stmt> ;                                   \n"
-        " dowhile         \"Do-while loop\" : \"do\" <stmt> \"while\" '(' <logic> ')' ';' ;                        \n"
-        " forloop              \"For loop\" : \"for\" '(' <lexp>? ';' <lexp>? ';' <lexp>? ')' <stmt>;              \n"
-        " ifstmt           \"If statement\" : \"if\" '(' <logic> ')' <stmt> (\"else\" <stmt>)*  ;                  \n"
-        " switchcase        \"Switch case\" : ((\"case\" <factor>) | \"default\") ':' <stmt>* ;                    \n"
-        " switchstmt   \"Switch statement\" : \"switch\" '(' <factor> ')' '{' <switchcase>* '}' ;                  \n"
-        " factor                 \"Factor\" : '(' <exp> ')'                                                       \n"
-        "                                   | <number>                                                             \n"
-        "                                   | <character>                                                          \n"
-        "                                   | <string>                                                             \n"
-        "                                   | <vardecl>                                                            \n"
-        "                                   | <symbol> (\"++\"|\"--\")                                             \n"
-        "                                   | (\"++\"|\"--\") <symbol>                                             \n"
-        "                                   | '~' <term>                                                           \n"
-        "                                   | '&' <symbol>                                                         \n"
-        "                                   | \"(->\"<decltype>')' <lexp>                                          \n"
-        "                                   | <funccall>                                                           \n"
-        "                                   | <symbol>                                                             \n"
-        "                                   | <arraylit>                                                           \n"
-        "                                   | <ptrop>* <symbol> <assigop> <exp>                                    \n"
-        "                                   | <structinit> ;                                                       \n"
-        " term                     \"Term\" : <factor> (('*' | '/' | '%') <factor>)* ;                             \n"
-        " lexp     \"Left-side expression\" : <term> (('+' | '-') <term>)* ;                                       \n"
-        " funccall        \"Function call\" : <symbol> '(' <lexp>? (',' <lexp>)* ')' ;                             \n"
-        " stmt                \"Statement\" : '{' <stmt>* '}'                                                      \n"
-        "                                   | <vardecl> ';'                                                        \n"
-        "                                   | <whileloop>                                                          \n"
-        "                                   | <dowhile>                                                            \n"
-        "                                   | <forloop>                                                            \n"
-        "                                   | <ifstmt>                                                             \n"
-        "                                   | <switchstmt>                                                         \n"
-        "                                   | <lexp> ';'                                                           \n"
-        "                                   | \"return\" <lexp>? ';'                                               \n"
+        " index                   \"Index\" : '[' ( '+' | <integer> | <symbol> )? ']' ;                            \n"
+        " number                 \"Number\" :  <floatn> | <integer>  ;                                             \n"
+        " constant             \"Constant\" :  <number> | <string> | <ident> ;                                     \n"
+       /**************************************************************************************************************
+        *============================================================================================================*
+        *%%%%%%%%%%%%%%%/------------------------------------------------------------------------------\%%%%%%%%%%%%%*
+        *%%%%%%%%%%%%%%%|                           Here lie EXPRESSIONS                               |%%%%%%%%%%%%%*
+        *%%%%%%%%%%%%%%%|Pain in the ass to make, but now finally 100% working. No regrets, I am happy.|%%%%%%%%%%%%%*
+        *%%%%%%%%%%%%%%%|                Will eat your dog if you try to modify it                     |%%%%%%%%%%%%%*
+        *%%%%%%%%%%%%%%%\------------------------------------------------------------------------------/%%%%%%%%%%%%%*
+        *============================================================================================================*
+        *Hours wasted: 9;                                                                       --Lukáš Hozda, 2017  *
+        **************************************************************************************************************/
+        " pexp                              : <ident> | <number> | <string> | <character> |'(' <exp> ')' ;         \n"
+        " pfexp                             : <pexp>                                                               \n"
+        "                                   ( <params>                                                             \n"
+        "                                   | '[' <exp> ']'                                                        \n"
+        "                                   | '[' <integer> ':' <integer> ']'                                      \n"
+        "                                   | '.' <ident>                                                          \n"
+        "                                   | (\"++\"|\"--\")                                                      \n"
+        "                                   )* ;                                                                   \n"
+        " uexp                              : <pfexp>                                                              \n"
+        "                                   | (\"++\"|\"--\") <uexp>                                               \n"
+        "                                   | <uop> <cast>                                                         \n"
+        "                                   | \"sizeof\" ( <uexp> | '(' <type> ')' ) ;                             \n"
+        " cast                              : ( \"(->\" <type> ')' )? <uexp> ;                                     \n"
+        " mexp                              : <cast> (('*'|'/'|'%') <cast>)* ;                                     \n"
+        " aexp                              : <mexp> (('+'|'-') <mexp>)* ;                                         \n"
+        " sexp                              : <aexp> (( \"<<\" | \">>\" ) <aexp>)* ;                               \n"
+        " rexp                              : <sexp> (( \"<=\" | \">=\" | \"<\" | \">\" ) <sexp>)* ;               \n"
+        " eexp                              : <rexp> ((\"==\"|\"!=\") <rexp>)* ;                                   \n"
+        " bexp                              : <eexp> (('|'|'^'|'&') <eexp>)* ;                                     \n"
+        " lexp                              : <bexp> ((\"&&\"|\"||\") <bexp>)* ;                                   \n"
+        " elexp                             : <lexp> ('?' <lexp> ':' <lexp>)* ;                                    \n"
+        " asexp                             : <elexp> (<asop> <asexp>)* ;                                          \n"
+        " exp                \"Expression\" : <asexp> (',' <asexp> )* ;                                            \n"
+        " params                            : '(' (<elexp> (',' <elexp>)*)? ')' ;                                  \n"
+       /**************************************************************************************************************
+        *============================================================================================================*
+        *---------------------------------------------FUNCTION STUFF-------------------------------------------------*
+        *============================================================================================================*
+        **************************************************************************************************************/
+        " arg                               : <type> <ident> ;                                                     \n"
+        " args      \"Function parameters\" : '(' (<arg> (',' <arg>)*)* ')' ;                                      \n"
+        " label                   \"Label\" : <ident>':'  <stmt>                                                   \n"
+        "                                   | \"case\" <elexp> ':' <stmt>                                          \n"
+        "                                   | \"default\" ':' <stmt> ;                                             \n"
+        " expstmt  \"Expression statement\" : <exp> ';' ;                                                          \n"
+        " compound   \"Compound statement\" : '{' <stmt>* '}' ;                                                    \n"
+        " branch    \"Branching statement\" : \"if\" '(' <exp> ')' <stmt> (\"else\" <stmt>)?                       \n"
+        "                                   | \"switch\" '(' <exp> ')' <stmt> ;                                    \n"
+        " loop      \"Iterating statement\" : \"while\" '(' <exp> ')' <stmt>                                       \n"
+        "                                   | \"do\" <stmt> \"while\" '(' <exp> ')' ';'                            \n"
+        "                                   | \"for\" '(' (<stmt>|';') (<stmt>|';') <exp>? ')' <stmt> ;            \n"
+        " jump   \"Flow control statement\" : \"goto\" <ident> ';'                                                 \n"
         "                                   | \"continue\" ';'                                                     \n"
         "                                   | \"break\" ';'                                                        \n"
-        "                                   | <funccall> ';' ;                                                     \n"
-        " exp        \"Boolean comparison\" : <lexp> '>' <lexp>                                                    \n"
-        "                                   | <lexp> '<' <lexp>                                                    \n"
-        "                                   | <lexp> \"<<\" <lexp>                                                 \n"
-        "                                   | <lexp> \">>\" <lexp>                                                 \n"
-        "                                   | <lexp> \">=\" <lexp>                                                 \n"
-        "                                   | <lexp> \"<=\" <lexp>                                                 \n"
-        "                                   | <lexp> \"!=\" <lexp>                                                 \n"
-        "                                   | <lexp> \"==\" <lexp>                                                 \n"
-        "                                   | '!'<lexp>                                                            \n"
-        "                                   | <lexp> ;                                                             \n"
-        " logic     \"Boolean expressions\" : <exp> ((\"&&\" | \"||\") <exp>)* ;                                   \n"
-        " block              \"Code block\" : '{' <stmt>* '}' ;                                                    \n"
-        " function             \"Function\" : <funcdecl> <block> ;                                                 \n"
-        " head                \"File head\" : <module> <import>* ;                                                 \n"
-        " body                \"File body\" : ( <public> <vardecl> ';'                                             \n"
-        "                                   | <structure> | <function>                                             \n"
-        "                                   | <globunion> | <alias>                                                \n"
-        "                                   | <functype> | <incrarray>)*;                                          \n"
+        "                                   | \"return\" <exp>? ';' ;                                              \n"
+        " declstmt\"Declaration statement\" : <type> <ident> ( ('=' <exp>)? ';' | ('=' <init>) )? ;                \n"
+        " stmt                              : <label>                                                              \n"
+        "                                   | <expstmt>                                                            \n"
+        "                                   | <compound>                                                           \n"
+        "                                   | <declstmt>                                                           \n"
+        "                                   | <loop>                                                               \n"
+        "                                   | <jump>                                                               \n"
+        "                                   | <branch> ;                                                           \n"
+        " func                 \"Function\" : <public> \"func\" <type> <ident> <args> <compound> ;                 \n"
+       /**************************************************************************************************************
+        *============================================================================================================*
+        *--------------------------------------------------TYPES-----------------------------------------------------*
+        *============================================================================================================*
+        **************************************************************************************************************/
+        " type                     \"Type\" : \"const\"? (<natives>|<symbol>) <ptrop>* <index>* ;                  \n"
+        " member                 \"Member\" : <uniontype> | (<type> <ident> (':' <integer>)? ';') ;                \n"
+        " memberblock           \"Members\" : '{' <member>+ '}' ;                                                  \n"
+        " alias                   \"Alias\" : <ident> <type> ';' ;                                                 \n"
+        " uniontype               \"Union\" : \"union\" <ident>? <memberblock> ;                                   \n"
+        " globalunion        \"Union type\" : <ident> \"union\" <memberblock> ;                                    \n"
+        " functype        \"Function type\" : <ident> \"func\" <type> <args> ';' ;                                 \n"
+        " structure              \"Struct\" : <ident> \"struct\" <memberblock> ;                                   \n"
+        " enumeration                       : '{' <ident> ('='<integer>)? (',' <ident> ('='<integer>)?)* ','? '}' ;\n"
+        " enumtype          \"Enumeration\" : <ident> \"enum\" <type> <enumeration> ;                              \n"
+        " usertype    \"User-defined type\" : <public> \"type\" ( <structure>   | <enumtype>                       \n"
+        "                                                       | <globalunion> | <functype>  | <alias> ) ;        \n"
+       /**************************************************************************************************************
+        *============================================================================================================*
+        *----------------------------------------------DECLARATIONS--------------------------------------------------*
+        *============================================================================================================*
+        **************************************************************************************************************/
+        " vardecl  \"Variable declaration\" : <type> <ident> ('=' <exp>)? ';' ;                                    \n"
+        " init                              : '{'(('.'<ident> '=')? (<init>|<elexp>)                               \n"
+        "                                    (',' ('.'<ident> '=')? (<init>|<elexp>))* )? ','? '}';                \n"
+        " cmpddecl \"Compound declaration\" : <type> <ident> '=' <init> ;                                          \n"
+        " decl              \"Declaration\" : <public> (<vardecl> | <cmpddecl>) ;                                  \n"
+        " arrayincr     \"Array increment\" : <symbol> \"+=\" (<exp> ';'|<init>) ;                                 \n"
+       /**************************************************************************************************************
+        *============================================================================================================*
+        *-----------------------------------------------FILE STUFF---------------------------------------------------*
+        *============================================================================================================*
+        **************************************************************************************************************/
+        " module                 \"Module\" : \"module\" <ident> ';' ;                                             \n"
+        " import                 \"Import\" : \"import\" <ident> (\"as\" <ident>)? (\"local\")? ';' ;              \n"
+        " head                              : <module> <import>* ;                                                 \n"
+        " body                              : (<usertype> | <func> | <decl> | <arrayincr> )* ;                     \n"
         " c2                                : <start> <head> <body> <end> ;                                        \n",
-        start, end, ptrop, assigop, ident, symbol, number, character, string, public_m, attrtype, attrwval, attribute, val,
-        emptyindices, indices, anyindices, module, import, natives, typeident, member, memblock, structure, locunion,
-        globunion, decltype, functype, incrarray, arraylit, structinit, alias, arg, args, funcdecl, factor, term, lexp,
-        vardecl, funccall, stmt, funccall, whileloop, dowhile, forloop, ifstmt, switchcase, switchstmt, exp, logic,
-        block, function, head, body, c2, NULL
+        /*BASIC*/
+        start, end, ptrop, ident, symbol, integer, character, string, public, floatn, natives, index, number, constant,
+        /*EXPRESSIONS*/
+        pexp, pfexp, params, cast, uexp, uop, mexp, aexp, sexp, rexp, eexp,bexp, lexp, elexp, asexp, asop, cexp, exp,
+        /*FUNCTIONS*/
+        arg, args, label, expstmt, declstmt, compound, branch, loop, jump, stmt, func,
+        /*TYPES*/
+        member, memberblock, type, alias, uniontype, globalunion, functype, structure, enumeration, enumtype, usertype,
+        /*DECLARATIONS*/
+        vardecl, init, cmpddecl, decl, arrayincr,
+        /*FILE STUFF*/
+        module, import,
+        head, body, c2, NULL
         );
     mpc_optimise(c2);
     if (err != NULL)
@@ -197,11 +226,7 @@ mpc_ast_t* c2parse(char* filename)
     }
 
 
-#ifdef R_OK
     if (access(filename, R_OK) == 0)
-#else
-    if (access(filename, _A_NORMAL) == 0)
-#endif
     {
         current = fopen(filename, "rb");
         if (!current)
@@ -262,14 +287,30 @@ mpc_ast_t* c2parse(char* filename)
         mpc_err_delete(r.error);
     }
 
-    mpc_cleanup(54, start, end, ptrop, assigop, ident, symbol, number, character, string, public_m, attrtype, attrwval, attribute,
-                val, emptyindices, indices, anyindices, module, import, natives, typeident, member, memblock,
-                structure, locunion, globunion, decltype, functype, incrarray, structinit, arraylit, alias, arg,
-                args, funcdecl, factor, term, lexp, vardecl, funccall, whileloop, dowhile, forloop, ifstmt,
-                switchcase, switchstmt, stmt, exp, logic, block, function, head, body, c2);
+
+                    /*BASIC*/
+    mpc_cleanup(64, start, end, ptrop, ident, symbol, integer, character, string,
+                    public, floatn, natives, index, number, constant,
+                    /*EXPRESSIONS*/
+                    pexp, pfexp, params, cast, uexp, uop, mexp,
+                    aexp, sexp, rexp, eexp, bexp,
+                    lexp, elexp, asexp, asop, cexp, exp,
+                    /*FUNCTIONS*/
+                    arg, args, label, expstmt, declstmt, compound,
+                    branch, loop, jump, func, stmt,
+                    /*TYPES*/
+                    member, memberblock, type, alias, uniontype, globalunion,
+                    functype, structure, enumeration, enumtype, usertype,
+                    /*DECLARATIONS*/
+                    vardecl, init, cmpddecl, decl, arrayincr,
+                    /*FILE STUFF*/
+                    module, import,
+                    head, body, c2);
 
     return NULL;
 }
+#undef parser
+
 
 int32 recipemain(int32 argc, char** argv)
 {
