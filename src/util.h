@@ -82,5 +82,6 @@ void testvector();
 void teststrings();
 
 //ast helpers
-#define MODULE(x) x->children[1]->children[0]->children[1]
+#define MODULE_PRE(x) x->children[1]->children[0]->children[1]
+
 #endif
