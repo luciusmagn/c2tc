@@ -1,0 +1,12 @@
+module vardecl_expr_test;
+
+import stdio as io;
+
+public func int32 main()
+{
+    int8 c;
+    if( c = 5 )
+        return 0;
+
+    return 1;
+}
