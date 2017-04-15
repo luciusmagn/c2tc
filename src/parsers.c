@@ -53,15 +53,19 @@ mpc_ast_t* c2parse(char* filename)
     //types
     parser(type);       parser(member);
     parser(memberblock);parser(alias);
-    parser(uniontype);  parser(globalunion);
-    parser(functype);   parser(structure);
-    parser(enumeration);parser(enumtype);
-    parser(usertype);
+    parser(uniontype);  parser(structlet);
+    parser(globalunion);parser(functype);
+    parser(structure);  parser(enumeration);
+    parser(enumtype);   parser(usertype);
 
     //declarations
     parser(vardecl);    parser(cmpddecl);
     parser(init);       parser(decl);
-    parser(arrayincr);                      //orphan with no place to go
+    parser(arrayincr);                  //orphan with no place to go
+
+    //attributes
+    parser(attribute);  parser(attrtype);
+    parser(attrparam);
 
     //head
     parser(module);
@@ -81,13 +85,13 @@ mpc_ast_t* c2parse(char* filename)
         " end                               : /$/ ;                                                                \n"
         " ptrop        \"Pointer operator\" : '*' ;                                                                \n"
         " uop                               :  '&' | '*' | '+' | '-' | '~' | '!'  ;                                \n"
-        " asop   \"Assignment operator\" :( \"=\"  | \"+=\" | \"-=\" | \"*=\" | \"/=\"                             \n"
+        " asop      \"Assignment operator\" :( \"=\"  | \"+=\" | \"-=\" | \"*=\" | \"/=\"                          \n"
         "                                   |  \"&=\" | \"|=\" | \"~=\" | \"<<=\"| \">>=\" );                      \n"
         " ident              \"Identifier\" : /[a-zA-Z_][a-zA-Z0-9_]*/ ;                                           \n"
         " symbol                 \"Symbol\" : (<ident> '.')? <ident> ;                                             \n"
-        " integer               \"Integer\" : /[0-9]+/ ;                                                           \n"
-        " character       \"Any character\" : '\'' /\\\\?./ '\'' ;                                                 \n"
-        " string         \"String literal\" : /\"(\\\\.|[^\"])*\"/ ;                                               \n"
+        " integer               \"Integer\" : /(0x)?[0-9]+/ ;                                                      \n"
+        " character       \"Any character\" : '\'' /\\\\?[^\\n']*/ '\'' ;                                          \n"
+        " string         \"String literal\" : (/\"(\\\\.|[^\"])+\"/)+ ;                                            \n"
         " public                            : (\"public\")? ;                                                      \n"
         " floatn   \"Floating-point value\" : /[0-9]+\\.[0-9]+[a-zA-Z]*/ ;                                         \n"
         " natives           \"Native type\" : \"void\"                                                             \n"
@@ -97,9 +101,9 @@ mpc_ast_t* c2parse(char* filename)
         "                                   | \"int32\"   | \"uint32\"                                             \n"
         "                                   | \"int64\"   | \"uint64\"                                             \n"
         "                                   | \"float32\" | \"float64\" ;                                          \n"
-        " index                   \"Index\" : '[' ( '+' | <integer> | <symbol> )? ']' ;                            \n"
+        " index                   \"Index\" : '[' ( '+' | <exp>)? ']' ;                                            \n"
         " number                 \"Number\" :  <floatn> | <integer>  ;                                             \n"
-        " constant             \"Constant\" :  <number> | <string> | <ident> ;                                     \n"
+        " constant             \"Constant\" :  \"nil\" | <number> | <string> | <ident>  ;                          \n"
        /**************************************************************************************************************
         *============================================================================================================*
         *%%%%%%%%%%%%%%%/------------------------------------------------------------------------------\%%%%%%%%%%%%%*
@@ -110,7 +114,7 @@ mpc_ast_t* c2parse(char* filename)
         *============================================================================================================*
         *Hours wasted: 9;                                                                       --Lukáš Hozda, 2017  *
         **************************************************************************************************************/
-        " pexp                              : <ident> | <number> | <string> | <character> |'(' <exp> ')' ;         \n"
+        " pexp                              : <ident> | <number> | <string> | <character> |'(' <exp> ')' ;        \n"
         " pfexp                             : <pexp>                                                               \n"
         "                                   ( <params>                                                             \n"
         "                                   | '[' <exp> ']'                                                        \n"
@@ -121,7 +125,7 @@ mpc_ast_t* c2parse(char* filename)
         " uexp                              : <pfexp>                                                              \n"
         "                                   | (\"++\"|\"--\") <uexp>                                               \n"
         "                                   | <uop> <cast>                                                         \n"
-        "                                   | \"sizeof\" ( <uexp> | '(' <type> ')' ) ;                             \n"
+        "                                   | (\"sizeof\"|\"elemsof\") ( <uexp> | '(' <type> ')' ) ;               \n"
         " cast                              : ( \"(->\" <type> ')' )? <uexp> ;                                     \n"
         " mexp                              : <cast> (('*'|'/'|'%') <cast>)* ;                                     \n"
         " aexp                              : <mexp> (('+'|'-') <mexp>)* ;                                         \n"
@@ -139,11 +143,11 @@ mpc_ast_t* c2parse(char* filename)
         *---------------------------------------------FUNCTION STUFF-------------------------------------------------*
         *============================================================================================================*
         **************************************************************************************************************/
-        " arg                               : <type> <ident> ;                                                     \n"
-        " args      \"Function parameters\" : '(' (<arg> (',' <arg>)*)* ')' ;                                      \n"
-        " label                   \"Label\" : <ident>':'  <stmt>                                                   \n"
-        "                                   | \"case\" <elexp> ':' <stmt>                                          \n"
-        "                                   | \"default\" ':' <stmt> ;                                             \n"
+        " arg                               : <type> (<ident> ('=' <constant>)?)? ;                                \n"
+        " args      \"Function parameters\" : '(' (<arg> (',' <arg>)*)* (',' \"...\")? ')' ;                       \n"
+        " label                   \"Label\" : \"case\" <elexp> ':' <stmt>                                          \n"
+        "                                   | \"default\" ':' <stmt>                                               \n"
+        "                                   | <ident> ':' <stmt> ;                                                 \n"
         " expstmt  \"Expression statement\" : <exp> ';' ;                                                          \n"
         " compound   \"Compound statement\" : '{' <stmt>* '}' ;                                                    \n"
         " branch    \"Branching statement\" : \"if\" '(' <exp> ')' <stmt> (\"else\" <stmt>)?                       \n"
@@ -155,30 +159,31 @@ mpc_ast_t* c2parse(char* filename)
         "                                   | \"continue\" ';'                                                     \n"
         "                                   | \"break\" ';'                                                        \n"
         "                                   | \"return\" <exp>? ';' ;                                              \n"
-        " declstmt\"Declaration statement\" : <type> <ident> ( ('=' <exp>)? ';' | ('=' <init>) )? ;                \n"
+        " declstmt\"Declaration statement\" : (\"local\")? <type> <ident> ( ('=' <exp>)? ';' | ('=' <init>) )? ;   \n"
         " stmt                              : <label>                                                              \n"
+        "                                   | <jump>                                                               \n"
         "                                   | <expstmt>                                                            \n"
         "                                   | <compound>                                                           \n"
         "                                   | <declstmt>                                                           \n"
         "                                   | <loop>                                                               \n"
-        "                                   | <jump>                                                               \n"
         "                                   | <branch> ;                                                           \n"
-        " func                 \"Function\" : <public> \"func\" <type> <ident> <args> <compound> ;                 \n"
+        " func                 \"Function\" : <public> \"func\" <type> <ident> <args> <attribute>? <compound> ;    \n"
        /**************************************************************************************************************
         *============================================================================================================*
         *--------------------------------------------------TYPES-----------------------------------------------------*
         *============================================================================================================*
         **************************************************************************************************************/
-        " type                     \"Type\" : \"const\"? (<natives>|<symbol>) <ptrop>* <index>* ;                  \n"
-        " member                 \"Member\" : <uniontype> | (<type> <ident> (':' <integer>)? ';') ;                \n"
-        " memberblock           \"Members\" : '{' <member>+ '}' ;                                                  \n"
+        " type                     \"Type\" : (\"const\"|\"volatile\")? (<natives>|<symbol>) <ptrop>* <index>* ;   \n"
+        " member                 \"Member\" : <structlet> | <uniontype> | (<type> <ident> (':' <integer>)? ';') ;  \n"
+        " memberblock           \"Members\" : '{' <member>* '}' ;                                                  \n"
         " alias                   \"Alias\" : <ident> <type> ';' ;                                                 \n"
         " uniontype               \"Union\" : \"union\" <ident>? <memberblock> ;                                   \n"
+        " structlet              \"Struct\" : \"struct\" <ident>? <memberblock> <attribute>? ;                     \n"
         " globalunion        \"Union type\" : <ident> \"union\" <memberblock> ;                                    \n"
-        " functype        \"Function type\" : <ident> \"func\" <type> <args> ';' ;                                 \n"
-        " structure              \"Struct\" : <ident> \"struct\" <memberblock> ;                                   \n"
+        " functype        \"Function type\" : <ident> \"func\" <type> <args> <attribute>? ';' ;                    \n"
+        " structure         \"Struct Type\" : <ident> \"struct\" <memberblock> <attribute>? ;                      \n"
         " enumeration                       : '{' <ident> ('='<integer>)? (',' <ident> ('='<integer>)?)* ','? '}' ;\n"
-        " enumtype          \"Enumeration\" : <ident> \"enum\" <type> <enumeration> ;                              \n"
+        " enumtype          \"Enumeration\" : <ident> \"enum\" <type> <enumeration> <attribute>? ;                 \n"
         " usertype    \"User-defined type\" : <public> \"type\" ( <structure>   | <enumtype>                       \n"
         "                                                       | <globalunion> | <functype>  | <alias> ) ;        \n"
        /**************************************************************************************************************
@@ -187,11 +192,22 @@ mpc_ast_t* c2parse(char* filename)
         *============================================================================================================*
         **************************************************************************************************************/
         " vardecl  \"Variable declaration\" : <type> <ident> ('=' <exp>)? ';' ;                                    \n"
-        " init                              : '{'(('.'<ident> '=')? (<init>|<elexp>)                               \n"
-        "                                    (',' ('.'<ident> '=')? (<init>|<elexp>))* )? ','? '}';                \n"
+        " init                              : '{'((('.'<ident>|'['<constant>']') '=')? (<init>|<elexp>)            \n"
+        "                                    (','(('.'<ident>|'['<constant>']') '=')?(<init>|<elexp>))* )?','? '}';\n"
         " cmpddecl \"Compound declaration\" : <type> <ident> '=' <init> ;                                          \n"
         " decl              \"Declaration\" : <public> (<vardecl> | <cmpddecl>) ;                                  \n"
         " arrayincr     \"Array increment\" : <symbol> \"+=\" (<exp> ';'|<init>) ;                                 \n"
+       /**************************************************************************************************************
+        *============================================================================================================*
+        *------------------------------------------------ATTRIBUTE---------------------------------------------------*
+        *============================================================================================================*
+        **************************************************************************************************************/
+        " attrtype                          : \"export\"   | \"packed\"                                            \n"
+        "                                   | \"unused\"   | \"unused_param\"                                      \n"
+        "                                   | \"noreturn\" | \"inline\"                                            \n"
+        "                                   | \"weak\"     | \"opaque\" ;                                          \n"
+        " attrparam                         : (\"section\" | \"aligned\") '=' (<string>|<integer>) ;               \n"
+        " attribute                         : \"@(\"(<attrtype>|<attrparam>) (',' (<attrtype>|<attrparam>))* ')' ; \n"
        /**************************************************************************************************************
         *============================================================================================================*
         *-----------------------------------------------FILE STUFF---------------------------------------------------*
@@ -209,9 +225,12 @@ mpc_ast_t* c2parse(char* filename)
         /*FUNCTIONS*/
         arg, args, label, expstmt, declstmt, compound, branch, loop, jump, stmt, func,
         /*TYPES*/
-        member, memberblock, type, alias, uniontype, globalunion, functype, structure, enumeration, enumtype, usertype,
+        member, memberblock, type, alias, uniontype, structlet, globalunion, functype,
+        structure, enumeration, enumtype, usertype,
         /*DECLARATIONS*/
         vardecl, init, cmpddecl, decl, arrayincr,
+        /*ATTRIBUTE*/
+        attrtype, attrparam, attribute,
         /*FILE STUFF*/
         module, import,
         head, body, c2, NULL
@@ -265,7 +284,12 @@ mpc_ast_t* c2parse(char* filename)
             if(currenttxt[i] == '/' && currenttxt[i+1] == '*')
             {
                 i += 2;
-                while(currenttxt[i] != '*' && currenttxt[i+1] != '/' && currenttxt[i] != '\0') i++;
+                while(currenttxt[i] != '\0' && strncmp(&currenttxt[i], "*/", 2) != 0)
+                {
+                    if(currenttxt[i] == '\n')
+                        temp[k] = currenttxt[i];
+                    i++;
+                }
                 if(currenttxt[i] != '\0')
                     i += 2;
             }
@@ -289,7 +313,7 @@ mpc_ast_t* c2parse(char* filename)
 
 
                     /*BASIC*/
-    mpc_cleanup(64, start, end, ptrop, ident, symbol, integer, character, string,
+    mpc_cleanup(68, start, end, ptrop, ident, symbol, integer, character, string,
                     public, floatn, natives, index, number, constant,
                     /*EXPRESSIONS*/
                     pexp, pfexp, params, cast, uexp, uop, mexp,
@@ -300,9 +324,11 @@ mpc_ast_t* c2parse(char* filename)
                     branch, loop, jump, func, stmt,
                     /*TYPES*/
                     member, memberblock, type, alias, uniontype, globalunion,
-                    functype, structure, enumeration, enumtype, usertype,
+                    structlet, functype, structure, enumeration, enumtype, usertype,
                     /*DECLARATIONS*/
                     vardecl, init, cmpddecl, decl, arrayincr,
+                    /*ATTRIBUTE*/
+                    attrtype, attrparam, attribute,
                     /*FILE STUFF*/
                     module, import,
                     head, body, c2);
