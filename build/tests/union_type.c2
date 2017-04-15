@@ -1,6 +1,6 @@
 module union_type_test;
 
-type Test union
+type TestUnion union
 {
     int8  t1;
     int16 t2;
