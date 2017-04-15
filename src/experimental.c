@@ -50,6 +50,7 @@ mpc_ast_t* ex_c2parse(char* filename)
     parser(memberblock);parser(alias);
     parser(uniontype);  parser(globalunion);
     parser(functype);   parser(structure);
+    parser(enumeration);parser(enumtype);
     parser(usertype);
 
     //declarations
@@ -77,7 +78,7 @@ mpc_ast_t* ex_c2parse(char* filename)
         " asop   \"Assignment operator\" :( \"=\"  | \"+=\" | \"-=\" | \"*=\" | \"/=\"                             \n"
         "                                   |  \"&=\" | \"|=\" | \"~=\" | \"<<=\"| \">>=\" );                      \n"
         " ident              \"Identifier\" : /[a-zA-Z_][a-zA-Z0-9_]*/ ;                                           \n"
-        " symbol                 \"Symbol\" : (<ident> '.')? <ident> ('.'<ident>)* ;                               \n"
+        " symbol                 \"Symbol\" : (<ident> '.')? <ident> ;                                             \n"
         " integer               \"Integer\" : /[0-9]+/ ;                                                           \n"
         " character       \"Any character\" : '\'' /\\\\?./ '\'' ;                                                 \n"
         " string         \"String literal\" : /\"(\\\\.|[^\"])*\"/ ;                                               \n"
@@ -139,16 +140,18 @@ mpc_ast_t* ex_c2parse(char* filename)
         *--------------------------------------------------TYPES-----------------------------------------------------*
         *============================================================================================================*
         **************************************************************************************************************/
-        " type                     \"Type\" : \"const\"? (<natives>|<symbol>) <ptrop>* <index>* (':' <integer>)? ; \n"
-        " member                 \"Member\" : (<type> <ident> ';' | <union>) ;                                     \n"
-        " member_block          \"Members\" : '{' <member>* '}' ;                                                  \n"
+        " type                     \"Type\" : \"const\"? (<natives>|<symbol>) <ptrop>* <index>* ;                  \n"
+        " member                 \"Member\" : <uniontype> | (<type> <ident> (':' <integer>)? ';') ;                \n"
+        " memberblock           \"Members\" : '{' <member>+ '}' ;                                                  \n"
         " alias                   \"Alias\" : <ident> <type> ';' ;                                                 \n"
-        " union                   \"Union\" : \"union\" <ident>? <memberblock> ;                                   \n"
-        " global_union       \"Union type\" : <ident> \"union\" <memberblock> ;                                    \n"
+        " uniontype               \"Union\" : \"union\" <ident>? <memberblock> ;                                   \n"
+        " globalunion        \"Union type\" : <ident> \"union\" <memberblock> ;                                    \n"
         " functype        \"Function type\" : <ident> \"func\" <type> <args> ';' ;                                 \n"
         " structure              \"Struct\" : <ident> \"struct\" <memberblock> ;                                   \n"
-        " usertype    \"User-defined type\" : <public> \"type\" ( <alias>  | <functype>                            \n"
-        "                                                       | <structure> | <globalunion>) ;                   \n"
+        " enumeration                       : '{' <ident> ('='<integer>)? (',' <ident> ('='<integer>)?)* ','? '}' ;\n"
+        " enumtype          \"Enumeration\" : <ident> \"enum\" <type> <enumeration> ;                              \n"
+        " usertype    \"User-defined type\" : <public> \"type\" ( <structure>   | <enumtype>                       \n"
+        "                                                       | <globalunion> | <functype>  | <alias> ) ;        \n"
        /**************************************************************************************************************
         *============================================================================================================*
         *----------------------------------------------DECLARATIONS--------------------------------------------------*
@@ -176,7 +179,7 @@ mpc_ast_t* ex_c2parse(char* filename)
         /*FUNCTIONS*/
         arg, args,
         /*TYPES*/
-        member, memberblock, type, alias, uniontype, globalunion, functype, structure, usertype,
+        member, memberblock, type, alias, uniontype, globalunion, functype, structure, enumeration, enumtype, usertype,
         /*DECLARATIONS*/
         vardecl, init, cmpddecl, decl,
         /*FILE STUFF*/
@@ -254,7 +257,7 @@ mpc_ast_t* ex_c2parse(char* filename)
         mpc_err_delete(r.error);
     }
                     /*BASIC*/
-    mpc_cleanup(53, start, end, ptrop, ident, symbol, integer, character, string,
+    mpc_cleanup(55, start, end, ptrop, ident, symbol, integer, character, string,
                     public, floatn, natives, index, number, constant,
                     /*EXPRESSIONS*/
                     pexp, pfexp, params, cast, uexp, uop, mexp,
@@ -264,7 +267,7 @@ mpc_ast_t* ex_c2parse(char* filename)
                     arg, args,
                     /*TYPES*/
                     member, memberblock, type, alias, uniontype, globalunion,
-                    functype, structure, usertype,
+                    functype, structure, enumeration, enumtype, usertype,
                     /*DECLARATIONS*/
                     vardecl, init, cmpddecl, decl,
                     /*FILE STUFF*/
