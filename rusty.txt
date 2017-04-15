@@ -20,4 +20,3 @@ target c2tc:
                               "errors.h","log.h", 
                               "c2.h");
     file: "tests.c";
-    file: "experimental.c";
