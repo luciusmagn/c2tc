@@ -211,7 +211,8 @@ func void board_init() {
 
 func char flags2char(int32 flags) {
     char f = ' ';
-    switch (flags) {
+    switch (flags)
+    {
     case NORTH:
         f = 'N';
         break;
@@ -231,6 +232,7 @@ func char flags2char(int32 flags) {
         f = 'T';
         break;
     }
+
     return f;
 }
 
@@ -253,7 +255,7 @@ func void board_print() {
                 }
                 *cp++ = ' ';
                 *cp++ = ' ';
-                break;
+                 break;
             case FIELD_BLOCKED:
                 cp += io.sprintf(cp, "%sXXX%s", ANSI_DARKGREY, ANSI_NORMAL);
                 break;
