@@ -44,6 +44,11 @@ mpc_ast_t* ex_c2parse(char* filename)
 
     //function
     parser(arg);        parser(args);
+    parser(label);      parser(expstmt);
+    parser(declstmt);   parser(compound);
+    parser(branch);     parser(loop);
+    parser(jump);       parser(stmt);
+    parser(func);
 
     //types
     parser(type);       parser(member);
@@ -56,6 +61,7 @@ mpc_ast_t* ex_c2parse(char* filename)
     //declarations
     parser(vardecl);    parser(cmpddecl);
     parser(init);       parser(decl);
+    parser(arrayincr);                      //orphan with no place to go
 
     //head
     parser(module);
@@ -102,7 +108,7 @@ mpc_ast_t* ex_c2parse(char* filename)
         *%%%%%%%%%%%%%%%|                Will eat your dog if you try to modify it                     |%%%%%%%%%%%%%*
         *%%%%%%%%%%%%%%%\------------------------------------------------------------------------------/%%%%%%%%%%%%%*
         *============================================================================================================*
-        *Hours wasted: 8;                                                                       --Lukáš Hozda, 2017  *
+        *Hours wasted: 9;                                                                       --Lukáš Hozda, 2017  *
         **************************************************************************************************************/
         " pexp                              : <ident> | <number> | <string> | <character> |'(' <exp> ')' ;         \n"
         " pfexp                             : <pexp>                                                               \n"
@@ -135,6 +141,29 @@ mpc_ast_t* ex_c2parse(char* filename)
         **************************************************************************************************************/
         " arg                               : <type> <ident> ;                                                     \n"
         " args      \"Function parameters\" : '(' (<arg> (',' <arg>)*)* ')' ;                                      \n"
+        " label                   \"Label\" : <ident>':'  <stmt>                                                   \n"
+        "                                   | \"case\" <elexp> ':' <stmt>                                          \n"
+        "                                   | \"default\" ':' <stmt> ;                                             \n"
+        " expstmt  \"Expression statement\" : <exp> ';' ;                                                          \n"
+        " compound   \"Compound statement\" : '{' <stmt>* '}' ;                                                    \n"
+        " branch    \"Branching statement\" : \"if\" '(' <exp> ')' <stmt> (\"else\" <stmt>)?                       \n"
+        "                                   | \"switch\" '(' <exp> ')' <stmt> ;                                    \n"
+        " loop      \"Iterating statement\" : \"while\" '(' <exp> ')' <stmt>                                       \n"
+        "                                   | \"do\" <stmt> \"while\" '(' <exp> ')' ';'                            \n"
+        "                                   | \"for\" '(' (<stmt>|';') (<stmt>|';') <exp>? ')' <stmt> ;            \n"
+        " jump   \"Flow control statement\" : \"goto\" <ident> ';'                                                 \n"
+        "                                   | \"continue\" ';'                                                     \n"
+        "                                   | \"break\" ';'                                                        \n"
+        "                                   | \"return\" <exp>? ';' ;                                              \n"
+        " declstmt\"Declaration statement\" : <type> <ident> ( ('=' <exp>)? ';' | ('=' <init>) )? ;                \n"
+        " stmt                              : <label>                                                              \n"
+        "                                   | <expstmt>                                                            \n"
+        "                                   | <compount>                                                           \n"
+        "                                   | <declstmt>                                                           \n"
+        "                                   | <loop>                                                               \n"
+        "                                   | <jump>                                                               \n"
+        "                                   | <branch> ;                                                           \n"
+        " func                 \"Function\" : <public> \"func\" <type> <ident> <args> <compound> ;                 \n"
        /**************************************************************************************************************
         *============================================================================================================*
         *--------------------------------------------------TYPES-----------------------------------------------------*
@@ -162,6 +191,7 @@ mpc_ast_t* ex_c2parse(char* filename)
         "                                    (',' ('.'<ident> '=')? (<init>|<elexp>))* '.'? )? '}';                \n"
         " cmpddecl \"Compound declaration\" : <type> <ident> '=' <init> ;                                          \n"
         " decl              \"Declaration\" : <public> (<vardecl> | <cmpddecl>) ;                                  \n"
+        " arrayincr     \"Array increment\" : <symbol> \"+=\" (<exp> ';'|<init>) ;                                 \n"
        /**************************************************************************************************************
         *============================================================================================================*
         *-----------------------------------------------FILE STUFF---------------------------------------------------*
@@ -170,18 +200,18 @@ mpc_ast_t* ex_c2parse(char* filename)
         " module                 \"Module\" : \"module\" <ident> ';' ;                                             \n"
         " import                 \"Import\" : \"import\" <ident> (\"as\" <ident>)? (\"local\")? ';' ;              \n"
         " head                              : <module> <import>* ;                                                 \n"
-        " body                              : (<usertype> | <decl>)* ;                                             \n"
+        " body                              : (<usertype> | <func> | <decl> | <arrayincr> )* ;                     \n"
         " c2                                : <start> <head> <body> <end> ;                                        \n",
         /*BASIC*/
         start, end, ptrop, ident, symbol, integer, character, string, public, floatn, natives, index, number, constant,
         /*EXPRESSIONS*/
         pexp, pfexp, params, cast, uexp, uop, mexp, aexp, sexp, rexp, eexp,bexp, lexp, elexp, asexp, asop, cexp, exp,
         /*FUNCTIONS*/
-        arg, args,
+        arg, args, label, expstmt, declstmt, compound, branch, loop, jump, stmt, func,
         /*TYPES*/
         member, memberblock, type, alias, uniontype, globalunion, functype, structure, enumeration, enumtype, usertype,
         /*DECLARATIONS*/
-        vardecl, init, cmpddecl, decl,
+        vardecl, init, cmpddecl, decl, arrayincr,
         /*FILE STUFF*/
         module, import,
         head, body, c2, NULL
@@ -257,19 +287,20 @@ mpc_ast_t* ex_c2parse(char* filename)
         mpc_err_delete(r.error);
     }
                     /*BASIC*/
-    mpc_cleanup(55, start, end, ptrop, ident, symbol, integer, character, string,
+    mpc_cleanup(65, start, end, ptrop, ident, symbol, integer, character, string,
                     public, floatn, natives, index, number, constant,
                     /*EXPRESSIONS*/
                     pexp, pfexp, params, cast, uexp, uop, mexp,
                     aexp, sexp, rexp, eexp, bexp,
                     lexp, elexp, asexp, asop, cexp, exp,
                     /*FUNCTIONS*/
-                    arg, args,
+                    arg, args, label, expstmt, declstmt, compound,
+                    branch, loop, jump, func, stmt,
                     /*TYPES*/
                     member, memberblock, type, alias, uniontype, globalunion,
                     functype, structure, enumeration, enumtype, usertype,
                     /*DECLARATIONS*/
-                    vardecl, init, cmpddecl, decl,
+                    vardecl, init, cmpddecl, decl, arrayincr,
                     /*FILE STUFF*/
                     module, import,
                     head, body, c2);
