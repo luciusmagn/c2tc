@@ -29,7 +29,7 @@ mpc_ast_t* c2parse(char* filename)
     parser(ptrop);      parser(index);
     parser(ident);      parser(symbol);
     parser(integer);    parser(character);
-    parser(string);     parser(public);
+    parser(stringlit);     parser(public);
     parser(floatn);     parser(natives);
     parser(number);     parser(constant);
 
@@ -93,7 +93,7 @@ mpc_ast_t* c2parse(char* filename)
         " symbol                 \"Symbol\" : (<ident> '.')? <ident> ;                                             \n"
         " integer               \"Integer\" : /(0x)?[0-9]+/ ;                                                      \n"
         " character       \"Any character\" : '\'' /\\\\?[^\\n']*/ '\'' ;                                          \n"
-        " string         \"String literal\" : (/\"(\\\\.|[^\"])+\"/)+ ;                                            \n"
+        " stringlit     \"String literal\" : (/\"(\\\\.|[^\"])+\"/)+ ;                                             \n"
         " public                            : (\"public\")? ;                                                      \n"
         " floatn   \"Floating-point value\" : /[0-9]+\\.[0-9]+[a-zA-Z]*/ ;                                         \n"
         " natives           \"Native type\" : \"void\"                                                             \n"
@@ -105,7 +105,7 @@ mpc_ast_t* c2parse(char* filename)
         "                                   | \"float32\" | \"float64\" ;                                          \n"
         " index                   \"Index\" : '[' ( '+' | <exp>)? ']' ;                                            \n"
         " number                 \"Number\" :  <floatn> | <integer>  ;                                             \n"
-        " constant             \"Constant\" :  \"nil\" | <number> | <string> | <ident>  ;                          \n"
+        " constant             \"Constant\" :  \"nil\" | <number> | <stringlit> | <ident>  ;                       \n"
        /**************************************************************************************************************
         *============================================================================================================*
         *%%%%%%%%%%%%%%%/------------------------------------------------------------------------------\%%%%%%%%%%%%%*
@@ -116,7 +116,7 @@ mpc_ast_t* c2parse(char* filename)
         *============================================================================================================*
         *Hours wasted: 9;                                                                       --Lukáš Hozda, 2017  *
         **************************************************************************************************************/
-        " pexp                              : <ident> | <number> | <string> | <character> |'(' <exp> ')' ;        \n"
+        " pexp                              : <ident> | <number> | <stringlit> | <character> |'(' <exp> ')' ;      \n"
         " pfexp                             : <pexp>                                                               \n"
         "                                   ( <params>                                                             \n"
         "                                   | '[' <exp> ']'                                                        \n"
@@ -208,7 +208,7 @@ mpc_ast_t* c2parse(char* filename)
         "                                   | \"unused\"   | \"unused_param\"                                      \n"
         "                                   | \"noreturn\" | \"inline\"                                            \n"
         "                                   | \"weak\"     | \"opaque\" ;                                          \n"
-        " attrparam                         : (\"section\" | \"aligned\") '=' (<string>|<integer>) ;               \n"
+        " attrparam                         : (\"section\" | \"aligned\") '=' (<stringlit>|<integer>) ;           \n"
         " attribute                         : \"@(\"(<attrtype>|<attrparam>) (',' (<attrtype>|<attrparam>))* ')' ; \n"
        /**************************************************************************************************************
         *============================================================================================================*
@@ -221,7 +221,7 @@ mpc_ast_t* c2parse(char* filename)
         " body                              : (<usertype> | <func> | <decl> | <arrayincr> )* ;                     \n"
         " c2                                : <start> <head> <body> <end> ;                                        \n",
         /*BASIC*/
-        start, end, ptrop, ident, symbol, integer, character, string, public, floatn, natives, index, number, constant,
+        start, end, ptrop, ident, symbol, integer, character, stringlit, public, floatn, natives, index, number, constant,
         /*EXPRESSIONS*/
         pexp, pfexp, params, cast, uexp, uop, mexp, aexp, sexp, rexp, eexp,bexp, lexp, elexp, asexp, asop, cexp, exp,
         /*FUNCTIONS*/
@@ -315,7 +315,7 @@ mpc_ast_t* c2parse(char* filename)
 
 
                     /*BASIC*/
-    mpc_cleanup(68, start, end, ptrop, ident, symbol, integer, character, string,
+    mpc_cleanup(68, start, end, ptrop, ident, symbol, integer, character, stringlit,
                     public, floatn, natives, index, number, constant,
                     /*EXPRESSIONS*/
                     pexp, pfexp, params, cast, uexp, uop, mexp,
