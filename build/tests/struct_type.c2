@@ -6,3 +6,12 @@ public type TestStruct struct
     char c;
     const char[16] name;
 }
+
+
+type BitStruct struct
+{
+    uint8 n :1;
+    uint8 o :5;
+    uint8 p :7;
+}
+
