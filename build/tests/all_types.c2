@@ -1,0 +1,25 @@
+module all_type_test;
+
+public type alias char*;
+
+public type StructType struct
+{
+    alias m_1;
+    alias m_2;
+    alias[] m_2_arr;
+}
+
+public type StructType_b struct
+{
+    uint8 b_1 :1;
+    uint8 b_2 :1;
+}
+
+public type StructType_u struct
+{
+    int8 m_i;
+    union my_union {
+        int8 potato;
+        int32 bigger_potato;
+    }
+}

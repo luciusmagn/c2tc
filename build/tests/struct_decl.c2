@@ -1,0 +1,18 @@
+module struct_decl_test;
+
+import struct_type_test local;
+
+public TestStruct decl_simple = { 5, 'c', "name" }
+public TestStruct decl_w_name =
+{
+    .number = 5,
+    .c      = 'c',
+    .name   = "test"
+}
+
+public TestStruct decl_w_decl =
+{
+    .number = 5,
+    .c      = 'c',
+    .name   = { 't', 'e', 's', 't', '\0' }
+}
