@@ -5,7 +5,9 @@
 #ifdef _WIN32
 #include <io.h>
 #include <direct.h>
+#define getcwd _getcwd
 #else
+
 #include <unistd.h>
 #endif
 
@@ -345,11 +347,8 @@ int32 recipemain(int32 argc, char** argv)
     {
         char* commentlessrecipe;
         char* recipetxt;
-#ifdef R_OK
+
         if (access(recipepath, R_OK) == 0)
-#else
-        if (access(recipepath, _A_NORMAL) == 0)
-#endif
         {
             current = fopen(recipepath, "rb");
             if (!current)
@@ -403,26 +402,20 @@ int32 recipemain(int32 argc, char** argv)
 char* findrecipe()
 {
     char buf[1024];
+    getcwd(buf, 1024);
+
 #ifdef _WIN32
-    _getcwd(buf, 1024);
     while (strlen(buf) != 3)
 #else
-    getcwd(buf, 1024);
     while (strcmp(buf, "/") != 0)
 #endif
     {
-#ifdef _WIN32
-        if (access("recipe.txt", _A_NORMAL) == 0)
-#else
+
         if (access("recipe.txt", R_OK) == 0)
-#endif
         {
             char* path = malloc(1024);
-#ifdef _WIN32
-            _getcwd(path, 1024);
-#else
             getcwd(path, 1024);
-#endif
+
             strcat(path, PATH_SEPARATOR "recipe.txt");
             return path;
         }
@@ -434,9 +427,11 @@ char* findrecipe()
 void parserecipe(char* recipetext)
 {
     state = START;
+
     char* nocarriage = str_replace(recipetext, "\r", " ");
     char** lines = strsplit((nocarriage ? nocarriage : recipetext), "\n");
     int32 lines_num = occurences(recipetext, '\n');
+
     recipe = malloc(sizeof(recipe_t));
     recipe->targets = malloc(sizeof(vector));
     recipe->count = 0;
@@ -459,7 +454,7 @@ void handleline(char* line)
         case START:
             if (words_num < 1)
                 throw(&enotoks, "Not enough tokens");
-            if (strcmp(words[0], "target") == 0)
+            if (strcmp(words[0], "executable") == 0)
             {
                 currenttrg = malloc(sizeof(target));
                 currenttrg->name = words[1];
@@ -498,8 +493,6 @@ void handleline(char* line)
                 else
                     throw(&ebadtok, "Bad token in recipe");
             }
-            else if(words[0][0] == '#')
-                return;
             else
                 throw(&ebadtok, "Bad token in recipe");
             break;
@@ -514,7 +507,7 @@ void handleline(char* line)
             {
                 target_option* opt = malloc(sizeof(target_option));
                 opt->name = malloc(strlen(words[0]) + 1);
-                opt->name = words[0];
+                opt->name = &words[0][1]; //skip the $
                 opt->opts = malloc(sizeof(vector));
                 vector_init(opt->opts);
 
