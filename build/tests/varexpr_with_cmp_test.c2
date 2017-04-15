@@ -4,7 +4,8 @@ import stdio as io;
 
 public func int32 main()
 {
-    if( (char c = 5) == 5)
+    char c;
+    if( (c = 5) == 5)
         return 0;
 
     return 1;
