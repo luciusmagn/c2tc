@@ -98,18 +98,14 @@ func int32 printPath(int32 idx) {
 
 }
 
-public func int32 main(int32, const int8*[]) {
-    // initialize paths
+func int32 main(int32, const int8*[]) {
     for (int32 p=0; p<POINT_MAX; p++) {
         for (int32 d=0; d<DEPTH_MAX; d++) {
             paths[index(p,d)] = -1;
-            // C2 cannot properly handle CastOperator yet
-            //paths[index((Point)p,d)] = -1;
         }
     }
     startPoint = index(POINT_A, 0);
     endPoint = index(POINT_J, 0);
-    // add start point
     paths[startPoint] = 0;
     listAdd(startPoint);
 
@@ -123,25 +119,25 @@ public func int32 main(int32, const int8*[]) {
         Point curPoint = toPoint(idx);
         int32 curDepth = toDepth(idx);
 
-        // follow all Connections, except incoming
         for (uint32 c = 0; c<elemsof(Connections); c++) {
             const Connection* cc = &Connections[c];
             int32 next = -1;
-            if (cc.src == curPoint) { // go down (or same)
+            if (cc.src == curPoint) {
                 next = index(cc.dst, cc.otherDepth ? curDepth + 1 : curDepth);
                 if (next == prev) continue;
                 tryPath(idx, next);
-            } else if (cc.dst == curPoint) { // go up (or same)
+            } else if (cc.dst == curPoint) {
                 next = index(cc.src, cc.otherDepth ? curDepth - 1 : curDepth);
                 if (next == prev) continue;
                 tryPath(idx, next);
             }
-            if (next == endPoint) { // got destination
+            if (next == endPoint) {
                 listClear();
                 break;
             }
         }
     }
+
     showPaths();
     if (paths[endPoint] == -1) {
         io.printf("No solution found\n");
