@@ -1,0 +1,15 @@
+module switch_test;
+
+func char flags2char(int32 flags)
+{
+    char f = ' ';
+    switch (flags)
+    {
+    case POTATOT:
+        f = 'N';
+        break;
+    default:
+        f = 'Z';
+        break;
+    }
+}
