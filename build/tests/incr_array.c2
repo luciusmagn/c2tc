@@ -3,7 +3,7 @@ module incr_array_test;
 const Element[+] Elements;
 test += 10;
 test += { 10 }
-test += { 10 };
+test += { 10 }
 test += { "test3" }
-test += { "test3", 10, generic };
-test += { "test4", 10, generic };
+test += { "test3", 10, generic }
+test += { "test4", 10, generic }

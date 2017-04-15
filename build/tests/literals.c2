@@ -5,7 +5,7 @@ import struct_type_test local;
 char c = 'c';
 int32 number = 5;
 char* str = "Hello, world!";
-char[] arr = { 'a', 'r', 'r', 'a', 'y', '\0' };
+char[] arr = { 'a', 'r', 'r', 'a', 'y', '\0' }
 
 /*TestStruct structure = {
     .number = 5,
