@@ -38,10 +38,9 @@ mpc_ast_t* ex_c2parse(char* filename)
     parser(uexp);       parser(mexp);   //unary expression;         multiplicative expression
     parser(aexp);       parser(sexp);   //addition expression;      shift expression
     parser(rexp);       parser(eexp);   //relation expression;      equivalence expression
-    parser(bexp);
-    parser(lexp);       parser(elexp);  //logic disjunction expr;   conditional expression
-    parser(asexp);      parser(cexp);   //assignment expression;    constant expression
-    parser(exp);                        //expression (yay!)
+    parser(bexp);       parser(lexp);   //bit-wise expression;      boolean expression
+    parser(elexp);      parser(asexp);  //conditional expression;   assignment expression
+    parser(cexp);       parser(exp);    //constant expression;      expression (cheers!)
 
     //function
     parser(arg);        parser(args);
@@ -54,9 +53,8 @@ mpc_ast_t* ex_c2parse(char* filename)
     parser(usertype);
 
     //declarations
-    parser(vardecl);    parser(arraydecl);
-    parser(arrayinit);  parser(structinit);
-    parser(decl);
+    parser(vardecl);    parser(cmpddecl);
+    parser(init);       parser(decl);
 
     //head
     parser(module);
@@ -141,7 +139,7 @@ mpc_ast_t* ex_c2parse(char* filename)
         *--------------------------------------------------TYPES-----------------------------------------------------*
         *============================================================================================================*
         **************************************************************************************************************/
-        " type                     \"Type\" : \"const\"? (<natives> | <symbol>) <ptrop>* <index>* ;                \n"
+        " type                     \"Type\" : \"const\"? (<natives>|<symbol>) <ptrop>* <index>* (':' <integer>)? ; \n"
         " member                 \"Member\" : (<type> <ident> ';' | <union>) ;                                     \n"
         " member_block          \"Members\" : '{' <member>* '}' ;                                                  \n"
         " alias                   \"Alias\" : <ident> <type> ';' ;                                                 \n"
@@ -156,12 +154,11 @@ mpc_ast_t* ex_c2parse(char* filename)
         *----------------------------------------------DECLARATIONS--------------------------------------------------*
         *============================================================================================================*
         **************************************************************************************************************/
-        " vardecl  \"Variable declaration\" : <public> <type> <ident> ('=' <exp>)? ';' ;                           \n"
-        " arrayinit                         : '{' (<elexp>|<arrayinit>)* '}';                                      \n"
-        " structinit                        : '{'(('.'<ident> '=')? (<arrayinit>|<structinit>|<elexp>)             \n"
-        "                                   (',' ('.'<ident> '=')? (<arrayinit>|<structinit>|<elexp>))* '.'?)?'}'; \n"
-        //TODO
-        " arraydecl   \"Array declaration\" : <public> <type> <ident> '=' <arrayinit>  ;                           \n"
+        " vardecl  \"Variable declaration\" : <type> <ident> ('=' <exp>)? ';' ;                                    \n"
+        " init                              : '{'(('.'<ident> '=')? (<init>|<elexp>)                               \n"
+        "                                    (',' ('.'<ident> '=')? (<init>|<elexp>))* '.'? )? '}';                \n"
+        " cmpddecl \"Compound declaration\" : <type> <ident> '=' <init> ;                                          \n"
+        " decl              \"Declaration\" : <public> (<vardecl> | <cmpddecl>) ;                                  \n"
        /**************************************************************************************************************
         *============================================================================================================*
         *-----------------------------------------------FILE STUFF---------------------------------------------------*
@@ -170,14 +167,19 @@ mpc_ast_t* ex_c2parse(char* filename)
         " module                 \"Module\" : \"module\" <ident> ';' ;                                             \n"
         " import                 \"Import\" : \"import\" <ident> (\"as\" <ident>)? (\"local\")? ';' ;              \n"
         " head                              : <module> <import>* ;                                                 \n"
-        " body                              : (<usertype> | <vardecl>)* ;                                          \n"
+        " body                              : (<usertype> | <decl>)* ;                                             \n"
         " c2                                : <start> <head> <body> <end> ;                                        \n",
+        /*BASIC*/
         start, end, ptrop, ident, symbol, integer, character, string, public, floatn, natives, index, number, constant,
-        pexp, pfexp, params, cast, uexp, uop, mexp, aexp, sexp, rexp, eexp,bexp,
-        lexp, elexp, asexp, asop, cexp, exp,
-        arg, args, member, memberblock,
-        type, alias, uniontype, globalunion, functype, structure, usertype,
-        vardecl,
+        /*EXPRESSIONS*/
+        pexp, pfexp, params, cast, uexp, uop, mexp, aexp, sexp, rexp, eexp,bexp, lexp, elexp, asexp, asop, cexp, exp,
+        /*FUNCTIONS*/
+        arg, args,
+        /*TYPES*/
+        member, memberblock, type, alias, uniontype, globalunion, functype, structure, usertype,
+        /*DECLARATIONS*/
+        vardecl, init, cmpddecl, decl,
+        /*FILE STUFF*/
         module, import,
         head, body, c2, NULL
         );
@@ -230,7 +232,7 @@ mpc_ast_t* ex_c2parse(char* filename)
             if(currenttxt[i] == '/' && currenttxt[i+1] == '*')
             {
                 i += 2;
-                while(currenttxt[i] != '*' && currenttxt[i+1] != '/' && currenttxt[i] != '\0') i++;
+                while(strncmp(&currenttxt[i], "*/", 2) != 0 && currenttxt[i] != '\0') i++;
                 if(currenttxt[i] != '\0')
                     i += 2;
             }
@@ -251,14 +253,21 @@ mpc_ast_t* ex_c2parse(char* filename)
         mpc_err_print(r.error);
         mpc_err_delete(r.error);
     }
-
-    mpc_cleanup(49, start, end, ptrop, ident, symbol, integer, character, string,
+                    /*BASIC*/
+    mpc_cleanup(53, start, end, ptrop, ident, symbol, integer, character, string,
                     public, floatn, natives, index, number, constant,
+                    /*EXPRESSIONS*/
                     pexp, pfexp, params, cast, uexp, uop, mexp,
                     aexp, sexp, rexp, eexp, bexp,
                     lexp, elexp, asexp, asop, cexp, exp,
-                    arg, args, member, memberblock,
-                    type, alias, uniontype, globalunion, functype, structure, usertype,
+                    /*FUNCTIONS*/
+                    arg, args,
+                    /*TYPES*/
+                    member, memberblock, type, alias, uniontype, globalunion,
+                    functype, structure, usertype,
+                    /*DECLARATIONS*/
+                    vardecl, init, cmpddecl, decl,
+                    /*FILE STUFF*/
                     module, import,
                     head, body, c2);
 
