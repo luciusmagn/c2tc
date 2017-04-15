@@ -28,7 +28,7 @@ void processtarget(target* trg)
     for(int32 i = 0; i < vector_total(trg->files); i++)
     {
         mpc_ast_t* ast = malloc(sizeof(mpc_ast_t*));
-        ast = c2parse(vector_get(trg->files, i);
+        ast = c2parse(vector_get(trg->files, i));
 
         if(ast)
         {
