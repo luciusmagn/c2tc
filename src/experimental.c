@@ -158,7 +158,7 @@ mpc_ast_t* ex_c2parse(char* filename)
         " declstmt\"Declaration statement\" : <type> <ident> ( ('=' <exp>)? ';' | ('=' <init>) )? ;                \n"
         " stmt                              : <label>                                                              \n"
         "                                   | <expstmt>                                                            \n"
-        "                                   | <compount>                                                           \n"
+        "                                   | <compound>                                                           \n"
         "                                   | <declstmt>                                                           \n"
         "                                   | <loop>                                                               \n"
         "                                   | <jump>                                                               \n"
@@ -188,7 +188,7 @@ mpc_ast_t* ex_c2parse(char* filename)
         **************************************************************************************************************/
         " vardecl  \"Variable declaration\" : <type> <ident> ('=' <exp>)? ';' ;                                    \n"
         " init                              : '{'(('.'<ident> '=')? (<init>|<elexp>)                               \n"
-        "                                    (',' ('.'<ident> '=')? (<init>|<elexp>))* '.'? )? '}';                \n"
+        "                                    (',' ('.'<ident> '=')? (<init>|<elexp>))* )? ','? '}';                \n"
         " cmpddecl \"Compound declaration\" : <type> <ident> '=' <init> ;                                          \n"
         " decl              \"Declaration\" : <public> (<vardecl> | <cmpddecl>) ;                                  \n"
         " arrayincr     \"Array increment\" : <symbol> \"+=\" (<exp> ';'|<init>) ;                                 \n"
