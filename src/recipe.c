@@ -8,7 +8,7 @@
 #include "shared.h"
 #include "errors.h"
 #include "log.h"
-#include "c2.h"
+#include "tree_transform.h"
 
 void processrecipe()
 {
@@ -34,7 +34,7 @@ void processtarget(target* trg)
         {
             vector_add(trg->nodes, ast);
             if(opts->print_info)
-                printf("module name: %s\n", MODULE(ast)->contents);
+                printf("module name: %s\n", MODULE_PRE(ast)->contents);
             if(opts->print_ast1)
                 mpc_ast_print(ast);
             if(opts->test)
@@ -55,5 +55,6 @@ void processtarget(target* trg)
     if(opts->test)
         printf(ANSI_GREEN "TOTAL: " ANSI_YELLOW "%d/%d files parsed successfully" ANSI_RESET "\n",
                success, vector_total(trg->files));
-    //cleanup_trg(trg);
+
+    cleanup_trg(trg);
 }
