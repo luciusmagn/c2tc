@@ -29,7 +29,7 @@ mpc_ast_t* c2parse(char* filename)
     parser(ptrop);      parser(index);
     parser(ident);      parser(symbol);
     parser(integer);    parser(character);
-    parser(stringlit);     parser(public);
+    parser(stringlit);  parser(public);
     parser(floatn);     parser(natives);
     parser(number);     parser(constant);
 
@@ -339,7 +339,6 @@ mpc_ast_t* c2parse(char* filename)
 }
 #undef parser
 
-
 int32 recipemain(int32 argc, char** argv)
 {
     char* recipepath = findrecipe();
@@ -421,7 +420,7 @@ char* findrecipe()
         }
         chdir("../");
     }
-    return 0;
+    return NULL;
 }
 
 void parserecipe(char* recipetext)

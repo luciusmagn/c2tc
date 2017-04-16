@@ -31,7 +31,6 @@ char* commentless;
 mpc_ast_t* currenttree;
 mpc_ast_t* trees;
 vector* modules;
-vector* wanted_targets;
 
 typedef struct
 {

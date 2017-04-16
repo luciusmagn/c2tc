@@ -23,7 +23,6 @@ int32 main(int32 argc, char** argv)
 	init_errors();
     opts = calloc(sizeof(options), 1);
     opts->wanted_targets = malloc(sizeof(vector)); vector_init(opts->wanted_targets);
-	wanted_targets = malloc(sizeof(vector)); vector_init(wanted_targets);
     ARGBEGIN
     {
         FLAG('h', help())
@@ -53,6 +52,12 @@ int32 main(int32 argc, char** argv)
             vector_add(trg->files, vector_get(opts->wanted_targets, i));
 
         processtarget(trg);
+    }
+    else
+    {
+        if(vector_total(opts->wanted_targets) == 0)
+            vector_add(opts->wanted_targets, "all");
+        recipemain(argc, argv);
     }
     return 0;
 }
