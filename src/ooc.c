@@ -12,6 +12,7 @@ llist* llist_new(void* first)
 	l->n = NULL;
 	return l;
 }
+
 void llist_put(llist* l, void* data)
 {
 	if (!l) return;
@@ -23,12 +24,14 @@ void llist_put(llist* l, void* data)
 	}
 	else llist_put(l->n, data);
 }
+
 int32_t llist_total(llist* l, int32_t carry)
 {
 	if (!l) return 0;
 	if (l->n != NULL) return llist_total(l->n, carry + 1);
 	else return carry + 1;
 }
+
 void* llist_get(llist* l, int32_t index, int32_t carry)
 {
 	if (!l) return NULL;
@@ -47,6 +50,7 @@ uint8_t rand256()
 		result = rand();
 	return result % 256;
 }
+
 uint64_t rand64()
 {
 	uint64_t results = 0ULL;
@@ -71,7 +75,7 @@ uint64_t get_hash()
 
 void init_ooc()
 {
-	if (!(hashes = llist_new(0)))
+	if ((hashes = llist_new((void*)1)) == NULL)
 	{
 		puts("ooc failed to init");
 		exit(1);
