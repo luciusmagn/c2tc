@@ -35,6 +35,8 @@ object* _new(char* type, int64_t size);
 void delete(object* obj);
 box* _box(uint64_t size, void* content);
 
+void init_ooc();
+
 //macros
 #define new(type) _new(#type, sizeof(type))
 #define classdef typedef struct { char* _type; uint64_t _hash; struct 
