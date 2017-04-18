@@ -1,9 +1,9 @@
-module main;
+module comment_test;
 
 //asdasdasdasdas
 /*asdacyxcacas*/
 
-public func int32 main(int32 argc, char** argv)
+public func int32 testf(int32 argc, char** argv)
 {
     return 0;
 }

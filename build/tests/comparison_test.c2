@@ -2,7 +2,7 @@ module vardecl_expr_test;
 
 import stdio as io;
 
-public func int32 main()
+public func int32 compare()
 {
     if( getchar() == 'c' )
         return 0;

@@ -1,5 +1,5 @@
 module alias_test;
 
-type matrix int32**;
-type arr int8*;
-public type string char*;
+type Matrix int32**;
+type Arr int8*;
+public type String char*;

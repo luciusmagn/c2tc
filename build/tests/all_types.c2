@@ -1,6 +1,6 @@
 module all_type_test;
 
-public type alias char*;
+public type Alias char*;
 
 public type StructType struct
 {

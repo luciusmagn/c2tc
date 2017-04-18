@@ -29,12 +29,12 @@ type Myunion union
     }
 }
 
-type banana char*[250];
+type Banana char*[250];
 
-public func int32 test0() {}
-public func int32 test1(int32 i, float64 f) {}
+public func int32 test0f() {}
+public func int32 test1f(int32 i, float64 f) {}
 
-public func int32 test2(int32 i, float64 f)
+public func int32 test2f(int32 i, float64 f)
 {
 	int32 n;
   	int32 i;
@@ -64,7 +64,7 @@ public func int32 test3(int32*[] i, float64 f)
 {
 	bool banana = false;
 	bool potato = true;
-	bool nil = nil;
+	bool bnil = nil;
 	if(banana) {}
 	else if(potato) {}
 	switch(banana)
