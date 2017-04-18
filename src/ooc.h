@@ -4,6 +4,15 @@
 
 #include "util.h"
 
+//macros
+#define new(type) (type*)_new(#type, sizeof(type))
+#define classdef typedef struct { char* _type; uint64_t _hash; struct
+#define class(type) ;} type;
+
+#define box_value(value) _box(sizeof(value), value)
+#define unbox_value(b) b->content
+
+
 //types
 typedef struct
 {
@@ -44,14 +53,5 @@ void delete(object* obj);
 box* _box(uint64_t size, void* content);
 
 void init_ooc();
-
-//macros
-#define new(type) _new(#type, sizeof(type))
-#define classdef typedef struct { char* _type; uint64_t _hash; struct 
-#define class(type) ;} type;
-
-
-#define box_value(value) _box(sizeof(value), value)
-#define unbox_value(b) b->content
 
 #endif

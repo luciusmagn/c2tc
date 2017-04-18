@@ -57,24 +57,23 @@ uint64_t rand64()
 int8_t contains(llist* l, uint64_t n)
 {
 	for (uint64_t i = 0; i < llist_total(l, 0); i++)
-		if (llist_get(l, i, 0) == n) return 1;
+		if ((uint64_t)llist_get(l, i, 0) == n) return 1;
 	return 0;
 }
+
 uint64_t get_hash()
 {
 	uint64_t hash;
 	while (contains(hashes, (hash = rand64()))) {}
-	llist_put(hashes, hash);
+	llist_put(hashes, (void*)hash);
 	return hash;
 }
 
 void init_ooc()
 {
-	if (!(hashes = llist_new(0))
+	if (!(hashes = llist_new(0)))
 	{
-#ifndef SHUT_UP_OOC
 		puts("ooc failed to init");
-#endif
 		exit(1);
 	}
 }
