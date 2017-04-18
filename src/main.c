@@ -8,6 +8,7 @@
 #include <unistd.h>
 #endif
 
+#include "ooc.h"
 #include "arg.h"
 #include "util.h"
 #include "shared.h"
@@ -20,7 +21,12 @@ void usage();
 
 int32 main(int32 argc, char** argv)
 {
+    init_ooc();
 	init_errors();
+
+    if(argc == 1)
+        usage();
+
     opts = calloc(sizeof(options), 1);
     opts->wanted_targets = malloc(sizeof(vector)); vector_init(opts->wanted_targets);
     ARGBEGIN
