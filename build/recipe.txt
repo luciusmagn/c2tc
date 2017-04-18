@@ -1,5 +1,26 @@
-target test
+executable test
     $generate-c
-    test.c2
-    test2.c2
+    alias_type.c2
+    all_types.c2
+    assign_in_expr.c2
+    basic_comparison_test.c2
+    call_in_expr.c2
+    comments.c2
+    comparison_test.c2
+    complex_f_test.c2
+    enum_type.c2
+    example1.c2
+    expr_test.c2
+    func_call.c2
+    func_decl.c2
+    func_type.c2
+    incr_array.c2
+    literals.c2
+    module.c2
+    struct_decl.c2
+    struct_type.c2
+    switch_test.c2
+    union_type.c2
+    varexpr_with_cmp_test.c2
+    variable_deců.c2
 end
