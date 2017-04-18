@@ -1,7 +1,8 @@
 //minimalistic object look-alike library
 #ifndef ooc_h
 #define ooc_h
-#include <util.h>
+
+#include "util.h"
 
 //types
 typedef struct
