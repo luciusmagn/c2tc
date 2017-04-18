@@ -17,6 +17,13 @@ typedef struct _llist
 	struct _llist* n;
 } llist;
 
+//box
+classdef
+{
+	uint64_t size;
+	void* content;
+} class(box);
+
 //global variables
 llist* hashes;
 
@@ -43,13 +50,6 @@ void init_ooc();
 #define classdef typedef struct { char* _type; uint64_t _hash; struct 
 #define class(type) ;} type;
 
-
-//box
-classdef
-{
-	uint64_t size;
-	void* content;
-} class(box);
 
 #define box_value(value) _box(sizeof(value), value)
 #define unbox_value(b) b->content
