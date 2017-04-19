@@ -13,7 +13,7 @@ enum bin_type
 }
 
 //to avoid conflicts with everything and anything
-#define SYMBOL_TYPE(x) #x
+#define SYMBOL_TYPE(x) #_##x
 static char* symbol_type[]
 {
     SYMBOL_TYPE(func),
@@ -46,6 +46,9 @@ typedef struct
 
 typedef struct
 {
+    uint8 generate_c :1;
+    uint8 generate_ir :1; //this option is ignored by c2tc, but still come in useful to others
+    uint8 refs :1;
     int* file_count;
     int* module_count;
     int* option_count;
@@ -53,6 +56,7 @@ typedef struct
     vector* files;
     vector* modules;
     vector* options;
+    vector* warnings;
 } target;
 
 typedef struct
