@@ -24,8 +24,8 @@ int32 main(int32 argc, char** argv)
     init_ooc();
 	init_errors();
 
-    if(argc == 1)
-        usage();
+    //if(argc == 1)
+    //    usage();
 
     opts = calloc(sizeof(options), 1);
     opts->wanted_targets = malloc(sizeof(vector)); vector_init(opts->wanted_targets);
@@ -63,7 +63,7 @@ int32 main(int32 argc, char** argv)
     {
         if(vector_total(opts->wanted_targets) == 0)
             vector_add(opts->wanted_targets, "all");
-        recipemain(argc, argv);
+        init_recipe(argc, argv);
     }
     return 0;
 }
