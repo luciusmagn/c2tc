@@ -110,8 +110,8 @@ mpc_ast_t* c2parse(char* filename)
         *============================================================================================================*
         *%%%%%%%%%%%%%%%/------------------------------------------------------------------------------\%%%%%%%%%%%%%*
         *%%%%%%%%%%%%%%%|                           Here lie EXPRESSIONS                               |%%%%%%%%%%%%%*
-        *%%%%%%%%%%%%%%%|Pain in the ass to make, but now finally 100% working. No regrets, I am happy.|%%%%%%%%%%%%%*
-        *%%%%%%%%%%%%%%%|                Will eat your dog if you try to modify it                     |%%%%%%%%%%%%%*
+        *%%%%%%%%%%%%%%%|                          Pain in the ass to make,                            |%%%%%%%%%%%%%*
+        *%%%%%%%%%%%%%%%|                will eat your dog if you try to modify it                     |%%%%%%%%%%%%%*
         *%%%%%%%%%%%%%%%\------------------------------------------------------------------------------/%%%%%%%%%%%%%*
         *============================================================================================================*
         *Hours wasted: 9;                                                                       --Lukáš Hozda, 2017  *
@@ -246,10 +246,11 @@ mpc_ast_t* c2parse(char* filename)
             exit(1);
     }
 
+    char* commentless;
 
     if (access(filename, R_OK) == 0)
     {
-        current = fopen(filename, "rb");
+        FILE* current = fopen(filename, "rb");
         if (!current)
         {
             perror(filename);
@@ -260,7 +261,7 @@ mpc_ast_t* c2parse(char* filename)
         lsize = ftell(current);
         rewind(current);
 
-        currenttxt = calloc(1, lsize + 1);
+        char* currenttxt = calloc(1, lsize + 1);
         if (!currenttxt)
         {
             fclose(current);
@@ -300,6 +301,7 @@ mpc_ast_t* c2parse(char* filename)
         commentless = malloc(sizeof(char) * strlen(temp));
         strcpy(commentless, temp);
         free(currenttxt);
+        free(temp);
     }
     else
         throw(&enoaccs, "Cannot access file");
@@ -339,66 +341,63 @@ mpc_ast_t* c2parse(char* filename)
 }
 #undef parser
 
-int32 recipemain(int32 argc, char** argv)
+void init_recipe(int32 argc, char** argv)
 {
-    char* recipepath = findrecipe();
-    if (argc > 0)
+    char* recipepath = find_recipe();
+    char* commentless_recipe;
+    char* raw;
+
+    if(!recipe)
     {
-        char* commentlessrecipe;
-        char* recipetxt;
-
-        if (access(recipepath, R_OK) == 0)
-        {
-            current = fopen(recipepath, "rb");
-            if (!current)
-            {
-                perror(recipepath);
-                exit(1);
-            }
-
-            fseek(current, 0L, SEEK_END);
-            lsize = ftell(current);
-            rewind(current);
-
-            recipetxt = calloc(1, lsize + 1);
-            if (!recipetxt)
-            {
-                fclose(current);
-                throw(&emafail, "Failed to alloc memory");
-                exit(1);
-            }
-
-            if (fread(recipetxt, lsize, 1, current) != 1)
-            {
-                fclose(current);
-                free(recipetxt);
-                throw(&erdfail, "Failed to read file");
-                exit(1);
-            }
-            fclose(current);
-
-            char* temp = calloc(sizeof(char) * strlen(recipetxt), 1);
-            for (int32 i = 0, k = 0; i < strlen(recipetxt) + 1; i++, k++)
-            {
-                if(recipetxt[i] == '#') while(recipetxt[i] != '\n') i++;
-                commentless[k] = recipetxt[i];
-            }
-            commentlessrecipe = malloc(sizeof(char) * strlen(temp));
-            strcpy(commentlessrecipe, temp);
-            parserecipe(commentlessrecipe);
-            free(recipetxt);
-        }
-        else
-            throw(&enoaccs, "Cannot access recipe file");
+        throw(&enoaccs, "Recipe file not found or unreadable");
+        exit(-1);
     }
-    else
-        throw(&enoaccs, "Not enough command-line arguments");
-    return 0;
+
+    FILE* recipe_f = fopen(recipepath, "rb");
+    if (!recipe_f)
+    {
+        perror(recipepath);
+        exit(1);
+    }
+
+    fseek(recipe_f, 0L, SEEK_END);
+    lsize = ftell(recipe_f);
+    rewind(recipe_f);
+
+    raw = calloc(1, lsize + 1);
+    if (!raw)
+    {
+        fclose(recipe_f);
+        throw(&emafail, "Failed to alloc memory");
+        exit(1);
+    }
+
+    if (fread(raw, lsize, 1, recipe_f) != 1)
+    {
+        fclose(recipe_f);
+        free(raw);
+        throw(&erdfail, "Failed to read file");
+        exit(1);
+    }
+    fclose(recipe_f);
+
+    char* temp = calloc(sizeof(char) * strlen(raw), 1);
+
+    for (int32 i = 0, k = 0; i < strlen(raw) + 1; i++, k++)
+    {
+        if(raw[i] == '#') while(raw[i] != '\n') i++;
+        temp[k] = raw[i];
+    }
+
+    commentless_recipe = malloc(sizeof(char) * strlen(temp));
+    strcpy(commentless_recipe, temp);
+    parserecipe(commentless_recipe);
+    free(raw);
 }
 
 //loops through parent directories until it finds the project root directory
 //where a cwd is set and recipe.txt file is located. Returns path to recipe.txt
-char* findrecipe()
+char* find_recipe()
 {
     char buf[1024];
     getcwd(buf, 1024);
@@ -409,16 +408,15 @@ char* findrecipe()
     while (strcmp(buf, "/") != 0)
 #endif
     {
-
         if (access("recipe.txt", R_OK) == 0)
         {
-            char* path = malloc(1024);
+            char* path = malloc(sizeof(char) * 1024);
             getcwd(path, 1024);
-
             strcat(path, PATH_SEPARATOR "recipe.txt");
             return path;
         }
         chdir("../");
+        getcwd(buf, 1024);
     }
     return NULL;
 }
