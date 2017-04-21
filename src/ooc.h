@@ -1,4 +1,5 @@
 //minimalistic object look-alike library
+//TODO move llist to util.c/h
 #ifndef ooc_h
 #define ooc_h
 
