@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 
+#include "ooc.h"
 #include "util.h"
 #include "microtest.h"
 
@@ -20,25 +21,22 @@ int8 endswith(char *string, char* suffix)
 
 char** strsplit(char* str, const char* delim)
 {
-    char** res = NULL;
-    char*  part;
-    int i = 0;
-
-    char* aux = strdup(str);
-
-    part = strdup(strtok(aux, delim));
-
-    while (part) {
-        res = (char**)realloc(res, (i + 1) * sizeof(char*));
-        *(res + i) = strdup(part);
-        part = strdup(strtok(NULL, delim));
+    int32 i = 1;
+    char* tok;
+    char** result;
+    llist* tokens;
+    tok = strtok(str, delim);
+    tokens = llist_new(tok);
+    while( (tok = strtok(NULL, delim)) )
+    {
+        llist_put(tokens, tok);
         i++;
     }
 
-    res = (char**)realloc(res, i * sizeof(char*));
-    *(res + i) = NULL;
-
-    return res;
+    result = malloc(sizeof(char*) * i);
+    for(int32 j = 0; j < llist_total(tokens, 0); j++)
+        result[j] = llist_get(tokens, j, 0);
+    return result;
 }
 
 //skip leading whitespace. proudly stolen from linux kernel in 2015
@@ -49,11 +47,12 @@ char *skip_spaces(const char *str)
     return str;
 }
 
+//WARNING: does not count double occurrences at all
 int32 occurences(char* str, char c)
 {
     int32 i, count;
     for (i = 0, count = 0; str[i]; i++)
-        count += (str[i] == c);
+        count += (str[i] == c && str[i+1] != c);
     return count;
 }
 
