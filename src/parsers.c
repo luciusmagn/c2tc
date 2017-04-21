@@ -7,12 +7,13 @@
 #include <direct.h>
 #define getcwd _getcwd
 #else
-
 #include <unistd.h>
 #endif
 
-#include "util.h"
+#include "ooc.h"
 #include "mpc.h"
+#include "util.h"
+#include "types.h"
 #include "shared.h"
 #include "recipe.h"
 #include "errors.h"
@@ -347,7 +348,7 @@ void init_recipe(int32 argc, char** argv)
     char* commentless_recipe;
     char* raw;
 
-    if(!recipe)
+    if(!recipepath)
     {
         throw(&enoaccs, "Recipe file not found or unreadable");
         exit(-1);
@@ -413,6 +414,7 @@ char* find_recipe()
             char* path = malloc(sizeof(char) * 1024);
             getcwd(path, 1024);
             strcat(path, PATH_SEPARATOR "recipe.txt");
+            puts(path);
             return path;
         }
         chdir("../");
@@ -423,100 +425,23 @@ char* find_recipe()
 
 void parserecipe(char* recipetext)
 {
-    state = START;
-
+    static recipe_state state = START;
     char* nocarriage = str_replace(recipetext, "\r", " ");
     char** lines = strsplit((nocarriage ? nocarriage : recipetext), "\n");
-    int32 lines_num = occurences(recipetext, '\n');
+    int32 lines_num = occurences(recipetext, '\n'); //does not count lines that only contain newlines
 
-    recipe = malloc(sizeof(recipe_t));
-    recipe->targets = malloc(sizeof(vector));
-    recipe->count = 0;
-    vector_init(recipe->targets);
+    recipe = calloc(sizeof(recipe_t), 1);
+    recipe->targets = malloc(sizeof(vector)); vector_init(recipe->targets);
+    recipe->target_count = 0;
 
-    for (int32 i = 0; i <= lines_num; i++)
-        handleline(lines[i]);
-
-    processrecipe();
-}
-
-void handleline(char* line)
-{
-    if (issornull(line)) return;
-    char** words = strsplit(line, " ");
-    int32 words_num = occurences(line, ' ');
-    if (!words) return;
-    switch (state)
+    printf("line count: %d\n", lines_num);
+    for (int32 i = 0; i < lines_num; i++)
     {
+        char* words = strdup(lines[i])
+        switch(state)
+        {
         case START:
-            if (words_num < 1)
-                throw(&enotoks, "Not enough tokens");
-            if (strcmp(words[0], "executable") == 0)
-            {
-                currenttrg = malloc(sizeof(target));
-                currenttrg->name = words[1];
-                currenttrg->type = executable;
-                currenttrg->files = malloc(sizeof(vector));
-                vector_init(currenttrg->files);
-                currenttrg->options = malloc(sizeof(vector));
-                vector_init(currenttrg->options);
-                state = INSIDE_TARGET;
-            }
-            else if (strcmp(words[0], "lib") == 0)
-            {
-                if (words_num < 2)
-                    throw(&enotoks, "Not enough tokens");
-
-                currenttrg = malloc(sizeof(target));
-                currenttrg->name = words[1];
-                if (strcmp(words[2], "static") == 0)
-                {
-                    currenttrg->type = libstatic;
-                    currenttrg->files = malloc(sizeof(vector));
-                    vector_init(currenttrg->files);
-                    currenttrg->options = malloc(sizeof(vector));
-                    vector_init(currenttrg->options);
-                    state = INSIDE_TARGET;
-                }
-                else if (strcmp(words[2], "shared") == 0)
-                {
-                    currenttrg->type = libshared;
-                    currenttrg->files = malloc(sizeof(vector));
-                    vector_init(currenttrg->files);
-                    currenttrg->options = malloc(sizeof(vector));
-                    vector_init(currenttrg->options);
-                    state = INSIDE_TARGET;
-                }
-                else
-                    throw(&ebadtok, "Bad token in recipe");
-            }
-            else
-                throw(&ebadtok, "Bad token in recipe");
-            break;
-        case INSIDE_TARGET:
-            if (strcmp(words[0], "end") == 0)
-            {
-                vector_add(recipe->targets, currenttrg);
-                recipe->count++;
-                state = START;
-            }
-            else if (words[0][0] == '$')
-            {
-                target_option* opt = malloc(sizeof(target_option));
-                opt->name = malloc(strlen(words[0]) + 1);
-                opt->name = &words[0][1]; //skip the $
-                opt->opts = malloc(sizeof(vector));
-                vector_init(opt->opts);
-
-                for (int32 i = 1; i < words_num; i++)
-                    vector_add(opt->opts, words[i]);
-
-                vector_add(currenttrg->options, opt);
-            }
-            else if (words_num >= 1)
-                vector_add(currenttrg->files, words[0]);
-            else
-                throw(&ebadtok, "Unexpected token in recipe");
-            break;
+        }
     }
+    processrecipe();
 }
