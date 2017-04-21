@@ -9,11 +9,11 @@
 #define libstatic 0x01
 #define libshared 0x02
 
-typedef struct
+/*typedef struct
 {
 	vector* targets;
 	int32 count;
-} recipe_t;
+} recipe_t;*/
 
 typedef struct
 {
@@ -30,16 +30,8 @@ typedef struct
 	vector* opts;
 } target_option;
 
-enum
-{
-	START,
-	INSIDE_TARGET
-};
-
 target* currenttrg;
 recipe_t* recipe;
-
-int32 state;
 
 void processrecipe();
 void processtarget(target* trg);
