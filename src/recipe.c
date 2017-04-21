@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "util.h"
+#include "types.h"
 #include "recipe.h"
 #include "mpc.h"
 #include "shared.h"
@@ -13,8 +14,8 @@
 void processrecipe()
 {
     test();
-    if(opts->print_info) printf("number of targets:%d\n", recipe->count);
-    for (int32 i = 0; i < recipe->count; i++)
+    if(opts->print_info) printf("number of targets:%ld\n", recipe->target_count);
+    for (int32 i = 0; i < recipe->target_count; i++)
         processtarget(vector_get(recipe->targets, i));
 }
 
