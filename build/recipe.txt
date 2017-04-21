@@ -1,27 +1,160 @@
 executable test
-    $generate-c
-    $refs
-    tests/alias_type.c2
-    tests/all_types.c2
-    tests/assign_in_expr.c2
-    tests/basic_comparison_test.c2
-    tests/call_in_expr.c2
-    tests/comments.c2
-    tests/comparison_test.c2
-    tests/complex_f_test.c2
-    tests/enum_type.c2
-    tests/example1.c2
-    tests/expr_test.c2
-    tests/func_call.c2
-    tests/func_decl.c2
-    tests/func_type.c2
-    tests/incr_array.c2
-    tests/literals.c2
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
     tests/module.c2
-    tests/struct_decl.c2
-    tests/struct_type.c2
-    tests/switch_test.c2
-    tests/union_type.c2
-    tests/varexpr_with_cmp_test.c2
-    tests/variable_decl.c2
+    orig/helloworld.c2
+end
+executable test
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+    tests/module.c2
+    orig/helloworld.c2
+end
+executable test
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+    tests/module.c2
+    orig/helloworld.c2
+end
+executable test
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+    tests/module.c2
+    orig/helloworld.c2
+end
+executable test
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+#ahssdacyxcyx
+#asdcyxoo
+    tests/module.c2
+    orig/helloworld.c2
 end
