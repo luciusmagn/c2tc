@@ -12,29 +12,6 @@ enum bin_type
     LIB_SHARED
 }
 
-//to avoid conflicts with everything and anything
-#define SYMBOL_TYPE(x) #_##x
-static char* symbol_type[]
-{
-    SYMBOL_TYPE(func),
-    SYMBOL_TYPE(typedef),
-    SYMBOL_TYPE(declaration),
-    SYMBOL_TYPE(aray_increment),
-    SYMBOL_TYPE(type),
-    SYMBOL_TYPE(index),
-    SYMBOL_TYPE(parameter),
-    SYMBOL_TYPE(statement),
-    SYMBOL_TYPE(expression),
-    SYMBOL_TYPE(struct),
-    SYMBOL_TYPE(alias),
-    SYMBOL_TYPE(enum),
-    SYMBOL_TYPE(func_type),
-    SYMBOL_TYPE(union),
-    SYMBOL_TYPE(variable),
-    SYMBOL_TYPE(literal),
-    SYMBOL_TYPE(compound_decl),
-    SYMBOL_TYPE(attribute)
-}
 
 typedef struct
 {
