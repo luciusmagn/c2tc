@@ -3,6 +3,7 @@
 
 #define debug
 
+#include "types.h"
 #include "inttypes.h"
 #include "mpc.h"
 #include "util.h"
@@ -43,5 +44,6 @@ typedef struct
 } options;
 
 options* opts;
+recipe_t* recipe;
 
 #endif
