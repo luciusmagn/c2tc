@@ -32,7 +32,7 @@ char *skip_spaces(const char *str);
 int32 occurences(char* str, char c);
 char *str_replace(char *orig, char *rep, char *with);
 int8 issornull(char* test);
-
+char* bin_type_str(int32 type);
 
 //asprintf & vasprintf
 #ifndef HAVE_ASPRINTF

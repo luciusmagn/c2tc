@@ -7,6 +7,8 @@
 
 #include "ooc.h"
 #include "util.h"
+#include "types.h"
+#include "types.h"
 #include "microtest.h"
 
 /***********
@@ -109,6 +111,17 @@ int8 issornull(char* test)
     while (isspace(test[i])) i++;
     if (i != strlen(test)) return 0;
     return 1;
+}
+
+char* bin_type_str(int32 type)
+{
+    switch((bin_type)type)
+    {
+        case EXECUTABLE: return "executable";
+        case LIB_STATIC: return "static library";
+        case LIB_SHARED: return "shared library";
+    }
+    return NULL; //should never happen
 }
 
 /************
