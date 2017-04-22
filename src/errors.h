@@ -25,7 +25,7 @@ typedef struct
 FILE *THROW_FD;
 void throw (void *type, char *msg);
 error_t error_new(int code, char *name);
-int32 errors;
+int32 throw_errors;
 
 
 error_t erdfail; //error read failed

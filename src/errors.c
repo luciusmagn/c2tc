@@ -20,7 +20,7 @@ void throw (void *type, char *msg)
     else
         log_error("%s (%d): %s\n", err->name, err->code, msg);
 
-    errors++;
+    throw_errors++;
 }
 
 void init_errors()
