@@ -16,8 +16,7 @@ target c2tc:
     file: "main.c" @depends("errors.h", "arg.h", "ooc.h");
     file: "mpc.c" @depends("mpc.c");
     file: "util.c";
-    file: "recipe.c" @depends("recipe.h", "mpc.h",
-                              "errors.h","log.h", 
-                              "tree_transform.h");
+    file: "recipe.c" @depends("mpc.h", "errors.h",
+                              "log.h", "tree_transform.h");
     file: "tests.c";
     file: "ooc.c" @depends("ooc.h");
