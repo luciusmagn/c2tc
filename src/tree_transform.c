@@ -4,17 +4,17 @@
 #include "util.h"
 #include "shared.h"
 
-void cleanup_trg(target* trg)
+void cleanup_trg(target_t* trg)
 {
-    for (int32 i = 0; i < vector_total(trg->nodes); i++)
+    for (int32 i = 0; i < vector_total(trg->trees); i++)
     {
-        cleanup(vector_get(trg->nodes, i));
-        simplify_tags(vector_get(trg->nodes, i));
+        cleanup(vector_get(trg->trees, i));
+        simplify_tags(vector_get(trg->trees, i));
     }
 
-    for (int32 i = 0; i < vector_total(trg->nodes); i++)
+    for (int32 i = 0; i < vector_total(trg->trees); i++)
         if(opts->print_ast2)
-            mpc_ast_print(vector_get(trg->nodes, i));
+            mpc_ast_print(vector_get(trg->trees, i));
 }
 
 void cleanup(mpc_ast_t* node)
