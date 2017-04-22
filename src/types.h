@@ -30,13 +30,16 @@ typedef struct
     uint8 generate_c :1;
     uint8 generate_ir :1; //this option is ignored by c2tc, but might still come in useful to others
     uint8 refs :1;
-    int* file_count;
-    int* module_count;
-    int* option_count;
+    int file_count;
+    int module_count;
+    char* name;
     bin_type type;
+    vector* use;
+    vector* deps;
+    vector* trees;
     vector* files;
+    vector* config;
     vector* modules;
-    vector* options;
     vector* warnings;
 } target_t;
 
