@@ -20,8 +20,11 @@ void init_recipe(int32 argc, char** argv);
 
 char* find_recipe();
 void parserecipe(char* recipetext);
-void handleline(char* line);
+//void handleline(char* line);
 void runtests();
+
+void processrecipe();
+void processtarget(target_t* trg);
 
 #define test() do { printf("%s:%d\n", __FILE__, __LINE__); } while(0)
 
