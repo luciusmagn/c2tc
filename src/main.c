@@ -13,7 +13,7 @@
 #include "util.h"
 #include "shared.h"
 #include "errors.h"
-#include "recipe.h"
+#include "types.h"
 
 int8 option(char**, int32*);
 void help();
@@ -40,6 +40,7 @@ int32 main(int32 argc, char** argv)
         FLAG('A', opts->print_ast2 = 1)
         FLAG('t', opts->test = 1)
         FLAG('e', opts->experiment = 1);
+        FLAG('i', opts->print_info = 1);
         default:
             printf("unrecognized option: %c\n", ARGC());
             break;
@@ -47,10 +48,10 @@ int32 main(int32 argc, char** argv)
     ARGEND
     if(opts->file_mode)
     {
-        target* trg = malloc(sizeof(target));
+        target_t* trg = calloc(sizeof(target_t), 1);
         trg->files = malloc(sizeof(vector));
         trg->name = (opts->target_name ? opts->target_name : "dummy");
-        trg->type = executable;
+        trg->type = EXECUTABLE;
 
         vector_init(trg->files);
 
