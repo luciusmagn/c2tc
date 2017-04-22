@@ -15,7 +15,6 @@
 #include "util.h"
 #include "types.h"
 #include "shared.h"
-#include "recipe.h"
 #include "errors.h"
 
 #ifndef R_OK
@@ -393,7 +392,7 @@ void init_recipe(int32 argc, char** argv)
     commentless_recipe = malloc(sizeof(char) * strlen(temp));
     strcpy(commentless_recipe, temp);
     parserecipe(commentless_recipe);
-    free(raw);
+    processrecipe();
 }
 
 //loops through parent directories until it finds the project root directory
@@ -423,6 +422,11 @@ char* find_recipe()
     return NULL;
 }
 
+#define error(x, y) do { throw(x, y); printf(ANSI_RED "error at line %d:" ANSI_RESET "\n%s\n", i, lines[i]);  } while(0)
+#define FIRST_OPTION(x)  if(strcmp(&word[1], x) == 0)
+#define OPTION(x)   else if(strcmp(&word[1], x) == 0)
+#define VECTOR_OPTION(x, y) else if(strcmp(&word[1], x) == 0) \
+                            while( (word = strtok_r(NULL, " ", &temp)) ) vector_add(y, word);
 void parserecipe(char* recipetext)
 {
     static recipe_state state = START;
@@ -434,14 +438,84 @@ void parserecipe(char* recipetext)
     recipe->targets = malloc(sizeof(vector)); vector_init(recipe->targets);
     recipe->target_count = 0;
 
+    target_t* trg = calloc(sizeof(target_t), 1);
+
     printf("line count: %d\n", lines_num);
     for (int32 i = 0; i < lines_num; i++)
     {
-        char* words = strdup(lines[i])
+        char* words = strdup(lines[i]);
+        char* temp;
         switch(state)
         {
-        case START:
+        case START:;
+            char* btype = strtok_r(words, " ", &temp);
+            if(strcmp(btype, "executable") == 0)
+            {
+                trg->type = EXECUTABLE;
+                if(! (trg->name = strtok_r(NULL, " ", &temp)) )
+                    error(&ebadtok, "expected an identifier after 'executable'");
+                if(strtok_r(NULL, " ", &temp))
+                    error(&ebadtok, "unexpected token in recipe");
+                if(throw_errors) exit(-1);
+            }
+            else if(strcmp(btype, "lib") == 0)
+            {
+                if(! (trg->name = strtok_r(NULL, " ", &temp)) )
+                    error(&ebadtok, "expected an identifier after 'lib'");
+                char* libtype = strtok_r(NULL, " ", &temp);
+                if(libtype)
+                {
+                         if(strcmp(libtype, "static") == 0) trg->type = LIB_STATIC;
+                    else if(strcmp(libtype, "shared") == 0) trg->type = LIB_SHARED;
+                    else error(&ebadtok, "unknown library type");
+
+                }
+                else error(&ebadtok, "expected lib type after target identifier");
+                if(strtok_r(NULL, " ", &temp))
+                    error(&ebadtok, "unexpected token in recipe");
+                if(throw_errors) exit(-1);
+            }
+            else { error(&ebadtok, "unknown binary type"); exit(-1); }
+
+            trg->use     = malloc(sizeof(vector)); vector_init(trg->use);
+            trg->deps    = malloc(sizeof(vector)); vector_init(trg->deps);
+            trg->trees   = malloc(sizeof(vector)); vector_init(trg->trees);
+            trg->files   = malloc(sizeof(vector)); vector_init(trg->files);
+            trg->config  = malloc(sizeof(vector)); vector_init(trg->config);
+            trg->modules = malloc(sizeof(vector)); vector_init(trg->modules);
+            trg->warnings= malloc(sizeof(vector)); vector_init(trg->warnings);
+
+            state = INSIDE_TRG;
+            vector_add(recipe->targets, trg);
+            recipe->target_count++;
+            break;
+        case INSIDE_TRG:;
+            char* word = strtok_r(words, " ", &temp);
+            if(strcmp(word, "end") == 0) { state = START; trg = calloc(sizeof(target_t), 1); continue; }
+            if(word[0] != '$')
+            {
+                vector_add(trg->files, word);
+                trg->file_count++;
+                if(strtok_r(NULL, " ", &temp)) error(&ebadtok, "unexpected token in recipe");
+            }
+            else
+            {
+                FIRST_OPTION("generate-c")  trg->generate_c = 1;
+                      OPTION("generate-ir") trg->generate_ir = 1;
+                      OPTION("refs")        trg->refs = 1;
+               VECTOR_OPTION("use", trg->use)
+               VECTOR_OPTION("deps", trg->deps)
+               VECTOR_OPTION("config", trg->config)
+               VECTOR_OPTION("warnings", trg->warnings)
+            }
+            break;
         }
     }
-    processrecipe();
+    for(int i = 0; i < recipe->target_count; i++)
+    {
+        target_t* current = (target_t*)vector_get(recipe->targets, i);
+        printf("target %d: name:%s type:%s generate C:%d file count:%d\n",
+               i, current->name, bin_type_str(current->type), current->generate_c, current->file_count);
+    }
 }
+#undef error

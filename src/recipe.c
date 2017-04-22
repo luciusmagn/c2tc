@@ -4,7 +4,6 @@
 
 #include "util.h"
 #include "types.h"
-#include "recipe.h"
 #include "mpc.h"
 #include "shared.h"
 #include "errors.h"
@@ -13,16 +12,15 @@
 
 void processrecipe()
 {
-    test();
     if(opts->print_info) printf("number of targets:%ld\n", recipe->target_count);
     for (int32 i = 0; i < recipe->target_count; i++)
         processtarget(vector_get(recipe->targets, i));
 }
 
-void processtarget(target* trg)
+void processtarget(target_t* trg)
 {
-    trg->nodes = malloc(sizeof(vector));
-    vector_init(trg->nodes);
+    trg->trees = malloc(sizeof(vector));
+    vector_init(trg->trees);
     int success = 0;
     if(opts->test)
         printf(ANSI_YELLOW "target: " ANSI_GREEN "%s " ANSI_RESET "\n", trg->name);
@@ -33,7 +31,7 @@ void processtarget(target* trg)
 
         if(ast)
         {
-            vector_add(trg->nodes, ast);
+            vector_add(trg->trees, ast);
             if(opts->print_info)
                 printf("module name: %s\n", MODULE_PRE(ast)->contents);
             if(opts->print_ast1)
