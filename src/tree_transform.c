@@ -72,6 +72,7 @@ void deluseless(mpc_ast_t* node)
 #define CHANGE(x,y)     if(strcmp(node->tag, x) == 0) { node->tag = y; found++; }
 #define REGEX(x)        REPLACE(x "|regex", x)
 #define STRING(x)       REPLACE(x "|string", x)
+#define CHAR(x)         REPLACE(x "|char", x)
 #define REPLACE(x,y)    { char* old = node->tag; node->tag = str_replace(old,x,y); if(strcmp(old, node->tag)) found++; }
 
 #define SIMPLIFY_START  for(int32 found = 0;;) {
@@ -157,12 +158,18 @@ void simplify_tags(mpc_ast_t* node)
         REGEX("character")
         REGEX("stringlit")
 
+        CHAR("ptrop")
+
         STRING("public")
         STRING("natives")
         STRING("attrtype")
 
         CHANGE("head|module|>", "module")
         CHANGE("type|natives", "natives")
+        CHANGE("asop|string", "asop")
+
+        REPLACE("symbol|ident", "symbol")
+        REPLACE("type|symbol", "type")
 
         REPLACE("number|integer", "integer")
         REPLACE("number|floatn", "floatn")
