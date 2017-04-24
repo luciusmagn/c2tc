@@ -1,108 +1,19 @@
 #![crate_type = "staticlib"]
 #![allow(unused_variables)]
 #![allow(non_upper_case_globals)]
+#![allow(dead_code)]
+#![allow(improper_ctypes)]
 
-use std::ptr;
+use util::*;
+use types::*;
 use std::slice;
-use std::vec::Vec;
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::os::raw::c_void;
 use std::os::raw::c_char;
-use std::collections::LinkedList;
 
-#[repr(C)]
-pub struct mpc_state_t
-{
-    pos: i64,
-    row: i64,
-    col: i64,
-}
-
-#[repr(C)]
-pub struct mpc_ast_t
-{
-    tag: *mut c_char,
-    contents: *mut c_char,
-    state: mpc_state_t,
-    children_num: i32,
-    children: *const *const mpc_ast_t,
-}
-
-
-#[repr(C)]
-pub struct vector;
-
-//TODO map structs to C
-
-#[repr(C)]
-pub struct module
-{
-    name: *mut c_char,
-    imports: *mut vector,
-    functions: *mut vector,
-    types: *mut vector,
-}
-
-#[repr(C)]
-pub struct import
-{
-    name: *mut c_char,
-    alias: *mut c_char,
-    local: bool,
-    w_alias: bool,
-}
-
-#[repr(C)]
-pub struct function
-{
-    name: *mut c_char,
-    public : bool,
-    param_count : i32,
-    params: *mut vector,
-    node: *const mpc_ast_t,
-}
-
-#[repr(C)]
-pub struct param
-{
-    p_type: symbol_type,
-    name: *mut c_char,
-    default: String,
-    w_default: bool,
-}
-
-#[repr(C)]
-pub struct symbol_type
-{
-    name: *mut c_char,
-    indirection: i32,
-}
-
-#[repr(C)]
-pub struct user_type
-{
-    name: *mut c_char,
-    t_type: type_kind,
-}
-
-#[repr(C)]
-enum type_kind
-{
-    ALIAS,
-    STRUCT,
-    ENUM,
-}
-
-impl mpc_ast_t
-{
-    unsafe fn get_children(&self) -> &'static[*const mpc_ast_t]
-    {
-        slice::from_raw_parts(self.children, self.children_num as usize)
-    }
-}
-
-
+mod util;
+mod types;
 
 extern
 {
@@ -110,33 +21,21 @@ extern
     fn vector_alloc() -> *mut vector;
     fn vector_init(v: *mut vector);
     fn vector_add(l: *mut vector, d: *mut c_void);
-    fn vector_total(l: *mut vector, carry: i32) -> i32;
-    fn vector_get(l: *mut vector, index: i32, carry: i32) -> *mut c_void;
+    fn vector_total(l: *mut vector) -> i32;
+    fn vector_get(l: *mut vector, index: i32) -> *mut c_void;
 }
-
-const RED      :&'static str = "\x1b[31m";
-const GREEN    :&'static str = "\x1b[32m";
-const YELLOW   :&'static str = "\x1b[33m";
-const BLUE     :&'static str = "\x1b[34m";
-const MAGENTA  :&'static str = "\x1b[35m";
-const CYAN     :&'static str = "\x1b[36m";
-const RESET    :&'static str = "\x1b[0m";
 
 static mut this_module: *mut module = 0 as *mut module;
 
 #[no_mangle]
 pub unsafe extern fn analyse(ast_ptr: *mut mpc_ast_t)
 {
-    this_module = &mut (module 
-        {
-            name: make_string("placeholder".to_string()),
-            functions: vector_alloc(),
-            imports: vector_alloc(),
-            types: vector_alloc(),
-        }) as *mut module;
+    this_module = &mut module::new() as *mut module;
 
-    println!("test: {} {}", CStr::from_ptr((*this_module).name).to_string_lossy().into_owned().len(), 
-                            read_string((*this_module).name));
+    vector_init((*this_module).types);
+    vector_init((*this_module).imports);
+    vector_init((*this_module).functions);
+
     process(ast_ptr, 0);
 }
 
@@ -184,5 +83,145 @@ pub unsafe fn read_string(s: *mut c_char) -> String
 
 pub unsafe fn read_func(ast_ptr: *mut mpc_ast_t)
 {
-    
+    let ref ast = *ast_ptr;
+    let mut func: function = function 
+    {
+        name: make_string("placeholder".to_string()),
+        public: false,
+        param_count: 0,
+        params: vector_alloc(),
+        ret_type: symbol_type
+        {
+            name: make_string("placeholder".to_string()),
+            indirection: 0,
+            constant: false,
+            volatile: false,
+        },
+    };
+
+    if read_string((*ast.get_children()[0]).tag) == "public" { func.public = true; }
+
+    if func.public
+    {
+        func.name = (*ast.get_children()[3]).contents;
+        let ref child = *ast.get_children()[2];
+        let tag = read_string(child.tag);
+        match tag.as_ref()
+        {
+            "natives" => 
+            { 
+                println!("it's a native {}", read_string(child.contents) );
+                let mut return_type: symbol_type = symbol_type
+                {
+                    name: child.contents,
+                    indirection: 0,
+                    constant: false,
+                    volatile: false,
+                };
+
+                return_type.name = child.contents;
+                func.ret_type = return_type;
+            },
+            "type" =>
+            {
+                let mut index = 0;
+                let mut is_const = false;
+                let mut is_vol = false;
+
+                if read_string( (*child.get_children()[0]).contents ) == "const"
+                {
+                    is_const = true;
+                    index += 1;
+                }
+                if read_string( (*child.get_children()[0]).contents ) == "volatile"
+                {
+                    is_vol = true;
+                    index += 1;
+                }
+
+                let mut return_type: symbol_type = symbol_type
+                {
+                    name: (*child.get_children()[index]).contents,
+                    indirection: 0,
+                    constant: is_const,
+                    volatile: is_vol,
+                };
+
+                for i in 0..child.children_num as usize
+                {
+                    if read_string( (*child.get_children()[i]).tag ) == "ptrop"
+                    || read_string( (*child.get_children()[i]).tag ) == "index"
+                    {
+                        return_type.indirection += 1;
+                    }
+                }
+
+                func.ret_type = return_type;
+            },
+            _ => {}
+        }
+    }
+    else
+    {
+        func.name = (*ast.get_children()[2]).contents;
+        let ref child = *ast.get_children()[1];
+        let tag = read_string( child.tag );
+        match tag.as_ref()
+        {
+            "natives" => 
+            { 
+                println!("it's a native {}", read_string(child.contents) );
+                let mut return_type: symbol_type = symbol_type
+                {
+                    name: child.contents,
+                    indirection: 0,
+                    constant: false,
+                    volatile: false,
+                };
+
+                return_type.name = child.contents;
+                func.ret_type = return_type;
+            },
+            "type" =>
+            {
+                let mut index = 0;
+                let mut is_const = false;
+                let mut is_vol = false;
+
+                if read_string( (*child.get_children()[0]).contents ) == "const"
+                {
+                    is_const = true;
+                    index += 1;
+                }
+                if read_string( (*child.get_children()[0]).contents ) == "volatile"
+                {
+                    is_vol = true;
+                    index += 1;
+                }
+
+                let mut return_type: symbol_type = symbol_type
+                {
+                    name: (*child.get_children()[index]).contents,
+                    indirection: 0,
+                    constant: is_const,
+                    volatile: is_vol,
+                };
+
+                for i in 0..child.children_num as usize
+                {
+                    if read_string( (*child.get_children()[i]).tag ) == "ptrop"
+                    || read_string( (*child.get_children()[i]).tag ) == "index"
+                    {
+                        return_type.indirection += 1;
+                    }
+                }
+
+                func.ret_type = return_type;
+            },
+            _ => {}
+        }
+    }    
+    println!("{}type {} with indirection {}", if func.ret_type.constant { "constant " } 
+                                               else if func.ret_type.volatile { "volatile " } else { "" }, 
+                                               read_string(func.ret_type.name), func.ret_type.indirection);
 }
