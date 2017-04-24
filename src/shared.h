@@ -26,6 +26,8 @@ void runtests();
 void processrecipe();
 void processtarget(target_t* trg);
 
+extern void analyse(mpc_ast_t* ast);
+
 #define test() do { printf("%s:%d\n", __FILE__, __LINE__); } while(0)
 
 int32 lsize;

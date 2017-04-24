@@ -68,6 +68,7 @@ typedef struct
 	int32 total;
 } vector;
 
+vector* vector_alloc();
 void vector_init(vector* v);
 int32 vector_total(vector* v);
 void vector_resize(vector* v, int32 capacity);

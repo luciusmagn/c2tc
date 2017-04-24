@@ -4,6 +4,11 @@
 
 #include "ooc.h"
 
+llist* llist_alloc()
+{
+    return malloc(sizeof(llist));
+}
+
 llist* llist_new(void* first)
 {
 	if (first == NULL) return NULL;

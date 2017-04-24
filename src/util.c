@@ -164,6 +164,11 @@ int vasprintf(char **str, const char *fmt, va_list args)
  **********/
 
 //Implementation of a vector. Based on a guide by Edd Mann
+vector* vector_alloc()
+{
+    return malloc(sizeof(vector));
+}
+
 void vector_init(vector* v)
 {
     v->capacity = 4;
