@@ -90,16 +90,23 @@ int8 option(char** argv, int32* argc)
 
 void help()
 {
-    printf("not gonna lie, there is not many flags as of yet:\n"
+    printf("OPTIONS:                                         \n"
            "--help -h                         print this text\n"
            "--dir -d                              chdir first\n"
-           "--usage -?              print simple usage string\n");
+           "--usage -?              print simple usage string\n"
+           "--file -f                     switch to file-mode\n"
+           "--ast0 -a                           print raw AST\n"
+           "--ast1 -A                         print clean AST\n"
+           "--output -o name     change file-mode target name\n"
+           "--info -i                       print information\n"
+    );
     exit(0);
 }
 
 void usage()
 {
-    puts("c2tc [-hdf?] [--file file] [--dir dir] target1 target2...");
+    puts("c2tc [-heidofatA?] [--ast0] [--ast1] [--test] [--info] "
+         "[--experiment] [--output name] [--file] [--dir dir] targets...");
     puts("use -h for more info");
     exit(0);
 }
