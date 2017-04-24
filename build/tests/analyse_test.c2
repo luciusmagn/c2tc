@@ -1,0 +1,13 @@
+module hello_world;
+
+import stdio local;
+
+public func potato*** main(int32 argc, int8*[] argv) {
+    printf("Hello World!\n");
+    return 0;
+}
+
+func banana_type*[][] moasdcxyin() {}
+func banana_type**[] moiadc() {}
+func int8*[][] moiscyxn() {}
+func const char*  char_ptr() {}
