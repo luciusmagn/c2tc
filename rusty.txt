@@ -18,7 +18,8 @@ target c2tc:
     file: "util.c";
     file: "recipe.c" @depends("mpc.h", "errors.h",
                               "log.h", "tree_transform.h",
-                              "analyse.rs");
+                              "analyse.rs", "util.rs",
+                              "types.rs");
     file: "tests.c";
     file: "ooc.c" @depends("ooc.h");
     run:
