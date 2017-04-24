@@ -56,4 +56,6 @@ void processtarget(target_t* trg)
                success, vector_total(trg->files));
 
     cleanup_trg(trg);
+    for(int32 i = 0; i < vector_total(trg->trees); i++)
+        analyse(vector_get(trg->trees, i));
 }
