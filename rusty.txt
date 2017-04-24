@@ -3,7 +3,7 @@ compiler: "gcc";
 target c2tc:
     name: "c2tc";
     type: executable;
-    flags: { "-Wall", "-Wno-discarded-qualifiers", "-g", "-flto" };
+    flags: { "-Wall", "-Wno-discarded-qualifiers", "-g", "-flto", "object/libanalyse.a", "-lpthread", "-ldl" };
     output: "build";
     sourcedir: "src";
     depends: "util.h";
@@ -17,6 +17,11 @@ target c2tc:
     file: "mpc.c" @depends("mpc.c");
     file: "util.c";
     file: "recipe.c" @depends("mpc.h", "errors.h",
-                              "log.h", "tree_transform.h");
+                              "log.h", "tree_transform.h",
+                              "analyse.rs");
     file: "tests.c";
     file: "ooc.c" @depends("ooc.h");
+    run:
+    {
+        "rustc -g -o object/libanalyse.a src/analyse.rs > /dev/null"
+    };
