@@ -60,3 +60,75 @@ Nejdříve se ze stromu vyhází nepotřebné tokeny jako jsou závorky, uvozovk
 Vyčištěné stromy jsou poté předány analyzéru. Analyzér a spol. jsou momentálně jediná část c2tc, která není napsana v C ale v Rustu. Analyzér poté přečte každý strom a vytvoří objekty (resp. struktury), které obsahují data o některých typech symbolů nalezených ve stromech. Typy podporované ve vydání pro Informatiku 2016/2017 jsou: import příkazy, uživatelem definované typy a funkce.
 .IP \fB\n+[step] \fR
 Objekty jsou poté přečteny a je z nich vytvořen barevný výstup do stdout.
+.SH LIMITACE
+    Přestože c2tc dokáže parsovat veškerý kód v jazyce C2, provází ho i několik limitací. Za prvé, c2tc nedokáže spracovat makra. Jazyk C2 momentálně nemá vůbec makra, ale standardní překladač C2C je schopen zpracovat makra jazyka C, pokud jsou vložena do souborů C2. Protože v jazyce C2 oficiálně makra nejsou, nemá je ani c2tc.
+    c2tc používá k parsování knihovnu mpc. To na jednu stranu přináší velké výhody v podobě čitelné gramatiky jazyka a bezchybnosti parseru, ale na druhou stranu způsobuje i nevýhody v podobě delších parsovacích časů a špatného zobrazování syntaxních chyb. V současné době mpc pouze prozradí kde (resp. u jakého bloku kódu) se chyba nachází a co se mpc pokoušelo parsovat když narazilo na chybu.
+.SH MAPA KÓDU
+.TP
+.BR \fBarg.h\fR
+Modifikovaný header pro zpracování přepínačů z příkazové řádky. Původně napsáno Christopherem Lohmannem. Změny zahrnují možnost dát přepínače kamkoliv do příkazu, přepínače psané celým slovem (např. \fB\-\-test\fR), makra pro jednoduché přepínače a integrace s c2tc pro lepší čtení cílů/souborů určených ke kompilaci. Kvůli integraci s c2tc je verze 'arg.h' v c2tc nepoužitelná v jiných programech.
+.TP
+.BR \fBerrors.c/h\fR
+Obsahuje definice chyb a dříve-jmenovanou knihovničku 'throw'. Verze 'throw' v c2tc byla modifikována tak, aby používala knihovnu 'log.h' k logování a neukončovala program při první chybě, ale místo toho zaznamenávala počet chyb.
+.TP
+.BR \fBlog.h\fR
+Malá logovací knihovna
+.TP
+.BR \fBmain.c\fR
+Hlavní soubor. Obsahuje funkci main() a funkce pro zpracování přepínačů a pro zobrazení pomocného textu.
+.TP
+.BR \fBmpc.c/h\fR
+Relativně malá (cca 3k řádků) parsovací knihovna. c2tc ji využívá k vlastnímu parsování jazyka
+.TP
+.BR \fBooc.c/h\fR
+Malá knihovna zprostředkovájící minimální, neúplnou objektovou orientaci. ooc je zatím jediná moje knihovna, která je (ne)licencovaná jako volné dílo.
+.TP
+.BR \fBparsers.c\fR
+Soubor obsahující jak parser pro C2 tak pro recipe.txt soubory.
+.TP
+.BR \fBrecipe.c\fR
+Obsahuje funkce pro zpracování recipe.txt souborů.
+.TP
+.BR \fBshared.h\fR
+Společný header obsahující definice veřejných symbolů ze souborů, kde by jich bylo moc málo na to, aby bylo potřeba vytvořit vlastní header. Také obsahuje deklarace globálních proměnných.
+.TP
+.BR \fBsymbol_types.h\fR
+Header obsahující definice typů symbolů jazyka C2. Momentálně nevyužitý, jelikož zpracované symboly zatím neopouští část programu napsanou v Rustu.
+.TP
+.BR \fBtests.c\fR
+Obsahuje funkci pro testování pomocných funkcí pro práci s řetězci a funkcí pro práci s implementací vektorů podle Edda Manna..TP
+.BR \fBtree_transform.c/h\fR
+Obsahuje funkce pro vyčištění a zjednodušení stromu.
+.TP
+.BR \fBtypes.h\fR
+Obsahuje definice struktur pro cíle, recipe.txt atd. Také obsahuje výčtové typy.
+.TP
+.BR \fBtypes.rs\fR
+Obsahuje definice typů pro část programu napsanou v Rustu.
+.TP
+.BR \fBanalyse.rs\fR
+Obsahuje část programu, která analyzuje kód.
+.TP
+.BR \fButil.rs\fR
+Pomocné funkce pro Rustovou část c2tc.
+.SH PŘÍKLADY
+Příklady parsovatelné s c2tc je možné najít ve složkách \fB/build/orig\fR a \fB/build/tests\fR. Ve složce \fB/build/orig\fR jsou delší a komplexnější příklady, původně pro překladač C2C, na kterých jsem se podílel s Basem van den Bergem, v \fB/build/tests\fR jsou jednoduché příklady kódu, vytvořené specificky pro testování c2tc.
+.SH LICENSE
+c2tc je licensováno licencí 'ISC license':
+
+ISC License
+
+Copyright (c) 2016-2017, Lukáš Hozda <luk.hozda@gmail.com>
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+ 

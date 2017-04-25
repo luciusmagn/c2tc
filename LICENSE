@@ -1,26 +1,15 @@
-Copyright 2016 Lukáš Hozda (github.com/luciusmagn)
+ISC License
 
-//License based on gnuplot license
-Permission to use, copy, and distribute this software and its
-documentation for any purpose with or without fee is hereby granted,
-provided that the above copyright notice appear in all copies and
-that both that copyright notice and this permission notice appear
-in supporting documentation.
+Copyright (c) 2016-2017, Lukáš Hozda <luk.hozda@gmail.com>
 
-Permission to modify the software is granted, along with the right to
-distribute the complete modified source code. Improvements/fixes are to
-be distributed as patches to the released version.  Permission to
-distribute binaries produced by compiling modified sources is granted,
-provided you
-1. add special version identification to distinguish your version
-in addition to the base release version number,
-2. provide your name and address as the primary contact for the
-support of your modified version, and
-3. retain original contact information in regard to use of the base
-software.
-Permission to distribute the released version of the source code along
-with corresponding source modifications in the form of a patch file is
-granted with same provisions 1 through 3 for binary distributions.
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
 
-This software is provided "as is" without express or implied warranty
-to the extent permitted by applicable law.
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
