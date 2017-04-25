@@ -4,9 +4,6 @@
 #![allow(improper_ctypes)]
 
 use std::slice;
-use std::ffi::CStr;
-use std::ffi::CString;
-use std::os::raw::c_void;
 use std::os::raw::c_char;
 
 #[repr(C)]
@@ -66,8 +63,6 @@ pub struct param
 {
     pub p_type: symbol_type,
     pub name: *mut c_char,
-    pub default: String,
-    pub w_default: bool,
 }
 
 #[repr(C)]
