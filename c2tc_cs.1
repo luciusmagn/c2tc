@@ -55,8 +55,8 @@ soubory jsou pak předány parsovací části programu. Nejprve jsou ze zdrojov�
 .IP \fB\n+[step] \fR
 C2 parser parsuje soubor a vrácí nezpracovaný syntaxní strom. Ten je potom předán čistícím funkcím.
 .IP \fB\n+[step] \fR
-First, unnecessary tokens are deleted from the AST. That means keywords, brackets etc. Secondly, AST node tags are simplified and semi-resolved - special characters from node's tag are removed, name is combined and built-in grammatical rules are combined with their respective parent rules (e.g. \fB'head|module|>'\fR -> \fB'module'\fR, \fB'ident|regex'\fR -> \fB'ident'\fR).
+Nejdříve se ze stromu vyhází nepotřebné tokeny jako jsou závorky, uvozovky nebo přebytečná klíčová slova. Dále se zjednoduší značky jednotlivých uzlů stromu - odeberou se z nich speciální znaky, zkombinují se jména parsovacích pravidel a zruší se nepotřebná jména zabudovaných prvků (např. \fB'head|module|>'\fR -> \fB'module'\fR, \fB'ident|regex'\fR -> \fB'ident'\fR).
 .IP \fB\n+[step] \fR
-The trees are then passed to the analyser. The analyser and his friends are currently the only part of c2tc that isn't written in C, but in Rust (albeit with unsafe features). The analyser reads each tree and creates objects that contain data about several types of symbols in the language (currently import statements, user\-defined types and functions).
+Vyčištěné stromy jsou poté předány analyzéru. Analyzér a spol. jsou momentálně jediná část c2tc, která není napsana v C ale v Rustu. Analyzér poté přečte každý strom a vytvoří objekty (resp. struktury), které obsahují data o některých typech symbolů nalezených ve stromech. Typy podporované ve vydání pro Informatiku 2016/2017 jsou: import příkazy, uživatelem definované typy a funkce.
 .IP \fB\n+[step] \fR
-The objects are read and colorful output is produced to stdout.
+Objekty jsou poté přečteny a je z nich vytvořen barevný výstup do stdout.
