@@ -24,5 +24,6 @@ target c2tc:
     file: "ooc.c" @depends("ooc.h");
     run:
     {
+        "mkdir object",
         "rustc -g -o object/libanalyse.a src/analyse.rs > /dev/null"
     };
