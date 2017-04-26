@@ -7,7 +7,9 @@
 use util::*;
 use types::*;
 use std::slice;
+use std::mem;
 use std::os::raw::c_void;
+//use std::os::raw::c_char;
 
 mod util;
 mod types;
@@ -19,7 +21,12 @@ pub unsafe extern fn analyse(ast_ptr: *mut mpc_ast_t)
 {
     this_module = &mut module::new() as *mut module;
 
+	let v = vector::new();
+	(*v).add(mem::transmute( make_string("potato".to_string()) ));
+	//println!("test: {}", read_string((*v).get(0) as *mut c_char));
+
     process(ast_ptr, 0);
+    print_module();
 }
 
 pub unsafe fn process(ast_ptr: *mut mpc_ast_t, level: usize)
@@ -34,18 +41,10 @@ pub unsafe fn process(ast_ptr: *mut mpc_ast_t, level: usize)
 
         match tag.as_ref()
         {
-            "func" =>
-            {
-                println!("{}: {}", MAGENTA.to_string() + &"tag" + &RESET, YELLOW.to_string() + &tag + &RESET);
-                read_func(children[i] as *mut mpc_ast_t);
-            },
-            "module" =>
-            {
-                println!("{}: {}", MAGENTA.to_string() + &"tag", YELLOW.to_string() + &tag + &RESET);
-                println!("{} {}:", GREEN.to_string() + &"module" + &RESET, read_string((*child.get_children()[0]).contents));
-                (*this_module).name = (*child.get_children()[0]).contents;
-            },
-			
+            "func" => read_func(children[i] as *mut mpc_ast_t),
+            "module" => (*this_module).name = (*child.get_children()[0]).contents,
+            "import" => read_import(children[i] as *mut mpc_ast_t),
+            "usertype" => read_usertype(children[i] as *mut mpc_ast_t),
             "statement" => println!("statement"),
             _ => {},
         }
@@ -54,76 +53,278 @@ pub unsafe fn process(ast_ptr: *mut mpc_ast_t, level: usize)
 
 }
 
+pub unsafe fn read_import(ast_ptr: *mut mpc_ast_t)
+{
+	let ref ast = *ast_ptr;
+	let ref mut imp = *Box::into_raw(Box::new(import::new()));;
+	imp.name = (*ast.get_children()[0]).contents;
+
+	for i in 1..ast.children_num as usize
+	{
+		let content = read_string((*ast.get_children()[i]).contents);
+		match content.as_ref()
+		{
+			"local" => imp.local = true,
+			_ =>
+			{ 
+				//println!("test: {}", read_string((*ast.get_children()[i]).contents));
+				imp.w_alias = true;
+				imp.alias = (*ast.get_children()[i]).contents; 
+			},
+		}
+	}
+
+	(*(*this_module).imports).add(
+		mem::transmute(imp as *mut import)
+	);
+}
+
+pub unsafe fn read_usertype(ast_ptr: *mut mpc_ast_t)
+{
+	let ref ast = *ast_ptr;
+	let mut index = 0;
+	let ref mut t: user_type = *Box::into_raw(Box::new(user_type::new()));
+
+	if read_string((*ast.get_children()[0]).tag) == "public" { t.public = true; index = 1; }
+
+	let ref child = *ast.get_children()[index];
+	let tag = read_string( (*ast.get_children()[index]).tag );
+
+	t.name = (*child.get_children()[0]).contents;
+	
+	match tag.as_ref()
+	{
+		"globalunion" => t.t_type = type_kind::UNION,
+		"structure" => t.t_type = type_kind::STRUCT,
+		"enumtype" => t.t_type = type_kind::ENUM,
+		"functype" => t.t_type = type_kind::FUNC,
+		"alias" => t.t_type = type_kind::ALIAS,
+		_ => {}
+	}
+
+	(*(*this_module).types).add(
+		mem::transmute(t as *mut user_type)		
+	);
+}
+
 pub unsafe fn read_func(ast_ptr: *mut mpc_ast_t)
 {
     let ref ast = *ast_ptr;
     let mut base_index = 0;
-    let mut func: function = function::new(); 
+    let ref mut func: function = *Box::into_raw(Box::new(function::new()));; 
 
-    if read_string((*ast.get_children()[0]).tag) == "public" { func.public = true; base_index = 1}
+    if read_string((*ast.get_children()[0]).tag) == "public" { func.public = true; base_index = 1; }
     
     func.name = (*ast.get_children()[base_index + 2]).contents;
     let ref child = *ast.get_children()[base_index + 1];
     let tag = read_string( child.tag );
 
-    match tag.as_ref()
-    {
-        "natives" => 
-        { 
-            println!("it's a native {}", read_string(child.contents) );
-            let mut return_type: symbol_type = symbol_type::new();
-            return_type.name = child.contents;
-            func.ret_type = return_type;
-        },
-        "type" =>
-        {
-            let mut index = 0;
-            let mut is_const = false;
-            let mut is_vol = false;
-
-            if read_string( (*child.get_children()[0]).contents ) == "const"
-            {
-                is_const = true;
-                index += 1;
-            }
-            if read_string( (*child.get_children()[0]).contents ) == "volatile"
-            {
-                is_vol = true;
-                index += 1;
-            }
-
-            let mut return_type: symbol_type = symbol_type::new();
-            return_type.name = (*child.get_children()[index]).contents;
-            return_type.constant = is_const;
-            return_type.volatile = is_vol; 
-
-            for i in 0..child.children_num as usize
-            {
-                if read_string( (*child.get_children()[i]).tag ) == "ptrop"
-                || read_string( (*child.get_children()[i]).tag ) == "index"
-                {
-                    return_type.indirection += 1;
-                }
-            }
-
-            func.ret_type = return_type;
-        },
-        _ => {}
-    }
+    func.ret_type = read_type(child);
 
 	func.params = read_params(ast.get_children()[base_index + 3]);	
 
-	(*(*this_module).functions).add(&mut func as *mut c_void);
-    println!("{}type {} with indirection {}", if func.ret_type.constant { "constant " } 
-                                               else if func.ret_type.volatile { "volatile " } else { "" }, 
-                                               read_string(func.ret_type.name), func.ret_type.indirection);
+	(*(*this_module).functions).add(mem::transmute(func as *mut function));
 }
 
 pub unsafe fn read_params(ast_ptr: *const mpc_ast_t) -> *mut vector
 {
 	let ref ast = *ast_ptr;
 	let params:*mut vector = vector::new();
-	println!("read_params: {}",  read_string(ast.tag));
-	
+	for i in 0..ast.children_num as usize
+	{
+		let ref child = *ast.get_children()[i];
+		let ref mut p = *Box::into_raw(Box::new(param::new()));
+		p.p_type = read_type( &(*child.get_children()[0]) );
+		p.name = (*child.get_children()[1]).contents;
+
+		vector_add(
+			params,
+			(p as *mut param) as *mut c_void
+		);
+
+		let p:*mut param = (*params).get(i) as *mut param;
+	}
+
+	/*//read example
+	for i in 0..(*params).total()
+	{
+		let d = (*params).get(i) as *mut param;
+		println!(
+			"test param: {} {}", 
+			read_string( (*d).name ),
+			read_string( (*d).p_type.name ) 
+		);
+	}*/
+
 	params
+}
+
+pub unsafe fn read_param(ast_ptr: *const mpc_ast_t) -> param
+{
+	let ref ast = *ast_ptr;
+	let mut p = param::new();
+	p.p_type = read_type( &(*ast.get_children()[0]) );
+	if ast.children_num != 1 {p.name = (*ast.get_children()[1]).contents };
+	println!("{}", read_string(p.name));
+	p
+}
+
+pub unsafe fn read_type(ast: &mpc_ast_t) -> symbol_type
+{
+	if read_string(ast.tag) == "natives" || ast.children_num == 0
+	{
+		let mut s: symbol_type = symbol_type::new();
+		s.name = ast.contents;
+		return s;
+	}
+
+    let mut index = 0;
+    let mut is_const = false;
+    let mut is_vol = false;
+
+   	if read_string( (*ast.get_children()[0]).contents ) == "const"
+   	{
+       	is_const = true;
+       	index += 1;
+   	}
+   	if read_string( (*ast.get_children()[0]).contents ) == "volatile"
+   	{
+       	is_vol = true;
+       	index += 1;
+   	}
+
+	let mut s: symbol_type = symbol_type::new();
+	s.name = (*ast.get_children()[index]).contents;
+	s.constant = is_const;
+	s.volatile = is_vol; 
+	
+	for i in 0..ast.children_num as usize
+	{
+	    if read_string( (*ast.get_children()[i]).tag ) == "ptrop"
+	    || read_string( (*ast.get_children()[i]).tag ) == "index"
+	    {
+	        s.indirection += 1;
+	    }
+	}
+	s
+}
+
+pub unsafe fn print_module()
+{
+	let ref module = *this_module;
+	let ref mut imports = *module.imports;
+	let ref mut funcs = *module.functions;
+	let ref mut types = *module.types;
+
+	println!("{} {}:", 
+		GREEN.to_string() + &"module" + &RESET, 
+		read_string((*this_module).name)
+	);
+	
+	for i in 0..imports.total()
+	{
+		print!("  {}imports module{} ", YELLOW, RESET);
+		print!("{}'{}'{}", 
+			RED, 
+			read_string( 
+			(*(imports.get(i) as *mut import)).name
+			), 
+			RESET
+		);
+		if (*(imports.get(i) as *mut import)).local
+		{
+			print!("{}{}{}",
+				MAGENTA,
+				" locally",
+				RESET
+			);
+		}
+		if (*(imports.get(i) as *mut import)).w_alias
+		{
+			print!(" {}with alias{} ", CYAN, RESET);
+			print!("{}'{}'{}",
+				YELLOW, 
+				read_string( 
+					(*(imports.get(i) as *mut import)).alias
+				), 
+				RESET
+			);
+		}
+		print!("\n");
+	}
+
+	println!("\n  {}functions:{}", MAGENTA, RESET);
+	for i in 0..funcs.total()
+	{
+		print_func( (funcs.get(i) as *mut function) );
+	}
+
+	println!("\n  {}types:{}", MAGENTA, RESET);
+	for i in 0..types.total()
+	{
+		print_usertype( (types.get(i) as *mut user_type) );
+	}
+}
+
+pub unsafe fn print_func(func_ptr: *mut function)
+{
+	let ref func = *func_ptr;
+	let ref mut params = *func.params;
+	if func.public { print!("    {}public {}function{} ", GREEN, CYAN, RESET); }
+	else { print!("    {}function{} ", CYAN, RESET); }
+
+	print!("{}{}{}", YELLOW, read_string(func.name), RESET);
+	print!(" {}returning{} ", MAGENTA, RESET);
+	print_type(&func.ret_type);
+
+	print!("\n");
+	for i in 0..params.total()
+	{
+		let ref p = *(params.get(i) as *mut param);
+		print!("      parameter{} {}{}: ",
+			MAGENTA,
+			read_string(p.name),
+			RESET
+		);
+		print_type(&p.p_type);
+		print!("\n");
+	}
+}
+
+pub unsafe fn print_usertype(type_ptr: *mut user_type)
+{
+	let ref t = *type_ptr;
+
+	if t.public { print!("    {}public{} ", GREEN, CYAN); }
+		   else { print!("    "); }
+
+	match t.t_type
+	{
+		type_kind::ALIAS => print!("{}{}{}", YELLOW, "alias type", RESET),
+		type_kind::STRUCT => print!("{}{}{}", YELLOW, "structure", RESET),
+		type_kind::UNION => print!("{}{}{}", YELLOW, "union", RESET),
+		type_kind::ENUM => print!("{}{}{}", YELLOW, "enumeration", RESET),
+		type_kind::FUNC => print!("{}{}{}", YELLOW, "function type", RESET),
+		type_kind::TEMP => {}	
+	}
+
+	print!(" {}{}{}\n", CYAN, read_string(t.name), RESET);
+}
+
+pub unsafe fn print_type(s_type: &symbol_type)
+{
+	if s_type.constant { print!("constant "); }
+	if s_type.volatile { print!("volatile "); }
+
+	print!("{}{}{} ",
+		RED,
+		read_string(s_type.name),
+		RESET
+	);
+
+	print!("{}[i:{}]{}",
+		GREEN,
+		s_type.indirection,
+		RESET
+	);
 }
