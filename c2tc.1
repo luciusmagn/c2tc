@@ -8,8 +8,8 @@ c2tc \- A tiny compiler for the C2 language. Currently only provides simple code
 .B c2tc
 is a tiny compiler for the C2 language. It uses Daniel Holden's (orangeduck's) \fBmicro parser combinators\fR library (see https://github.com/orangeduck/mpc for more info) for parsing. The version included in c2tc is modified to print index of each node relative to their parent node and to be very colorful. Since c2tc doesn't utilise an ad hoc parser but uses this library, the parsing efficiency seems to be bigger than \fBO(n)\fR but lower than \fBO(n^2)\fR. This is especially noticeable on files of great sizes (10k+ lines). Parsing currently takes the longest time of all the tasks the compiler performs. Speeding up parsing is on the imaginary TODO list.
     For collections of dynamic sizes, c2tc mostly utilizes own implementation of vectors based on a tutorial written by Edd Mann (link: \fBhttp://eddmann.com/posts/implementing-a-dynamic-vector-array-in-c/\fR). The version of vectors provided in c2tc was originally implemented as a C2 paste-in library. A minimalistic implementation of a single-linked list is utilized by the included ooc library. The ooc library provides basic means for object-orientation, but remains mostly unused at the moment as the insides of functions are not being processed yet.
-    Error handling is facilitated by the \fB'throw'\fR library by \fBJoseph Werle <joseph.werle@gmail.com>\fR. In c2tc, \fB'throw'\fR is bundled inside the \fIerror.c/h\fR files for the purpose of conservating spaces and avoiding litering the repository with a lot of tiny source files. The version of 'throw' included in c2tc has also been modified to use the \fI'log.h'\fR library (also created by Joseph Werle) to produce output to stderr.
-    Logging is handled by the afore-mentioned 'log.h' library by Joseph Werle. Currently, c2tc only logs into stdout, which is unlikely to change. Logging to a file can be easily done in the shell with pipes. c2tc tries to stay as small as possible and logging to files through a command-line option is a futile feature.
+    Error handling is facilitated by the \fB'throw'\fR library by \fBJoseph Werle <joseph.werle@gmail.com>\fR. In c2tc, \fB'throw'\fR is bundled inside the \fIerror.c/h\fR files for the purpose of conservating spaces and avoiding litering the repository with a lot of tiny source files. The version of 'throw' included in c2tc has also been modified to use the \fI'log.h'\fR library by Thorsten Lorenz to produce output to stderr.
+    Logging is handled by the afore-mentioned 'log.h' library. Currently, c2tc only logs into stdout, which is unlikely to change. Logging to a file can be easily done in the shell with pipes. c2tc tries to stay as small as possible and logging to files through a command-line option is a futile feature.
     c2tc has a very small memory footprint. However, many pointers are intentionally not freed so there are memory leaks. Memory footprint of c2tc will most likely never reach sizes that would be threatening for common PCs. Because of the memory leaks, c2tc is \fBnot\fI recommended for embedded devices, but compiling and running it should be possible on any system that satisfies the dependencies.
 .SH OPTIONS
 .TP
@@ -20,7 +20,7 @@ Print help text.
 Print usage test.
 .TP
 .BR \-i ", " \-\-info\fR
-Print info about each target found in the rustyfile.
+Print extra info.
 .TP
 .BR \-d ", " \-\-dir " " \fIpath\fR
 Change directory before starting to look for recipe file.
@@ -59,4 +59,4 @@ First, unnecessary tokens are deleted from the AST. That means keywords, bracket
 .IP \fB\n+[step] \fR
 The trees are then passed to the analyser. The analyser and his friends are currently the only part of c2tc that isn't written in C, but in Rust (albeit with unsafe features). The analyser reads each tree and creates objects that contain data about several types of symbols in the language (currently import statements, user\-defined types and functions).
 .IP \fB\n+[step] \fR
-The objects are read and colorful output is produced to stdout.
+The objects are then read and colorful output is produced to stdout.
