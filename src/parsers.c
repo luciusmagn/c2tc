@@ -301,7 +301,6 @@ mpc_ast_t* c2parse(char* filename)
         commentless = malloc(sizeof(char) * strlen(temp));
         strcpy(commentless, temp);
         free(currenttxt);
-        free(temp);
     }
     else
         throw(&enoaccs, "Cannot access file");
