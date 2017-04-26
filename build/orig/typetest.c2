@@ -99,8 +99,6 @@ type Callback struct {
     Func1 cb;
 }
 
-func void myfunc(int32 a, ...) {}
-
 func void myfunc2(int32 a = 10, int32 b = 20) {}
 
 public func int32 main() {

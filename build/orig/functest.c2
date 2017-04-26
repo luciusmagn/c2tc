@@ -12,8 +12,6 @@ func int32 add(int32 a, int32 b) {
 
 func void doThing() {}
 
-func void printf(int32 argc, const char* text, ...) {}
-
 type Coor int32;  // temp until we support multi-module
 
 func utils.Coor getCoor(int32 argc, char*[] argv) {

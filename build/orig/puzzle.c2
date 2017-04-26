@@ -98,7 +98,7 @@ func int32 printPath(int32 idx) {
 
 }
 
-func int32 main(int32, const int8*[]) {
+func int32 main(int32 argc, const int8*[] argv) {
     for (int32 p=0; p<POINT_MAX; p++) {
         for (int32 d=0; d<DEPTH_MAX; d++) {
             paths[index(p,d)] = -1;
