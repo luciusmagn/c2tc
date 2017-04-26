@@ -49,6 +49,7 @@ void deluseless(mpc_ast_t* node)
 {
     START_REM
     {
+        REM_CHAR(",")
         REM_CHAR(":")
         REM_CHAR(";")
         REM_CHAR("\"")
@@ -60,6 +61,7 @@ void deluseless(mpc_ast_t* node)
         REM_STRING("module")
         REM_STRING("import")
         REM_STRING("as")
+        REM_STRING("type")
         REM_STRING("@(")
         REM_BY_TAG("start|regex")
         REM_BY_TAG("end|regex")
@@ -113,6 +115,7 @@ void simplify_tags(mpc_ast_t* node)
         NORMAL("alias")
         NORMAL("enumtype")
         NORMAL("enumeration")
+        NORMAL("functype")
 
         NORMAL("attribute")
         NORMAL("attrtype")
