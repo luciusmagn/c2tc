@@ -102,7 +102,20 @@ impl param
 		param
 		{
 			p_type: symbol_type::new(),
+			name: make_string("<empty>".to_string()),
+		}
+	}
+}
+
+impl user_type
+{
+	pub unsafe fn new() -> user_type
+	{
+		user_type
+		{
+			t_type: type_kind::TEMP,
 			name: make_string("placeholder".to_string()),
+			public: false
 		}
 	}
 }
@@ -118,5 +131,13 @@ impl vector
 	pub unsafe fn add(&mut self, item: *mut c_void)
 	{
 		vector_add(self as *mut vector, item);
+	}
+	pub unsafe fn get(&mut self, index: usize) -> *mut c_void
+	{
+		vector_get(self as *mut vector, index as i32)
+	}
+	pub unsafe fn total(&mut self) -> usize
+	{
+		vector_total(self as *mut vector) as usize
 	}
 }
