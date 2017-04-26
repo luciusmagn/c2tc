@@ -1,2 +1,8 @@
-doc:
-	groff -k -Tutf8 -man c2tc_cs.1 | less -r
+all:
+	rusty 2> /dev/null
+
+clean:
+    rusty clean
+
+install:
+    rusty install
