@@ -27,3 +27,18 @@ target c2tc:
         "mkdir object",
         "rustc -g -o object/libanalyse.a src/analyse.rs > /dev/null"
     };
+    install:
+    {
+        "cp ./build/c2tc /usr/bin/c2tc",
+        "chmod 0777 /usr/bin/rusty",
+        "mkdir /usr/man 2> /dev/null",
+        "mkdir /usr/man/man1 2> /dev/null",
+        "cp ./c2tc.1 /usr/man/man1",
+        "echo updating mandb; mandb -q"
+    };
+    uninstall:
+    {
+        "rm -f /usr/bin/c2tc",
+        "rm -f /usr/man/man1/c2tc.1",
+        "echo updating mandb; mandb -q"
+    }
