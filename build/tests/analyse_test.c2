@@ -1,13 +1,17 @@
 module hello_world;
 
-import stdio local;
+import stdio as io local;
+import stdlib local;
+import strings as str;
+import unistd;
 
-public func potato*** main(int32 argc, int8*[] argv) {
+/*public func potato*** main(int32 argc, int8*[] argv) {
     printf("Hello World!\n");
     return 0;
-}
+}*/
 
-func banana_type*[][] moasdcxyin() {}
-func banana_type**[] moiadc() {}
-func int8*[][] moiscyxn() {}
-func const char*  char_ptr() {}
+//func banana_type*[][] moasdcxyin() {}
+//func banana_type**[] moiadc() {}
+//func int8*[][] moiscyxn() {}
+//func const char*  char_ptr() {}
+func void param_test(int32 a, int64 b, float32 c, float64 d) {}
