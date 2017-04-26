@@ -79,6 +79,7 @@ pub struct user_type
 {
     pub name: *mut c_char,
     pub t_type: type_kind,
+    pub public: bool,
 }
 
 #[repr(C)]
@@ -86,7 +87,10 @@ pub enum type_kind
 {
     ALIAS,
     STRUCT,
+    UNION,
     ENUM,
+    FUNC,
+    TEMP
 }
 
 impl mpc_ast_t
