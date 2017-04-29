@@ -6,11 +6,11 @@ c2tc \- Miniaturní překladač pro jazyk C2. Momentálně pouze vypisuje inform
 [\fB\-heidofatA?\fR] [\fB\-\-help\fR] [\fB\-\-usage\fR] [\fB\-\-experiment\fR] [\fB\-\-ast0\fR] [\fB\-\-ast1\fR] [\fB\-\-test\fR] [\fB-f\fR [\fB\-o\fR \fINAME\fR]] [\fB\-d\fR \fIDIR\fR] [\fB\-\-dir\fR \fIDIR\fR] [\fITARGETS\fR]
 .SH DESCRIPTION
 .B c2tc
-je miniaturní překladač pro jazyk C2. Používá parsovací knihovnu \fBmpc\fR Daniela Holdena (orangeduck) (odkaz: https://github.com/orangeduck/mpc for more info). Verze obsažená v c2tc je modifikována k vypisování indexu uzlů stromu relativně k jejich rodičům a produkování barevného výstupu. Protože c2tc nepoužívá ad hoc parser ale tuto knihovnu, je parsovací efektivita někde mezi \fBO(n)\fR a \fBO(n^2)\fR. To je obzvlášť znatelné při parsování velkých souborů (10k řádků a více). Parsovaní momentálně zabírá nejvíc času ze všech úloh prováděných překladačem.
-    Pro sbírky dynamické velikosti c2tc používá vlastní implementaci vektoru podle tutoriálu Edda Manna (link: \fBhttp://eddmann.com/posts/implementing-a-dynamic-vector-array-in-c/\fR). Verze vektoru v c2tc byla původně implementována jako vkladatelná knihovna pro C2. Minimalistická implementace lineárního spojového seznamu je využívaná vloženou knihovnou ooc. Knihovna ooc poskytuje základní prostředkypro objektově-orientované programování, ale zůstává z většiny nevyužitá, protože c2tc ještě nezpracovává vnitřky funkcí.
+je miniaturní překladač pro jazyk C2. Používá parsovací knihovnu \fBmpc\fR Daniela Holdena (orangeduck) (odkaz: https://github.com/orangeduck/mpc for more info). Verze obsažená v c2tc je modifikována k vypisování indexu uzlů stromu relativně k jejich rodičům a produkování barevného výstupu. Protože c2tc nepoužívá ad hoc parser, ale tuto knihovnu, je parsovací efektivita někde mezi \fBO(n)\fR a \fBO(n^2)\fR. To je obzvlášť znatelné při parsování velkých souborů (10k řádků a více). Parsování momentálně zabírá nejvíc času ze všech úloh prováděných překladačem.
+    Pro sbírky dynamické velikosti c2tc používá vlastní implementaci vektoru podle tutoriálu Edda Manna (link: \fBhttp://eddmann.com/posts/implementing-a-dynamic-vector-array-in-c/\fR). Verze vektoru v c2tc byla původně implementována jako vkladatelná knihovna pro C2. Minimalistická implementace lineárního spojového seznamu je využívaná vloženou knihovnou ooc. Knihovna ooc poskytuje základní prostředky pro objektově-orientované programování, ale zůstává z většiny nevyužitá, protože c2tc ještě nezpracovává vnitřky funkcí.
     Zpracovávání chyb je zprostředkováno knihovnou \fB'throw'\fR Josepha Werleho \fB<joseph.werle@gmail.com>\fR. V c2tc je 'throw' zabudováno do souborů \fIerror.c/h\fR z důvodu ušetření místa a snížení počtu zdrojových souborů v repozitáři. Poskytnutá verze je modifikována k tomu, aby využívala knihovnu \fB'log.h'\fR Thorstena Lorenze k produkování výstupu do stderr.
-    Logging je zpracován dříve-jmenovanou knihovnou 'log.h'. Momentálně c2tc vypisuje veškeré informace do stdout, což se pravděpodobně nezmění. Logging do souboru je jednoduše zprostředkován pomocí přesměrování výstupu v shellu. c2tc se snaží být co nejmenší a proto logging do souborů v c2tc není vítaným rozšířením.
-    c2tc má velmi malé nároky na paměť. Mnoho ukazatelů ale není úmyslně uvolněno a proto dochází k únikům paměti. Paměť využítá c2tc pravděpodobně nikdy nedosáhne velikostí, které by byly ohrožující pro současné počítače, a proto malé úniky paměti nejsou akutním problémem. Kvůli únikum paměti není c2tc doporučen na vestavěné systém, přestože jej zle zkompilovat a zpustit na jakémkoliv systému který splzávislosti.
+    Logging je zpracován dříve-jmenovanou knihovnou 'log.h'. Momentálně c2tc vypisuje veškeré informace do stdout, což se pravděpodobně nezmění. Logging do souboru je jednoduše zprostředkován pomocí přesměrování výstupu v shellu. c2tc se snaží být co nejmenší, a proto logging do souborů v c2tc není vítaným rozšířením.
+    c2tc má velmi malé nároky na paměť. Mnoho ukazatelů ale není úmyslně uvolněno, a proto dochází k únikům paměti. Paměť využítá c2tc pravděpodobně nikdy nedosáhne velikostí, které by byly ohrožující pro současné počítače, a proto malé úniky paměti nejsou akutním problémem. Kvůli únikum paměti není c2tc doporučen na vestavěné systémy, přestože jej lze zkompilovat a spustit na jakémkoliv systému, který splňuje závislosti.
 .SH OPTIONS
 .TP
 .BR \-h ", " \-\-help\fR
@@ -26,7 +26,7 @@ Zobrazí extra informace při běhu programu.
 Přejít do složky \fIpath\fR před hledáním recipe souboru.
 .TP
 .BR \-a ", " \-\-ast0\fR
-Vypíše syntaxní strom před tím než proběhne jakékoliv čištění/zjednodušování
+Vypíše syntaxní strom před tím, než proběhne jakékoliv čištění/zjednodušování
 .TP
 .BR \-A ", " \-\-ast1\fR
 Vypíše syntaxní strom po jeho zjednodušení
@@ -38,18 +38,18 @@ Změní jméno vygenerovaného cíle v souborovém módu.
 Zapne experimentální funkce. Změna pravděpodobně nebude postřehnuta uživatelem. Experimentální funkce se s vývojem rychle mění.
 .TP
 .BR \-f ", " \-\-file\fR
-Přepna na souborový mód. Souborový mód znamená, že jména, který c2tc dostal jako vstup jsou brána jako jména souborů spíš než jména cílů. c2tc vygeneruje  ad hoc cíl pro tyto soubory, jehož jméno může být změněno přepínačem -o.
+Přepíná na souborový mód. Souborový mód znamená, že jména, která c2tc dostal jako vstup, jsou brána jako jména souborů spíš než jména cílů. c2tc vygeneruje  ad hoc cíl pro tyto soubory, jehož jméno může být změněno přepínačem -o.
 .TP
 .BR \-t ", " \-\-test\fR
 Vypíše testovací informace. To také znamená zacházení se soubory jako s testy spíše než kompilačními jednotkami.
 .SH MODUS OPERANDI
 .nr step 1 1
 .IP \fB\n[step] 6\fR
-c2tc přečte parametry z příkazového řádku. Pokud není spuštěný souborový mód, začne c2tc iterativně hledat recipe.txt dokud ho nenajde nebo nedosáhne kořenového adresáře. Složka se souborem recipe.txt se stane pracovním adresářem programu.
+c2tc přečte parametry z příkazového řádku. Pokud není spuštěný souborový mód, začne c2tc iterativně hledat recipe.txt, dokud ho nenajde nebo nedosáhne kořenového adresáře. Složka se souborem recipe.txt se stane pracovním adresářem programu.
 .IP \fB\n+[step] \fR
-c2tc přečte soubor recipe.txt a odebera komentáře a prázdné řádk. Zbytek je potom parsován čtečkou recipe souborů, která, narozdíl od C2 parseru, je ad hoc parser, a vytvoří cíle na základě dat.
+c2tc přečte soubor recipe.txt a odebere komentáře a prázdné řádky. Zbytek je potom parsován čtečkou recipe souborů, která, na rozdíl od C2 parseru, je ad hoc parser, a vytvoří cíle na základě dat.
 .IP \fB\n+[step] \fR
-na základě informací poskytnutých v souboru recipe.txt, c2tc najde soubory a zkontroluje, jestli jsou čitelné. Pokud c2tc narazí na nečitelný soubor, vypíše chybu.
+na základě informací poskytnutých v souboru recipe.txt c2tc najde soubory a zkontroluje, jestli jsou čitelné. Pokud c2tc narazí na nečitelný soubor, vypíše chybu.
 .IP \fB\n+[step] \fR
 soubory jsou pak předány parsovací části programu. Nejprve jsou ze zdrojového kódu odebrány komentáře, poté je text předán C2 parseru.
 .IP \fB\n+[step] \fR
@@ -57,12 +57,12 @@ C2 parser parsuje soubor a vrácí nezpracovaný syntaxní strom. Ten je potom p
 .IP \fB\n+[step] \fR
 Nejdříve se ze stromu vyhází nepotřebné tokeny jako jsou závorky, uvozovky nebo přebytečná klíčová slova. Dále se zjednoduší značky jednotlivých uzlů stromu - odeberou se z nich speciální znaky, zkombinují se jména parsovacích pravidel a zruší se nepotřebná jména zabudovaných prvků (např. \fB'head|module|>'\fR -> \fB'module'\fR, \fB'ident|regex'\fR -> \fB'ident'\fR).
 .IP \fB\n+[step] \fR
-Vyčištěné stromy jsou poté předány analyzéru. Analyzér a spol. jsou momentálně jediná část c2tc, která není napsana v C ale v Rustu. Analyzér poté přečte každý strom a vytvoří objekty (resp. struktury), které obsahují data o některých typech symbolů nalezených ve stromech. Typy podporované ve vydání pro Informatiku 2016/2017 jsou: import příkazy, uživatelem definované typy a funkce.
+Vyčištěné stromy jsou poté předány analyzéru. Analyzér a spol. jsou momentálně jediná část c2tc, která není napsana v C, ale v Rustu. Analyzér poté přečte každý strom a vytvoří objekty (resp. struktury), které obsahují data o některých typech symbolů nalezených ve stromech. Typy podporované ve vydání pro Informatiku 2016/2017 jsou: import příkazy, uživatelem definované typy a funkce.
 .IP \fB\n+[step] \fR
 Objekty jsou poté přečteny a je z nich vytvořen barevný výstup do stdout.
 .SH LIMITACE
-    Přestože c2tc dokáže parsovat veškerý kód v jazyce C2, provází ho i několik limitací. Za prvé, c2tc nedokáže spracovat makra. Jazyk C2 momentálně nemá vůbec makra, ale standardní překladač C2C je schopen zpracovat makra jazyka C, pokud jsou vložena do souborů C2. Protože v jazyce C2 oficiálně makra nejsou, nemá je ani c2tc.
-    c2tc používá k parsování knihovnu mpc. To na jednu stranu přináší velké výhody v podobě čitelné gramatiky jazyka a bezchybnosti parseru, ale na druhou stranu způsobuje i nevýhody v podobě delších parsovacích časů a špatného zobrazování syntaxních chyb. V současné době mpc pouze prozradí kde (resp. u jakého bloku kódu) se chyba nachází a co se mpc pokoušelo parsovat když narazilo na chybu.
+    Přestože c2tc dokáže parsovat veškerý kód v jazyce C2, provází ho i několik limitací. Za prvé, c2tc nedokáže zpracovat makra. Jazyk C2 momentálně nemá vůbec makra, ale standardní překladač C2C je schopen zpracovat makra jazyka C, pokud jsou vložena do souborů C2. Protože v jazyce C2 oficiálně makra nejsou, nemá je ani c2tc.
+    c2tc používá k parsování knihovnu mpc. To na jednu stranu přináší velké výhody v podobě čitelné gramatiky jazyka a bezchybnosti parseru, ale na druhou stranu způsobuje i nevýhody v podobě delších parsovacích časů a špatného zobrazování syntaxních chyb. V současné době mpc pouze prozradí, kde (resp. u jakého bloku kódu) se chyba nachází, a co se mpc pokoušelo parsovat, když narazilo na chybu.
 .SH MAPA KÓDU
 .TP
 .BR \fBarg.h\fR
@@ -96,7 +96,8 @@ Společný header obsahující definice veřejných symbolů ze souborů, kde by
 Header obsahující definice typů symbolů jazyka C2. Momentálně nevyužitý, jelikož zpracované symboly zatím neopouští část programu napsanou v Rustu.
 .TP
 .BR \fBtests.c\fR
-Obsahuje funkci pro testování pomocných funkcí pro práci s řetězci a funkcí pro práci s implementací vektorů podle Edda Manna..TP
+Obsahuje funkci pro testování pomocných funkcí pro práci s řetězci a funkcí pro práci s implementací vektorů podle Edda Manna.
+.TP
 .BR \fBtree_transform.c/h\fR
 Obsahuje funkce pro vyčištění a zjednodušení stromu.
 .TP
@@ -114,7 +115,7 @@ Pomocné funkce pro Rustovou část c2tc.
 .SH PŘÍKLADY
 Příklady parsovatelné s c2tc je možné najít ve složkách \fB/build/orig\fR a \fB/build/tests\fR. Ve složce \fB/build/orig\fR jsou delší a komplexnější příklady, původně pro překladač C2C, na kterých jsem se podílel s Basem van den Bergem, v \fB/build/tests\fR jsou jednoduché příklady kódu, vytvořené specificky pro testování c2tc.
 .SH LICENSE
-c2tc je licensováno licencí 'ISC license':
+c2tc je licencováno licencí 'ISC license':
 
 ISC License
 
