@@ -3,7 +3,7 @@ compiler: "gcc";
 target c2tc:
     name: "c2tc";
     type: executable;
-    flags: { "-Wall", "-Wno-discarded-qualifiers", "-g", "-flto", "object/libanalyse.a", "-lpthread", "-ldl" };
+    flags: { "-std=gnu99", "-Wall", "-Wno-discarded-qualifiers", "-g", "-flto", "object/libanalyse.a", "-lpthread", "-ldl" };
     output: "build";
     sourcedir: "src";
     depends: "util.h";
@@ -41,4 +41,4 @@ target c2tc:
         "rm -f /usr/bin/c2tc",
         "rm -f /usr/man/man1/c2tc.1",
         "echo updating mandb; mandb -q"
-    }
+    };
