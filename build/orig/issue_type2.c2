@@ -1,4 +1,5 @@
 module type2;
+import c2;
 
 public type Long uint32;
 
