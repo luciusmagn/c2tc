@@ -1,0 +1,35 @@
+## Here is an example for C2.
+syntax "C2" "\.c2i?$"
+#everything else
+color brightred "\<[A-Z_][0-9A-Z_]+\>" 
+#types
+color green "\<(void|float32|float64|bool|char|u?int8|u?int16|u?int32|u?int64|sizeof|elemsof|enum|void|const|volatile|auto|struct|union|type|)\>"
+#modulestuff
+color brightyellow "\<(module|public|local|type|import)\>"
+#constants?
+color yellow "\<(true|false|nil|enum_min|enum_max)\>"
+#flow + as
+color brightgreen "\<(as|for|if|while|do|else|case|default|switch)\>"
+#types, too
+color brightcyan "\<(struct|alias|union|func|enum)\>"
+#flow no. 2
+color brightmagenta "\<(goto|continue|break|return|func|fallthrough)\>"
+#char literals
+color brightmagenta "'([^'\]|(\\["'abfnrtv\\]))'" "'\\(([0-3]?[0-7]{1,2}))'" "'\\x[0-9A-Fa-f]{1,2}'"
+
+#operators
+color yellow "[.:;,+*|=!\%]" "<" ">" "/" "-" "&" 
+
+#parenthesis
+color magenta "[(){}]" "\[" "\]"
+
+#comments
+color brightblue "//.*"
+color brightblue start="/\*" end="\*/"
+
+#strings
+color cyan "<[^= 	]*>" ""(\\.|[^"])*""
+
+#trailing whitespace
+color ,green "[[:space:]]+$"
+
