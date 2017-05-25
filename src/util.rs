@@ -28,19 +28,19 @@ extern
     pub fn vector_get(l: *mut vector, index: i32) -> *mut c_void;
 }
 
-pub unsafe fn make_string(s: String) -> *mut c_char
+pub fn make_string(s: String) -> *mut c_char
 {
     CString::new(s).unwrap().into_raw()
 }
 
-pub unsafe fn read_string(s: *mut c_char) -> String
+pub fn read_string(s: *mut c_char) -> String
 {
-    CStr::from_ptr(s).to_string_lossy().into_owned()
+    unsafe { CStr::from_ptr(s).to_string_lossy().into_owned() }
 }
 
 impl module
 {
-    pub unsafe fn new() -> module 
+    pub fn new() -> module 
     {
         module
         {
@@ -54,7 +54,7 @@ impl module
 
 impl import
 {
-    pub unsafe fn new() -> import
+    pub fn new() -> import
     {
         import
         {
@@ -68,7 +68,7 @@ impl import
 
 impl function
 {
-	pub unsafe fn new() -> function
+	pub fn new() -> function
 	{
 		function
 		{
@@ -83,7 +83,7 @@ impl function
 
 impl symbol_type
 {
-	pub unsafe fn new() -> symbol_type
+	pub fn new() -> symbol_type
 	{
 		symbol_type
 		{
@@ -97,7 +97,7 @@ impl symbol_type
 
 impl param
 {
-	pub unsafe fn new() -> param
+	pub fn new() -> param
 	{
 		param
 		{
@@ -109,7 +109,7 @@ impl param
 
 impl user_type
 {
-	pub unsafe fn new() -> user_type
+	pub fn new() -> user_type
 	{
 		user_type
 		{
@@ -120,24 +120,67 @@ impl user_type
 	}
 }
 
+/*
+** Defaults
+*/
+
+impl Default for user_type
+{
+	fn default() -> Self
+	{
+		Self::new()
+	}
+}
+
+impl Default for param
+{
+	fn default() -> Self
+	{
+		Self::new()
+	}
+}
+
+impl Default for symbol_type
+{
+	fn default() -> Self
+	{
+		Self::new()
+	}
+}
+
+impl Default for function
+{
+	fn default() -> Self
+	{
+		Self::new()
+	}
+}
+
+/*
+** C vector
+*/
+
 impl vector
 {
-	pub unsafe fn new() -> *mut vector
+	pub fn new() -> *mut vector
 	{ 
-		let mut x = vector_alloc();
-		vector_init(x);
-		x 
+		unsafe
+		{
+			let mut x = vector_alloc();
+			vector_init(x);
+			x
+		} 
 	}
-	pub unsafe fn add(&mut self, item: *mut c_void)
+	pub fn add(&mut self, item: *mut c_void)
 	{
-		vector_add(self as *mut vector, item);
+		unsafe { vector_add(self as *mut vector, item); }
 	}
-	pub unsafe fn get(&mut self, index: usize) -> *mut c_void
+	pub fn get(&mut self, index: usize) -> *mut c_void
 	{
-		vector_get(self as *mut vector, index as i32)
+		unsafe { vector_get(self as *mut vector, index as i32) }
 	}
-	pub unsafe fn total(&mut self) -> usize
+	pub fn total(&mut self) -> usize
 	{
-		vector_total(self as *mut vector) as usize
+		unsafe { vector_total(self as *mut vector) as usize }
 	}
 }

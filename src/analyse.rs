@@ -1,4 +1,6 @@
 #![crate_type = "staticlib"]
+//#![feature(plugin)]
+//#![plugin(clippy)]
 #![allow(unused_variables)]
 #![allow(non_upper_case_globals)]
 #![allow(dead_code)]
@@ -23,7 +25,6 @@ pub unsafe extern fn analyse(ast_ptr: *mut mpc_ast_t)
 
 	let v = vector::new();
 	(*v).add(mem::transmute( make_string("potato".to_string()) ));
-	//println!("test: {}", read_string((*v).get(0) as *mut c_char));
 
     process(ast_ptr, 0);
     print_module();
@@ -31,32 +32,32 @@ pub unsafe extern fn analyse(ast_ptr: *mut mpc_ast_t)
 
 pub unsafe fn process(ast_ptr: *mut mpc_ast_t, level: usize)
 {
-    let ast = &*ast_ptr;
+    let ast = &(*ast_ptr);
     let children = slice::from_raw_parts(ast.children, ast.children_num as usize);
 
-    for i in 0 .. ast.children_num as usize
+    for child_ptr in children.iter().take(ast.children_num as usize)//0 .. ast.children_num as usize
     {
-        let tag = read_string( (*children[i]).tag );
-        let ref child = *children[i];
+        let child = *child_ptr;
+        let tag = read_string((*child).tag);
 
         match tag.as_ref()
         {
-            "func" => read_func(children[i] as *mut mpc_ast_t),
-            "module" => (*this_module).name = (*child.get_children()[0]).contents,
-            "import" => read_import(children[i] as *mut mpc_ast_t),
-            "usertype" => read_usertype(children[i] as *mut mpc_ast_t),
+            "func" => read_func(child as *mut mpc_ast_t),
+            "module" => (*this_module).name = (*(*child).get_children()[0]).contents,
+            "import" => read_import(child as *mut mpc_ast_t),
+            "usertype" => read_usertype(child as *mut mpc_ast_t),
             "statement" => println!("statement"),
             _ => {},
         }
-        process(children[i] as *mut mpc_ast_t, level + 1);
+        process(child as *mut mpc_ast_t, level + 1);
     }
 
 }
 
 pub unsafe fn read_import(ast_ptr: *mut mpc_ast_t)
 {
-	let ref ast = *ast_ptr;
-	let ref mut imp = *Box::into_raw(Box::new(import::new()));;
+	let ast = &(*ast_ptr);
+	let mut imp = &mut(*Box::into_raw(Box::new(import::new())));
 	imp.name = (*ast.get_children()[0]).contents;
 
 	for i in 1..ast.children_num as usize
@@ -67,7 +68,6 @@ pub unsafe fn read_import(ast_ptr: *mut mpc_ast_t)
 			"local" => imp.local = true,
 			_ =>
 			{ 
-				//println!("test: {}", read_string((*ast.get_children()[i]).contents));
 				imp.w_alias = true;
 				imp.alias = (*ast.get_children()[i]).contents; 
 			},
@@ -81,13 +81,13 @@ pub unsafe fn read_import(ast_ptr: *mut mpc_ast_t)
 
 pub unsafe fn read_usertype(ast_ptr: *mut mpc_ast_t)
 {
-	let ref ast = *ast_ptr;
+	let ast = &(*ast_ptr);
 	let mut index = 0;
-	let ref mut t: user_type = *Box::into_raw(Box::new(user_type::new()));
+	let mut t: &mut user_type = &mut(*Box::into_raw(Box::new(user_type::new())));
 
 	if read_string((*ast.get_children()[0]).tag) == "public" { t.public = true; index = 1; }
 
-	let ref child = *ast.get_children()[index];
+	let child = &(*ast.get_children()[index]);
 	let tag = read_string( (*ast.get_children()[index]).tag );
 
 	t.name = (*child.get_children()[0]).contents;
@@ -109,14 +109,14 @@ pub unsafe fn read_usertype(ast_ptr: *mut mpc_ast_t)
 
 pub unsafe fn read_func(ast_ptr: *mut mpc_ast_t)
 {
-    let ref ast = *ast_ptr;
+    let ast = &(*ast_ptr);
     let mut base_index = 0;
-    let ref mut func: function = *Box::into_raw(Box::new(function::new()));; 
+    let mut func: &mut function = &mut(*Box::into_raw(Box::new(function::new()))); 
 
     if read_string((*ast.get_children()[0]).tag) == "public" { func.public = true; base_index = 1; }
     
     func.name = (*ast.get_children()[base_index + 2]).contents;
-    let ref child = *ast.get_children()[base_index + 1];
+    let child = &(*ast.get_children()[base_index + 1]);
     let tag = read_string( child.tag );
 
     func.ret_type = read_type(child);
@@ -126,14 +126,24 @@ pub unsafe fn read_func(ast_ptr: *mut mpc_ast_t)
 	(*(*this_module).functions).add(mem::transmute(func as *mut function));
 }
 
+/// read example
+///	for i in 0..(*params).total()
+///	{
+///		let d = (*params).get(i) as *mut param;
+///		println!(
+///			"test param: {} {}", 
+///			`read_string`( (*d).name ),
+///			`read_string`( (*d).`p_type`.name ) 
+///		);
+///	}
 pub unsafe fn read_params(ast_ptr: *const mpc_ast_t) -> *mut vector
 {
-	let ref ast = *ast_ptr;
+	let ast = &(*ast_ptr);
 	let params:*mut vector = vector::new();
 	for i in 0..ast.children_num as usize
 	{
-		let ref child = *ast.get_children()[i];
-		let ref mut p = *Box::into_raw(Box::new(param::new()));
+		let child = &(*ast.get_children()[i]);
+		let mut p = &mut(*Box::into_raw(Box::new(param::new())));
 		p.p_type = read_type( &(*child.get_children()[0]) );
 		p.name = (*child.get_children()[1]).contents;
 
@@ -145,23 +155,12 @@ pub unsafe fn read_params(ast_ptr: *const mpc_ast_t) -> *mut vector
 		let p:*mut param = (*params).get(i) as *mut param;
 	}
 
-	/*//read example
-	for i in 0..(*params).total()
-	{
-		let d = (*params).get(i) as *mut param;
-		println!(
-			"test param: {} {}", 
-			read_string( (*d).name ),
-			read_string( (*d).p_type.name ) 
-		);
-	}*/
-
 	params
 }
 
 pub unsafe fn read_param(ast_ptr: *const mpc_ast_t) -> param
 {
-	let ref ast = *ast_ptr;
+	let ast = &(*ast_ptr);
 	let mut p = param::new();
 	p.p_type = read_type( &(*ast.get_children()[0]) );
 	if ast.children_num != 1 {p.name = (*ast.get_children()[1]).contents };
@@ -211,13 +210,13 @@ pub unsafe fn read_type(ast: &mpc_ast_t) -> symbol_type
 
 pub unsafe fn print_module()
 {
-	let ref module = *this_module;
-	let ref mut imports = *module.imports;
-	let ref mut funcs = *module.functions;
-	let ref mut types = *module.types;
+	let module = &(*this_module);
+	let mut imports = &mut (*module.imports);
+	let mut funcs = &mut (*module.functions);
+	let mut types = &mut (*module.types);
 
 	println!("{} {}:", 
-		GREEN.to_string() + &"module" + &RESET, 
+		GREEN.to_string() + "module" + RESET, 
 		read_string((*this_module).name)
 	);
 	
@@ -250,26 +249,26 @@ pub unsafe fn print_module()
 				RESET
 			);
 		}
-		print!("\n");
+		println!();
 	}
 
 	println!("\n  {}functions:{}", MAGENTA, RESET);
 	for i in 0..funcs.total()
 	{
-		print_func( (funcs.get(i) as *mut function) );
+		print_func(funcs.get(i) as *mut function);
 	}
 
 	println!("\n  {}types:{}", MAGENTA, RESET);
 	for i in 0..types.total()
 	{
-		print_usertype( (types.get(i) as *mut user_type) );
+		print_usertype(types.get(i) as *mut user_type);
 	}
 }
 
 pub unsafe fn print_func(func_ptr: *mut function)
 {
-	let ref func = *func_ptr;
-	let ref mut params = *func.params;
+	let func = &(*func_ptr);
+	let mut params = &mut (*func.params);
 	if func.public { print!("    {}public {}function{} ", GREEN, CYAN, RESET); }
 	else { print!("    {}function{} ", CYAN, RESET); }
 
@@ -277,23 +276,23 @@ pub unsafe fn print_func(func_ptr: *mut function)
 	print!(" {}returning{} ", MAGENTA, RESET);
 	print_type(&func.ret_type);
 
-	print!("\n");
+	println!();
 	for i in 0..params.total()
 	{
-		let ref p = *(params.get(i) as *mut param);
+		let p = &(*(params.get(i) as *mut param));
 		print!("      parameter{} {}{}: ",
 			MAGENTA,
 			read_string(p.name),
 			RESET
 		);
 		print_type(&p.p_type);
-		print!("\n");
+		println!();
 	}
 }
 
 pub unsafe fn print_usertype(type_ptr: *mut user_type)
 {
-	let ref t = *type_ptr;
+	let t = &(*type_ptr);
 
 	if t.public { print!("    {}public{} ", GREEN, CYAN); }
 		   else { print!("    "); }
@@ -308,7 +307,7 @@ pub unsafe fn print_usertype(type_ptr: *mut user_type)
 		type_kind::TEMP => {}	
 	}
 
-	print!(" {}{}{}\n", CYAN, read_string(t.name), RESET);
+	println!(" {}{}{}", CYAN, read_string(t.name), RESET);
 }
 
 pub unsafe fn print_type(s_type: &symbol_type)
