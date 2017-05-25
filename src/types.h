@@ -27,9 +27,9 @@ typedef struct
 
 typedef struct
 {
-    uint8 generate_c :1;
-    uint8 generate_ir :1; //this option is ignored by c2tc, but might still come in useful to others
-    uint8 refs :1;
+    uint8 generate_c;
+    uint8 generate_ir; //this option is ignored by c2tc, but might still come in useful to others
+    uint8 refs;
     int file_count;
     int module_count;
     char* name;
@@ -53,8 +53,8 @@ typedef struct
 
 typedef struct
 {
-    unsigned int local :1;
-    unsigned int with_alias :1;
+    uint8 local;
+    uint8 with_alias;
     module_t* module;
 } import_t;
 

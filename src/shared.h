@@ -37,15 +37,15 @@ vector* modules;
 
 typedef struct
 {
-    unsigned int file_mode  :1;
-    unsigned int print_ast1 :1;
-    unsigned int print_ast2 :1;
-    unsigned int print_info :1;
-    unsigned int library    :1; //if the file-mode target is a library
-    unsigned int test       :1; //continue even when some errors occur
-    unsigned int experiment :1; //experimental c2 parser
+    uint8 file_mode;
+    uint8 print_ast1;
+    uint8 print_ast2;
+    uint8 print_info;
+    uint8 library;			//if the file-mode target is a library
+    uint8 test; 			//continue even when some errors occur
+    uint8 experiment;		//experimental c2 parser
     vector* wanted_targets;
-    char* target_name; //name for file-mode target
+    char* target_name;		//name for file-mode target
 } options;
 
 options* opts;
