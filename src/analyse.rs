@@ -1,4 +1,3 @@
-#![crate_type = "staticlib"]
 //#![feature(plugin)]
 //#![plugin(clippy)]
 #![allow(unused_variables)]
@@ -12,9 +11,6 @@ use std::slice;
 use std::mem;
 use std::os::raw::c_void;
 //use std::os::raw::c_char;
-
-mod util;
-mod types;
 
 static mut this_module: *mut module = 0 as *mut module;
 

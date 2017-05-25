@@ -20,13 +20,13 @@ target c2tc:
                               "log.h", "tree_transform.h",
                               "analyse.rs", "util.rs",
                               "types.rs");
-    file: "tests.c";
+#    file: "tests.c";
     file: "ooc.c" @depends("ooc.h");
-    run:
-    {
-        "mkdir object",
-        "rustc -g -o object/libanalyse.a src/analyse.rs > /dev/null"
-    };
+#    run:
+#    {
+#        "mkdir object",
+#        "rustc -g -o object/libanalyse.a src/analyse.rs > /dev/null"
+#    };
     install:
     {
         "cp ./build/c2tc /usr/bin/c2tc",
