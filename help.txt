@@ -1,0 +1,161 @@
+warning: unnecessary `unsafe` block
+  --> src/util.rs:38:5
+   |
+38 |     unsafe { CStr::from_ptr(s).to_string_lossy().into_owned() }
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unnecessary `unsafe` block
+   |
+   = note: #[warn(unused_unsafe)] on by default
+note: because it's nested under this `unsafe` fn
+  --> src/util.rs:36:1
+   |
+36 | / pub unsafe fn read_string(s: *mut c_char) -> String
+37 | | {
+38 | |     unsafe { CStr::from_ptr(s).to_string_lossy().into_owned() }
+39 | | }
+   | |_^
+
+warning: you should consider adding a `Default` implementation for `types::module`
+  --> src/util.rs:43:5
+   |
+43 | /     pub fn new() -> module
+44 | |     {
+45 | |         module
+46 | |         {
+...  |
+51 | |         }
+52 | |     }
+   | |_____^
+   |
+   = note: #[warn(new_without_default)] on by default
+   = help: for further information visit https://github.com/Manishearth/rust-clippy/wiki#new_without_default
+help: try this
+   |     impl Default for types::module {
+   |         fn default() -> Self {
+   |             Self::new()
+   |         }
+   |     }
+   | 
+...
+
+warning: you should consider adding a `Default` implementation for `types::import`
+  --> src/util.rs:57:5
+   |
+57 | /     pub fn new() -> import
+58 | |     {
+59 | |         import
+60 | |         {
+...  |
+65 | |         }
+66 | |     }
+   | |_____^
+   |
+   = note: #[warn(new_without_default)] on by default
+   = help: for further information visit https://github.com/Manishearth/rust-clippy/wiki#new_without_default
+help: try this
+   |     impl Default for types::import {
+   |         fn default() -> Self {
+   |             Self::new()
+   |         }
+   |     }
+   | 
+...
+
+warning: this public function dereferences a raw pointer but is not marked `unsafe`
+   --> src/util.rs:176:44
+    |
+176 | 		unsafe { vector_add(self as *mut vector, item); }
+    | 		                                         ^^^^
+    |
+    = note: #[warn(not_unsafe_ptr_arg_deref)] on by default
+    = help: for further information visit https://github.com/Manishearth/rust-clippy/wiki#not_unsafe_ptr_arg_deref
+
+warning: unnecessary `unsafe` block
+  --> src/macros.rs:17:3
+   |
+17 | 		unsafe { CStr::from_ptr($ptr).to_string_lossy().into_owned() }
+   | 		^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unnecessary `unsafe` block
+   | 
+  :::	src/errors.rs
+   |
+40 | 	println!("{} ({}): {}", str_c!((*etype).name), (*etype).code, str_c!(msg));
+   | 		                       --------------------- in this macro invocation
+   |
+   = note: #[warn(unused_unsafe)] on by default
+note: because it's nested under this `unsafe` fn
+  --> src/errors.rs:38:1
+   |
+38 | / pub unsafe fn throw(etype: *const error_t, msg: *const c_char)
+39 | | {
+40 | | 	println!("{} ({}): {}", str_c!((*etype).name), (*etype).code, str_c!(msg));
+41 | | 	throw_errors+=1;
+42 | | }
+   | |_^
+
+warning: unnecessary `unsafe` block
+  --> src/macros.rs:17:3
+   |
+17 | 		unsafe { CStr::from_ptr($ptr).to_string_lossy().into_owned() }
+   | 		^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unnecessary `unsafe` block
+   | 
+  :::	src/errors.rs
+   |
+40 | 	println!("{} ({}): {}", str_c!((*etype).name), (*etype).code, str_c!(msg));
+   | 		                                                             ----------- in this macro invocation
+   |
+   = note: #[warn(unused_unsafe)] on by default
+note: because it's nested under this `unsafe` fn
+  --> src/errors.rs:38:1
+   |
+38 | / pub unsafe fn throw(etype: *const error_t, msg: *const c_char)
+39 | | {
+40 | | 	println!("{} ({}): {}", str_c!((*etype).name), (*etype).code, str_c!(msg));
+41 | | 	throw_errors+=1;
+42 | | }
+   | |_^
+
+warning: unnecessary `unsafe` block
+  --> src/macros.rs:17:3
+   |
+17 | 		unsafe { CStr::from_ptr($ptr).to_string_lossy().into_owned() }
+   | 		^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unnecessary `unsafe` block
+   | 
+  :::	src/errors.rs
+   |
+50 | 			str_c!(filename),
+   | 		 ---------------- in this macro invocation
+   |
+   = note: #[warn(unused_unsafe)] on by default
+note: because it's nested under this `unsafe` fn
+  --> src/errors.rs:45:1
+   |
+45 | / pub unsafe fn get_file_error(filename: *const c_char) -> *const c_char
+46 | | {
+47 | | 	c_str!(
+48 | | 		format!("Failed to parse file {} {} {}.",
+...  |
+53 | | 	)
+54 | | }
+   | |_^
+
+note: link against the following native artifacts when linking against this static library
+
+note: the order and any duplication can be significant on some platforms, and so may need to be preserved
+
+note: library: dl
+
+note: library: rt
+
+note: library: pthread
+
+note: library: gcc_s
+
+note: library: c
+
+note: library: m
+
+note: library: rt
+
+note: library: pthread
+
+note: library: util
+

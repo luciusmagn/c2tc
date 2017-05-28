@@ -22,7 +22,7 @@ typedef struct
 	char *name;
 } error_t;
 
-FILE *THROW_FD;
+
 void throw (void *type, char *msg);
 error_t error_new(int code, char *name);
 int32 throw_errors;

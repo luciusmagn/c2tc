@@ -8,7 +8,6 @@
 #include <unistd.h>
 #endif
 
-#include "ooc.h"
 #include "arg.h"
 #include "util.h"
 #include "shared.h"
@@ -21,7 +20,6 @@ void usage();
 
 int32 main(int32 argc, char** argv)
 {
-    init_ooc();
 	init_errors();
 
     opts = calloc(sizeof(options), 1);

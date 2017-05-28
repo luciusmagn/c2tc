@@ -78,6 +78,19 @@ void* vector_get(vector* v, int32 index);
 void vector_delete(vector* v, int32 index);
 void vector_free(vector* v);
 
+//llist
+typedef struct _llist
+{
+	void* data;
+	struct _llist* n;
+} llist;
+
+void llist_put(llist* l, void* data);
+void* llist_get(llist* l, int32_t index, int32_t carry);
+llist* llist_new(void* first);
+int32_t llist_total(llist* l, int32_t carry);
+
+
 //tests
 void testvector();
 void teststrings();

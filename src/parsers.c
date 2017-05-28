@@ -10,7 +10,6 @@
 #include <unistd.h>
 #endif
 
-#include "ooc.h"
 #include "mpc.h"
 #include "util.h"
 #include "types.h"

@@ -10,10 +10,9 @@ target c2tc:
     depends: "shared.h";
     depends: "microtest.h";
     file: "tree_transform.c" @depends("tree_transform.h");
-    file: "errors.c" @depends("errors.h", "log.h");
     file: "parsers.c" @depends("mpc.h","errors.h",
                               "log.h");
-    file: "main.c" @depends("errors.h", "arg.h", "ooc.h");
+    file: "main.c" @depends("errors.h", "arg.h");
     file: "mpc.c" @depends("mpc.c");
     file: "util.c";
     file: "recipe.c" @depends("mpc.h", "errors.h",
@@ -21,7 +20,6 @@ target c2tc:
                               "analyse.rs", "util.rs",
                               "types.rs");
 #    file: "tests.c";
-    file: "ooc.c" @depends("ooc.h");
 #    run:
 #    {
 #        "mkdir object",

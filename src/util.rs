@@ -9,6 +9,7 @@ use std::ffi::CStr;
 use std::ffi::CString;
 use std::os::raw::c_char;
 use std::os::raw::c_void;
+use std::mem::transmute;
 
 pub const RED      :&'static str = "\x1b[31m";
 pub const GREEN    :&'static str = "\x1b[32m";
@@ -40,7 +41,7 @@ pub fn read_string(s: *mut c_char) -> String
 
 impl module
 {
-    pub fn new() -> module 
+    pub fn new() -> module
     {
         module
         {
@@ -163,13 +164,13 @@ impl Default for function
 impl vector
 {
 	pub fn new() -> *mut vector
-	{ 
+	{
 		unsafe
 		{
 			let mut x = vector_alloc();
 			vector_init(x);
 			x
-		} 
+		}
 	}
 	pub fn add(&mut self, item: *mut c_void)
 	{
@@ -183,4 +184,13 @@ impl vector
 	{
 		unsafe { vector_total(self as *mut vector) as usize }
 	}
+}
+
+/*
+** Danger zone
+*/
+pub struct R<'a>(&'a str);
+pub unsafe fn extend_lifetime<'a>(r: &'a str) -> &'static str
+{
+    transmute::<&'a str, &'static str>(r)
 }

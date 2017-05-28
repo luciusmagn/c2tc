@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-#include "ooc.h"
 #include "util.h"
 #include "types.h"
 #include "types.h"
@@ -227,6 +226,51 @@ void vector_free(vector* v)
 {
     free(v->items);
     v->items = NULL;
+}
+
+/*********
+ * LLIST *
+ *********/
+llist* llist_alloc()
+{
+    return malloc(sizeof(llist));
+}
+
+llist* llist_new(void* first)
+{
+	if (first == NULL) return NULL;
+	llist* l = malloc(sizeof(llist));
+	l->data = first;
+	l->n = NULL;
+	return l;
+}
+
+void llist_put(llist* l, void* data)
+{
+	if (!l) return;
+	if (l && l->n == NULL)
+	{
+		l->n = malloc(sizeof(llist));
+		l->n->data = data;
+		l->n->n = NULL;
+	}
+	else llist_put(l->n, data);
+}
+
+int32_t llist_total(llist* l, int32_t carry)
+{
+	if (!l) return 0;
+	if (l->n != NULL) return llist_total(l->n, carry + 1);
+	else return carry + 1;
+}
+
+void* llist_get(llist* l, int32_t index, int32_t carry)
+{
+	if (!l) return NULL;
+	if (carry > index) return NULL;
+	if (carry < index && l->n) return llist_get(l->n, index, carry + 1);
+	if (carry == index && l->data != NULL) return l->data;
+	return NULL;
 }
 
 /*********
