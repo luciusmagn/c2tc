@@ -7,4 +7,6 @@ obj/
 Debug/
 *.exe
 *.ilk
-*.pdb
+*.pdb/target/
+**/*.rs.bk
+target/

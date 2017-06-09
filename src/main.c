@@ -18,7 +18,7 @@ int8 option(char**, int32*);
 void help();
 void usage();
 
-int32 main(int32 argc, char** argv)
+int32 c2tc_main(int32 argc, char** argv)
 {
 	init_errors();
 
