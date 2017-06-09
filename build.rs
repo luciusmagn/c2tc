@@ -9,7 +9,7 @@ fn main()
 		.file("src/recipe.c")
 		.file("src/tree_transform.c")
 		.file("src/util.c")
-//		.file("src/errors.c")
 		.flag("-std=gnu99")
+		.flag("-Wno-discarded-qualifiers")
 		.compile("libc2tc.a");
 }
