@@ -1,7 +1,7 @@
 #ifndef SYMBOL_TYPES_H
 #define SYMBOL_TYPES_H
 
-typedef struct
+/*typedef struct
 {
     char* name;
     vector* imports; //import*
@@ -18,5 +18,5 @@ typedef struct
     char* ident;
     module* module;
 } import;
-
+*/
 #endif
