@@ -22,16 +22,21 @@ typedef uint16_t uint16;
 typedef uint32_t uint32;
 typedef uint64_t uint64;
 
+//temporary evil
+#define bool uint8
+#define true 1
+#define false 0
+
 //strings
 /*zero-indexed*/
 #define get_line(src, index) strsplit(src, "\n")[index]
 #define startswith(str1, str2) strncmp(str1, str2, strlen(str2))
-int8 endswith(char* str1,char* str2);
+bool endswith(char* str1,char* str2);
 char** strsplit(char* str, const char* delim);
 char *skip_spaces(const char *str);
 int32 occurences(char* str, char c);
 char *str_replace(char *orig, char *rep, char *with);
-int8 issornull(char* test);
+bool issornull(char* test);
 char* bin_type_str(int32 type);
 
 //asprintf & vasprintf

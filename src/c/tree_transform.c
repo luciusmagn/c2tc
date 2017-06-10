@@ -6,28 +6,28 @@
 
 void cleanup_trg(target_t* trg)
 {
-    for (int32 i = 0; i < vector_total(trg->trees); i++)
-    {
-        cleanup(vector_get(trg->trees, i));
-        simplify_tags(vector_get(trg->trees, i));
-    }
+	for (int32 i = 0; i < vector_total(trg->trees); i++)
+	{
+		cleanup(vector_get(trg->trees, i));
+		simplify_tags(vector_get(trg->trees, i));
+	}
 
-    for (int32 i = 0; i < vector_total(trg->trees); i++)
-        if(opts->print_ast2)
-            mpc_ast_print(vector_get(trg->trees, i));
+	for (int32 i = 0; i < vector_total(trg->trees); i++)
+		if(opts->print_ast2)
+			mpc_ast_print(vector_get(trg->trees, i));
 }
 
 void cleanup(mpc_ast_t* node)
 {
-    deluseless(node);
-    for (int32 i = 0; i < node->children_num; i++)
-        cleanup(node->children[i]);
+	deluseless(node);
+	for (int32 i = 0; i < node->children_num; i++)
+		cleanup(node->children[i]);
 }
 
 void r_elem(mpc_ast_t** arr, int index, int len)
 {
-    for(int i = index; i < len; i++)
-        arr[i] = arr[i+1];
+	for(int i = index; i < len; i++)
+		arr[i] = arr[i+1];
 }
 
 /*macros for deluseless()*/
@@ -47,26 +47,26 @@ void r_elem(mpc_ast_t** arr, int index, int len)
 
 void deluseless(mpc_ast_t* node)
 {
-    START_REM
-    {
-        REM_CHAR(",")
-        REM_CHAR(":")
-        REM_CHAR(";")
-        REM_CHAR("\"")
-        REM_CHAR("'")
-        REM_CHAR("(")
-        REM_CHAR(")")
-        REM_CHAR("{")
-        REM_CHAR("}")
-        REM_STRING("module")
-        REM_STRING("import")
-        REM_STRING("as")
-        REM_STRING("type")
-        REM_STRING("@(")
-        REM_BY_TAG("start|regex")
-        REM_BY_TAG("end|regex")
-    }
-    END_REM
+	START_REM
+	{
+		REM_CHAR(",")
+		REM_CHAR(":")
+		REM_CHAR(";")
+		REM_CHAR("\"")
+		REM_CHAR("'")
+		REM_CHAR("(")
+		REM_CHAR(")")
+		REM_CHAR("{")
+		REM_CHAR("}")
+		REM_STRING("module")
+		REM_STRING("import")
+		REM_STRING("as")
+		REM_STRING("type")
+		REM_STRING("@(")
+		REM_BY_TAG("start|regex")
+		REM_BY_TAG("end|regex")
+	}
+	END_REM
 }
 
 
@@ -82,133 +82,133 @@ void deluseless(mpc_ast_t* node)
 
 void simplify_tags(mpc_ast_t* node)
 {
-    for(int i = 0; i < node->children_num; i++)
-        simplify_tags(node->children[i]);
+	for(int i = 0; i < node->children_num; i++)
+		simplify_tags(node->children[i]);
 
-    SIMPLIFY_START
-    {
-        NORMAL("head")
-        NORMAL("body")
-        NORMAL("module")
-        NORMAL("import")
+	SIMPLIFY_START
+	{
+		NORMAL("head")
+		NORMAL("body")
+		NORMAL("module")
+		NORMAL("import")
 
-        REPLACE("body|func", "func")
-        REPLACE("body|usertype", "usertype")
-        REPLACE("body|decl", "decl")
-        REPLACE("body|arrayincr", "arrayincr")
+		REPLACE("body|func", "func")
+		REPLACE("body|usertype", "usertype")
+		REPLACE("body|decl", "decl")
+		REPLACE("body|arrayincr", "arrayincr")
 
-        NORMAL("index")
+		NORMAL("index")
 
-        NORMAL("decl")
-        NORMAL("vardecl")
-        NORMAL("cmpddecl")
-        NORMAL("init")
-        NORMAL("arrayincr")
+		NORMAL("decl")
+		NORMAL("vardecl")
+		NORMAL("cmpddecl")
+		NORMAL("init")
+		NORMAL("arrayincr")
 
-        NORMAL("usertype")
-        NORMAL("structure")
-        NORMAL("memberblock")
-        NORMAL("member")
-        NORMAL("type")
-        NORMAL("globalunion")
-        NORMAL("uniontype")
-        NORMAL("alias")
-        NORMAL("enumtype")
-        NORMAL("enumeration")
-        NORMAL("functype")
+		NORMAL("usertype")
+		NORMAL("structure")
+		NORMAL("memberblock")
+		NORMAL("member")
+		NORMAL("type")
+		NORMAL("globalunion")
+		NORMAL("uniontype")
+		NORMAL("alias")
+		NORMAL("enumtype")
+		NORMAL("enumeration")
+		NORMAL("functype")
 
-        NORMAL("attribute")
-        NORMAL("attrtype")
-        NORMAL("attrparam")
+		NORMAL("attribute")
+		NORMAL("attrtype")
+		NORMAL("attrparam")
 
-        NORMAL("args")
-        NORMAL("arg")
+		NORMAL("args")
+		NORMAL("arg")
 
-        NORMAL("label")
-        NORMAL("jump")
-        NORMAL("expstmt")
-        NORMAL("compound")
-        NORMAL("declstmt")
-        NORMAL("loop")
-        NORMAL("branch")
-        NORMAL("func")
+		NORMAL("label")
+		NORMAL("jump")
+		NORMAL("expstmt")
+		NORMAL("compound")
+		NORMAL("declstmt")
+		NORMAL("loop")
+		NORMAL("branch")
+		NORMAL("func")
 
-        NORMAL("params")
-        NORMAL("exp")
-        NORMAL("asexp")
-        NORMAL("elexp")
-        NORMAL("lexp")
-        NORMAL("bexp")
-        NORMAL("eexp")
-        NORMAL("rexp")
-        NORMAL("sexp")
-        NORMAL("aexp")
-        NORMAL("mexp")
-        NORMAL("cast")
-        NORMAL("uexp")
-        NORMAL("pfexp")
-        NORMAL("pexP")
+		NORMAL("params")
+		NORMAL("exp")
+		NORMAL("asexp")
+		NORMAL("elexp")
+		NORMAL("lexp")
+		NORMAL("bexp")
+		NORMAL("eexp")
+		NORMAL("rexp")
+		NORMAL("sexp")
+		NORMAL("aexp")
+		NORMAL("mexp")
+		NORMAL("cast")
+		NORMAL("uexp")
+		NORMAL("pfexp")
+		NORMAL("pexP")
 
-        NORMAL("ident")
-        NORMAL("integer")
-        NORMAL("floatn")
-        NORMAL("character")
-        NORMAL("stringlit")
+		NORMAL("ident")
+		NORMAL("integer")
+		NORMAL("floatn")
+		NORMAL("character")
+		NORMAL("stringlit")
 
-        REGEX("ident")
-        REGEX("integer")
-        REGEX("floatn")
-        REGEX("character")
-        REGEX("stringlit")
+		REGEX("ident")
+		REGEX("integer")
+		REGEX("floatn")
+		REGEX("character")
+		REGEX("stringlit")
 
-        CHAR("ptrop")
+		CHAR("ptrop")
 
-        STRING("public")
-        STRING("natives")
-        STRING("attrtype")
+		STRING("public")
+		STRING("natives")
+		STRING("attrtype")
 
-        CHANGE("head|module|>", "module")
-        CHANGE("type|natives", "natives")
-        CHANGE("asop|string", "asop")
+		CHANGE("head|module|>", "module")
+		CHANGE("type|natives", "natives")
+		CHANGE("asop|string", "asop")
 
-        REPLACE("symbol|ident", "symbol")
-        REPLACE("type|symbol", "type")
+		REPLACE("symbol|ident", "symbol")
+		REPLACE("type|symbol", "type")
 
-        REPLACE("number|integer", "integer")
-        REPLACE("number|floatn", "floatn")
+		REPLACE("number|integer", "integer")
+		REPLACE("number|floatn", "floatn")
 
-        REPLACE("exp|asexp", "asexp")
-        REPLACE("asexp|elexp", "elexp")
-        REPLACE("elexp|lexp", "lexp")
-        REPLACE("lexp|bexp", "bexp")
-        REPLACE("bexp|eexp", "eexp")
-        REPLACE("eexp|rexp", "rexp")
-        REPLACE("rexp|sexp", "sexp")
-        REPLACE("sexp|aexp", "aexp")
-        REPLACE("aexp|mexp", "mexp")
-        REPLACE("mexp|cast", "cast")
-        REPLACE("cast|uexp", "uexp")
-        REPLACE("uexp|pfexp", "pfexp")
-        REPLACE("pfexp|pexp", "pexp")
+		REPLACE("exp|asexp", "asexp")
+		REPLACE("asexp|elexp", "elexp")
+		REPLACE("elexp|lexp", "lexp")
+		REPLACE("lexp|bexp", "bexp")
+		REPLACE("bexp|eexp", "eexp")
+		REPLACE("eexp|rexp", "rexp")
+		REPLACE("rexp|sexp", "sexp")
+		REPLACE("sexp|aexp", "aexp")
+		REPLACE("aexp|mexp", "mexp")
+		REPLACE("mexp|cast", "cast")
+		REPLACE("cast|uexp", "uexp")
+		REPLACE("uexp|pfexp", "pfexp")
+		REPLACE("pfexp|pexp", "pexp")
 
-        REPLACE("pexp|ident", "ident")
-        REPLACE("pexp|integer", "integer")
-        REPLACE("pexp|character", "character")
-        REPLACE("pexp|stringlit", "stringlit")
+		REPLACE("pexp|ident", "ident")
+		REPLACE("pexp|integer", "integer")
+		REPLACE("pexp|character", "character")
+		REPLACE("pexp|stringlit", "stringlit")
 
-        REPLACE("decl|vardecl", "vardecl")
-        REPLACE("decl|cmpddecl", "cmpddecl")
+		REPLACE("decl|vardecl", "vardecl")
+		REPLACE("decl|cmpddecl", "cmpddecl")
 
-        REPLACE("stmt|expstmt", "expstmt")
-        REPLACE("stmt|label", "label")
-        REPLACE("stmt|compound", "compound")
-        REPLACE("stmt|declstmt", "declstmt")
-        REPLACE("stmt|loop", "loop")
-        REPLACE("stmt|branch", "branch")
-        REPLACE("stmt|jump", "jump")
+		REPLACE("stmt|expstmt", "expstmt")
+		REPLACE("stmt|label", "label")
+		REPLACE("stmt|compound", "compound")
+		REPLACE("stmt|declstmt", "declstmt")
+		REPLACE("stmt|loop", "loop")
+		REPLACE("stmt|branch", "branch")
+		REPLACE("stmt|jump", "jump")
 
-        REPLACE("member|uniontype", "uniontype")
-        REPLACE("member|structlet", "structlet")
-    }
-    SIMPLIFY_END
+		REPLACE("member|uniontype", "uniontype")
+		REPLACE("member|structlet", "structlet")
+	}
+	SIMPLIFY_END
 }

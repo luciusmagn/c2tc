@@ -57,5 +57,4 @@ typedef struct
     uint8 with_alias;
     module_t* module;
 } import_t;
-
 #endif
