@@ -14,6 +14,18 @@ pub struct EvalRes
 	content: String,
 }
 
+impl EvalRes
+{
+	pub fn new() -> EvalRes
+	{
+		EvalRes
+		{
+			ret_type: SymbolType::new(),
+			content: String::new(),
+		}
+	}
+}
+
 pub struct Expression
 {
 	pub e_type: SymbolType,
@@ -154,3 +166,109 @@ impl Eval for AssignExpr
 		temp
 	}
 }
+
+//lexp
+pub struct BoolExpr
+{
+	pub left: Box<Eval>,
+	pub op: String,
+	pub right: Box<Eval>,
+}
+
+impl Eval for BoolExpr
+{
+	fn eval(&self) -> EvalRes
+	{
+		self.right.eval();
+		self.left.eval();
+		let mut res = EvalRes::new();
+		res.content.push_str(&self.left.contents());
+		res.content.push_str(&format!(" {} ", &self.op));
+		res.content.push_str(&self.right.contents());
+		res.ret_type = SymbolType
+		{
+			name: "bool".to_string(),
+			indirection: 0,
+			volatile: false,
+			constant: false
+		};
+		res
+	}
+
+	fn print(&self, level: usize)
+	{
+		for _ in 0..level { print!("    "); }
+		println!("boolean: ");
+		self.left.print(level+1);
+		for _ in 0..level+1 { print!("    "); }
+		println!("{}", &self.op);
+		self.right.print(level+1);
+	}
+	fn contents(&self) -> String
+	{
+		let mut temp = String::new();
+		temp.push_str(&self.left.contents());
+		temp.push_str(&format!(" {} ", &self.op));
+		temp.push_str(&self.right.contents());
+		temp
+	}
+}
+
+//eexp
+pub struct EqExpr
+{
+	pub left: Box<Eval>,
+	pub op: String,
+	pub right: Box<Eval>,
+}
+
+impl Eval for EqExpr
+{
+	fn eval(&self) -> EvalRes
+	{
+		let lres = self.right.eval();
+		let rres = self.left.eval();
+		let mut res = EvalRes::new();
+
+		res.content.push_str(&self.left.contents());
+		res.content.push_str(&format!(" {} ", &self.op));
+		res.content.push_str(&self.right.contents());
+
+		if lres.ret_type.compare(&rres.ret_type)
+		{
+			res
+		}
+		else
+		{
+			panic!()
+		}
+	}
+
+	fn print(&self, level: usize)
+	{
+		for _ in 0..level { print!("    "); }
+		println!("equality: ");
+		self.left.print(level+1);
+		for _ in 0..level+1 { print!("    "); }
+		println!("{}", &self.op);
+		self.right.print(level+1);
+	}
+	fn contents(&self) -> String
+	{
+		let mut temp = String::new();
+		temp.push_str(&self.left.contents());
+		temp.push_str(&format!(" {} ", &self.op));
+		temp.push_str(&self.right.contents());
+		temp
+	}
+}
+
+//bexp
+pub struct BitwiseExpr
+{
+	pub left: Box<Eval>,
+	pub op: String,
+	pub right: Box<Eval>,
+}
+
+
