@@ -15,8 +15,8 @@
 #include "types.h"
 
 int8 option(char**, int32*);
-void help();
-void usage();
+void help(); /*[RUST DEFINED]*/
+void usage(); /*[RUST DEFINED]*/
 
 int32 c2tc_main(int32 argc, char** argv)
 {
@@ -81,12 +81,4 @@ int8 option(char** argv, int32* argc)
     else
         vector_add(opts->wanted_targets, argv[0]);
     return 1;
-}
-
-void usage()
-{
-    puts("c2tc [-heidofatA?] [--ast0] [--ast1] [--test] [--info] "
-         "[--experiment] [--output name] [--file] [--dir dir] targets...");
-    puts("use -h for more info");
-    exit(0);
 }
