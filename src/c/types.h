@@ -42,19 +42,4 @@ typedef struct
     vector* modules;
     vector* warnings;
 } target_t;
-
-typedef struct
-{
-    char* name;
-    vector imports;
-    vector symbols;
-    vector trees;
-} module_t;
-
-typedef struct
-{
-    uint8 local;
-    uint8 with_alias;
-    module_t* module;
-} import_t;
 #endif

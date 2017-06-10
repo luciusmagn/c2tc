@@ -39,15 +39,6 @@ char *skip_spaces(const char *str)
 	return str;
 }
 
-//WARNING: does not count double occurrences at all
-int32 occurences(char* str, char c)
-{
-	int32 i, count;
-	for (i = 0, count = 0; str[i]; i++)
-		count += (str[i] == c && str[i+1] != c);
-	return count;
-}
-
 //replace every occurence of char* rep with char* with
 char *str_replace(char *orig, char *rep, char *with)
 {
@@ -91,16 +82,6 @@ char *str_replace(char *orig, char *rep, char *with)
 	}
 	strcpy(tmp, orig);
 	return result;
-}
-
-//tests whether a string is whitespace or null
-bool issornull(char* test)
-{
-	if (!test) return 0;
-	int32 i = 0;
-	while (isspace(test[i])) i++;
-	if (i != strlen(test)) return false;
-	return true;
 }
 
 char* bin_type_str(int32 type)

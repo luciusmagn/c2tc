@@ -31,12 +31,11 @@ typedef uint64_t uint64;
 /*zero-indexed*/
 #define get_line(src, index) strsplit(src, "\n")[index]
 #define startswith(str1, str2) strncmp(str1, str2, strlen(str2))
-bool endswith(char* str1,char* str2);
+bool endswith(char* str1,char* str2); /*[RUST DEFINED]*/
 char** strsplit(char* str, const char* delim);
 char *skip_spaces(const char *str);
-int32 occurences(char* str, char c);
+uint32 occurences(char* str, char c); /*[RUST DEFINED]*/
 char *str_replace(char *orig, char *rep, char *with);
-bool issornull(char* test);
 char* bin_type_str(int32 type);
 
 //asprintf & vasprintf
@@ -94,11 +93,6 @@ void llist_put(llist* l, void* data);
 void* llist_get(llist* l, int32_t index, int32_t carry);
 llist* llist_new(void* first);
 int32_t llist_total(llist* l, int32_t carry);
-
-
-//tests
-void testvector();
-void teststrings();
 
 //ast helpers
 #define MODULE_PRE(x) x->children[1]->children[0]->children[1]

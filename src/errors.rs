@@ -1,18 +1,19 @@
 #![allow(unused_unsafe)]
 use std::os::raw::c_char;
+use std::process::exit;
 use util::*;
 
 extern
 {
-	static mut throw_errors: i32;
+	pub static mut throw_errors: i32;
 
-	static mut erdfail: error_t;
-	static mut emafail: error_t;
-	static mut enoargs: error_t;
-	static mut enoaccs: error_t;
-	static mut ebadtok: error_t;
-	static mut enotoks: error_t;
-	static mut eparsef: error_t;
+	pub static mut erdfail: error_t;
+	pub static mut emafail: error_t;
+	pub static mut enoargs: error_t;
+	pub static mut enoaccs: error_t;
+	pub static mut ebadtok: error_t;
+	pub static mut enotoks: error_t;
+	pub static mut eparsef: error_t;
 }
 
 #[repr(C)]
@@ -43,6 +44,12 @@ pub fn throw(etype: *const error_t, msg: *const c_char)
 		str_c!(msg)
 	);
 	unsafe { throw_errors+=1; }
+}
+
+pub fn error(etype: *const error_t, msg: &str) -> !
+{
+	throw(etype, c_str!(msg));
+	unsafe { exit((*etype).code); }
 }
 
 #[no_mangle]

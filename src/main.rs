@@ -1,5 +1,5 @@
 //#![crate_type = "staticlib"]
-#![feature(start)]
+#![feature(start, slice_patterns)]
 #![allow(not_unsafe_ptr_arg_deref, unknown_lints)]
 
 use std::process::exit;
@@ -48,3 +48,4 @@ pub fn usage()
 	println!("use -h for more info");
 	exit(0);
 }
+

@@ -151,3 +151,9 @@ pub fn endswith(haystack: *const c_char, needle: *const c_char) -> bool
 	let hay: String = str_c!(haystack);
 	hay.ends_with::<&str>(str_c!(needle).as_ref())
 }
+
+#[no_mangle]
+pub fn occurences(haystack: *const c_char, needle: char) -> u32
+{
+	str_c!(haystack).chars().filter(|x| *x == needle).count() as u32
+}

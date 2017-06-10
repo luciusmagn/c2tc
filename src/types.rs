@@ -1,4 +1,3 @@
-use std::slice;
 use std::os::raw::c_char;
 
 #[repr(C)]
@@ -73,12 +72,4 @@ pub enum TypeKind
 	ENUM,
 	FUNC,
 	TEMP
-}
-
-impl mpc_ast_t
-{
-	pub unsafe fn get_children(&self) -> &'static[*mut mpc_ast_t]
-	{
-		slice::from_raw_parts(self.children, self.children_num as usize)
-	}
 }
