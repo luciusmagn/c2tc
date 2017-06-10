@@ -1,5 +1,5 @@
 //#![crate_type = "staticlib"]
-#![feature(start, slice_patterns)]
+#![feature(start, conservative_impl_trait)]
 #![allow(not_unsafe_ptr_arg_deref, unknown_lints)]
 
 use std::process::exit;
@@ -13,6 +13,7 @@ pub mod analyse;
 pub mod errors;
 pub mod colors;
 pub mod ast;
+pub mod expressions;
 
 extern
 {

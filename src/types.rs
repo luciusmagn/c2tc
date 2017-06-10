@@ -1,4 +1,5 @@
 use std::os::raw::c_char;
+use expressions::*;
 
 #[repr(C)]
 pub struct mpc_state_t
@@ -72,4 +73,14 @@ pub enum TypeKind
 	ENUM,
 	FUNC,
 	TEMP
+}
+
+/*
+** Globals
+*/
+pub struct Global
+{
+	pub name: String,
+	pub g_type: SymbolType,
+	pub content: Option<Expression>,
 }
