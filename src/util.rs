@@ -8,7 +8,6 @@ use types::*;
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::os::raw::c_char;
-use std::os::raw::c_void;
 use std::mem::transmute;
 
 pub const RED      :&'static str = "\x1b[31m";
@@ -18,16 +17,6 @@ pub const BLUE     :&'static str = "\x1b[34m";
 pub const MAGENTA  :&'static str = "\x1b[35m";
 pub const CYAN     :&'static str = "\x1b[36m";
 pub const RESET    :&'static str = "\x1b[0m";
-
-extern
-{
-    pub fn puts(s: *const c_char);
-    pub fn vector_alloc() -> *mut vector;
-    pub fn vector_init(v: *mut vector);
-    pub fn vector_add(l: *mut vector, d: *mut c_void);
-    pub fn vector_total(l: *mut vector) -> i32;
-    pub fn vector_get(l: *mut vector, index: i32) -> *mut c_void;
-}
 
 pub fn make_string(s: String) -> *mut c_char
 {
@@ -39,56 +28,56 @@ pub fn read_string(s: *mut c_char) -> String
     unsafe { CStr::from_ptr(s).to_string_lossy().into_owned() }
 }
 
-impl module
+impl Module
 {
-    pub fn new() -> module
+    pub fn new() -> Module
     {
-        module
+        Module
         {
-            types: vector::new(),
-            imports: vector::new(),
-            functions: vector::new(),
-            name: make_string("placeholder".to_string()),
+            types: Vec::new(),
+            imports: Vec::new(),
+            functions: Vec::new(),
+            name: "placeholder".to_string(),
         }
     }
 }
 
-impl import
+impl Import
 {
-    pub fn new() -> import
+    pub fn new() -> Import
     {
-        import
+        Import
         {
             local: false,
             w_alias: false,
-            name: make_string("placeholder".to_string()),
-            alias: make_string("placeholder".to_string()),
+            name: "placeholder".to_string(),
+            alias: "placeholder".to_string(),
         }
     }
 }
 
-impl function
+impl Function
 {
-	pub fn new() -> function
+	pub fn new() -> Function
 	{
-		function
+		Function
 		{
-			name: make_string("placeholder".to_string()),
+			name: "placeholder".to_string(),
 			public: false,
 			param_count: 0,
-			params: vector::new(),
-			ret_type: symbol_type::new(),
+			params: Vec::new(),
+			ret_type: SymbolType::new(),
 		}
 	}
 }
 
-impl symbol_type
+impl SymbolType
 {
-	pub fn new() -> symbol_type
+	pub fn new() -> SymbolType
 	{
-		symbol_type
+		SymbolType
 		{
-			name: make_string("placeholder".to_string()),
+			name: "placeholder".to_string(),
 			indirection: 0,
 			constant: false,
 			volatile: false,
@@ -96,26 +85,26 @@ impl symbol_type
 	}
 }
 
-impl param
+impl Param
 {
-	pub fn new() -> param
+	pub fn new() -> Param
 	{
-		param
+		Param
 		{
-			p_type: symbol_type::new(),
-			name: make_string("<empty>".to_string()),
+			p_type: SymbolType::new(),
+			name: "<empty>".to_string(),
 		}
 	}
 }
 
-impl user_type
+impl UserType
 {
-	pub fn new() -> user_type
+	pub fn new() -> UserType
 	{
-		user_type
+		UserType
 		{
-			t_type: type_kind::TEMP,
-			name: make_string("placeholder".to_string()),
+			t_type: TypeKind::TEMP,
+			name: "placeholder".to_string(),
 			public: false
 		}
 	}
@@ -125,7 +114,7 @@ impl user_type
 ** Defaults
 */
 
-impl Default for user_type
+impl Default for UserType
 {
 	fn default() -> Self
 	{
@@ -133,7 +122,7 @@ impl Default for user_type
 	}
 }
 
-impl Default for param
+impl Default for Param
 {
 	fn default() -> Self
 	{
@@ -141,7 +130,7 @@ impl Default for param
 	}
 }
 
-impl Default for symbol_type
+impl Default for SymbolType
 {
 	fn default() -> Self
 	{
@@ -149,7 +138,7 @@ impl Default for symbol_type
 	}
 }
 
-impl Default for function
+impl Default for Function
 {
 	fn default() -> Self
 	{
@@ -157,32 +146,19 @@ impl Default for function
 	}
 }
 
-/*
-** C vector
-*/
-
-impl vector
+impl Default for Module
 {
-	pub fn new() -> *mut vector
+	fn default() -> Self
 	{
-		unsafe
-		{
-			let mut x = vector_alloc();
-			vector_init(x);
-			x
-		}
+		Self::new()
 	}
-	pub fn add(&mut self, item: *mut c_void)
+}
+
+impl Default for Import
+{
+	fn default() -> Self
 	{
-		unsafe { vector_add(self as *mut vector, item); }
-	}
-	pub fn get(&mut self, index: usize) -> *mut c_void
-	{
-		unsafe { vector_get(self as *mut vector, index as i32) }
-	}
-	pub fn total(&mut self) -> usize
-	{
-		unsafe { vector_total(self as *mut vector) as usize }
+		Self::new()
 	}
 }
 

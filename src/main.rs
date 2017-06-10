@@ -1,5 +1,8 @@
 //#![crate_type = "staticlib"]
 #![feature(start)]
+#![allow(not_unsafe_ptr_arg_deref, unknown_lints)]
+
+use std::process::exit;
 
 #[macro_use]
 pub mod macros;
@@ -9,6 +12,8 @@ pub mod tests;
 pub mod types;
 pub mod analyse;
 pub mod errors;
+pub mod colors;
+pub mod ast;
 
 extern
 {
@@ -33,4 +38,14 @@ pub fn help()
            \n--ast1 -A                         print clean AST\
            \n--output -o name     change file-mode target name\
            \n--info -i                       print information");
+    exit(0);
+}
+
+#[no_mangle]
+pub fn usage()
+{
+    println!("c2tc [-heidofatA?] [--ast0] [--ast1] [--test] [--info] \
+         [--experiment] [--output name] [--file] [--dir dir] targets...");
+    println!("use -h for more info");
+    exit(0);
 }

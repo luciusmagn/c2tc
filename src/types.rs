@@ -1,8 +1,3 @@
-#![allow(unused_variables)]
-#![allow(non_upper_case_globals)]
-#![allow(dead_code)]
-#![allow(improper_ctypes)]
-
 use std::slice;
 use std::os::raw::c_char;
 
@@ -21,69 +16,56 @@ pub struct mpc_ast_t
     pub contents: *mut c_char,
     pub state: mpc_state_t,
     pub children_num: i32,
-    pub children: *const *const mpc_ast_t,
+    pub children: *mut *mut mpc_ast_t,
 }
 
-
-#[repr(C)]
-pub struct vector;
-
-//TODO map structs to C
-
-#[repr(C)]
-pub struct module
+pub struct Module
 {
-    pub name: *mut c_char,
-    pub imports: *mut vector,
-    pub functions: *mut vector,
-    pub types: *mut vector,
+    pub name: String,
+    pub imports: Vec<Import>,
+    pub functions: Vec<Function>,
+    pub types: Vec<UserType>,
 }
 
-#[repr(C)]
-pub struct import
+pub struct Import
 {
-    pub name: *mut c_char,
-    pub alias: *mut c_char,
+    pub name: String,
+    pub alias: String,
     pub local: bool,
     pub w_alias: bool,
 }
 
-#[repr(C)]
-pub struct function
+pub struct Function
 {
-    pub name: *mut c_char,
+    pub name: String,
     pub public : bool,
     pub param_count : i32,
-    pub params: *mut vector,
-    pub ret_type: symbol_type,
+    pub params: Vec<Param>,
+    pub ret_type: SymbolType,
 }
 
-#[repr(C)]
-pub struct param
+pub struct Param
 {
-    pub p_type: symbol_type,
-    pub name: *mut c_char,
+    pub p_type: SymbolType,
+    pub name: String,
 }
 
-#[repr(C)]
-pub struct symbol_type
+pub struct SymbolType
 {
-    pub name: *mut c_char,
+    pub name: String,
     pub indirection: i32,
     pub constant: bool,
     pub volatile: bool,
 }
 
-#[repr(C)]
-pub struct user_type
+pub struct UserType
 {
-    pub name: *mut c_char,
-    pub t_type: type_kind,
+    pub name: String,
+    pub t_type: TypeKind,
     pub public: bool,
 }
 
-#[repr(C)]
-pub enum type_kind
+pub enum TypeKind
 {
     ALIAS,
     STRUCT,
@@ -95,7 +77,7 @@ pub enum type_kind
 
 impl mpc_ast_t
 {
-    pub unsafe fn get_children(&self) -> &'static[*const mpc_ast_t]
+    pub unsafe fn get_children(&self) -> &'static[*mut mpc_ast_t]
     {
         slice::from_raw_parts(self.children, self.children_num as usize)
     }
