@@ -11,5 +11,7 @@ fn main()
 		.file("src/c/util.c")
 		.flag("-std=gnu99")
 		.flag("-Wno-discarded-qualifiers")
+		.flag("-O3")
+		.flag("-Ofast")
 		.compile("libc2tc.a");
 }
